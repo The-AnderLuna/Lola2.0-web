@@ -2257,11 +2257,37 @@ export default function FlujoReserva() {
                                             <FileText className="w-5 h-5" /> Resumen de Reserva
                                         </h3>
 
+                                        {(() => {
+                                            let titularHora = selectedTime ? formatearHora(selectedTime) : '';
+                                            let amigaHora = titularHora;
+                                            
+                                            if (esReservaCompartida && serviciosAmiga.length > 0 && serviciosTitular.length > 0 && selectedTime) {
+                                                const getProfId = (s: any) => {
+                                                    const sIsStaff = s.nombre.toLowerCase().includes('staff') || s.responsable?.toLowerCase() === 'staff';
+                                                    const sIsMile = s.nombre.toLowerCase().includes('mile') || s.responsable?.toLowerCase() === 'mile';
+                                                    return (sIsStaff && !sIsMile) ? 'STAFF' : 'MILE';
+                                                };
+                                                const profTitular = getProfId(serviciosTitular[0]);
+                                                const profAmiga = getProfId(serviciosAmiga[0]);
+                                                
+                                                if (profTitular === profAmiga) {
+                                                    const duracion = serviciosTitular[0].duracionMin + serviciosTitular[0].bufferMin;
+                                                    const [h, m] = selectedTime.split(':').map(Number);
+                                                    const d = new Date();
+                                                    d.setHours(h, m + duracion, 0, 0);
+                                                    amigaHora = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                                                }
+                                            }
+
+                                            return (
                                         <div className="space-y-4 relative z-10">
                                             <div className="bg-bg-surface rounded-2xl p-4 border border-border-subtle">
                                                 {esReservaCompartida ? (
                                                     <>
-                                                        <p className="text-xs text-gold uppercase tracking-wider font-bold mb-3 border-b border-gold/20 pb-2 flex items-center gap-2"><User className="w-3.5 h-3.5" /> Tus servicios ({serviciosTitular.length})</p>
+                                                        <div className="flex justify-between items-center mb-3 border-b border-gold/20 pb-2">
+                                                            <p className="text-xs text-gold uppercase tracking-wider font-bold flex items-center gap-2"><User className="w-3.5 h-3.5" /> Tus servicios ({serviciosTitular.length})</p>
+                                                            <p className="text-xs text-text-muted font-semibold bg-bg-base px-2 py-1 rounded-md flex items-center gap-1"><Clock className="w-3 h-3 text-gold" /> {titularHora}</p>
+                                                        </div>
                                                         <div className="space-y-3 mb-4">
                                                             {serviciosTitular.map(srv => (
                                                                 <div key={srv.uid} className="flex justify-between items-start">
@@ -2273,7 +2299,10 @@ export default function FlujoReserva() {
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        <p className="text-xs text-gold uppercase tracking-wider font-bold mb-3 border-b border-gold/20 pb-2 flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Servicios de {datosAmiga.nombre || 'tu amiga'} ({serviciosAmiga.length})</p>
+                                                        <div className="flex justify-between items-center mb-3 border-b border-gold/20 pb-2">
+                                                            <p className="text-xs text-gold uppercase tracking-wider font-bold flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Servicios de {datosAmiga.nombre || 'tu amiga'} ({serviciosAmiga.length})</p>
+                                                            <p className="text-xs text-text-muted font-semibold bg-bg-base px-2 py-1 rounded-md flex items-center gap-1"><Clock className="w-3 h-3 text-gold" /> {amigaHora}</p>
+                                                        </div>
                                                         <div className="space-y-3">
                                                             {serviciosAmiga.map(srv => (
                                                                 <div key={`amiga-${srv.uid}`} className="flex justify-between items-start">
@@ -2332,6 +2361,8 @@ export default function FlujoReserva() {
                                                 </div>
                                             </div>
                                         </div>
+                                        );
+                                        })()}
                                     </div>
 
                                     {/* ABONO REQUERIDO */}
