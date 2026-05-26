@@ -3,16 +3,17 @@ import { EstadoCita } from './Tipos';
 export class Cita {
   constructor(
     public readonly id: string,
-    public readonly clienteId: string,
-    public readonly servicioId: string,
-    public readonly profesionalId: string,
-    public readonly fechaHoraInicio: Date,
-    public readonly fechaHoraFin: Date,
-    public readonly duracionMin: number,
-    public readonly precioTotal: number,
+    public clienteId: string,
+    public servicioId: string,
+    public profesionalId: string,
+    public fechaHoraInicio: Date,
+    public fechaHoraFin: Date,
+    public duracionMin: number,
+    public precioTotal: number,
     public estado: EstadoCita,
     public expiresAt?: Date | null,
     public grupoId?: string | null,
+    public reservaTitularId?: string | null,
     public createdAt: Date = new Date(),
   ) {}
 

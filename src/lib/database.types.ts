@@ -25,8 +25,11 @@ export type Database = {
           fecha_hora_inicio: string
           grupo_id: string | null
           id: string
+          metodo_pago: string | null
+          notas: string | null
           precio_total: number
           profesional_id: string | null
+          reserva_titular_id: string | null
           servicio_id: string | null
         }
         Insert: {
@@ -39,8 +42,11 @@ export type Database = {
           fecha_hora_inicio: string
           grupo_id?: string | null
           id?: string
+          metodo_pago?: string | null
+          notas?: string | null
           precio_total: number
           profesional_id?: string | null
+          reserva_titular_id?: string | null
           servicio_id?: string | null
         }
         Update: {
@@ -53,8 +59,11 @@ export type Database = {
           fecha_hora_inicio?: string
           grupo_id?: string | null
           id?: string
+          metodo_pago?: string | null
+          notas?: string | null
           precio_total?: number
           profesional_id?: string | null
+          reserva_titular_id?: string | null
           servicio_id?: string | null
         }
         Relationships: [
@@ -70,6 +79,13 @@ export type Database = {
             columns: ["profesional_id"]
             isOneToOne: false
             referencedRelation: "profesionales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "citas_reserva_titular_id_fkey"
+            columns: ["reserva_titular_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
           {
@@ -117,6 +133,33 @@ export type Database = {
           id?: string
           nombre?: string | null
           telefono?: string
+        }
+        Relationships: []
+      }
+      codigos_otp: {
+        Row: {
+          codigo: string
+          created_at: string
+          expires_at: string
+          id: string
+          telefono: string
+          usado: boolean
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          telefono: string
+          usado?: boolean
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          telefono?: string
+          usado?: boolean
         }
         Relationships: []
       }
@@ -418,7 +461,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_locks: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

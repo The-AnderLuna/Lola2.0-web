@@ -43,7 +43,72 @@ export class RepositorioCitas {
       row.estado as EstadoCita,
       row.expires_at ? new Date(row.expires_at) : null,
       row.grupo_id,
+      row.reserva_titular_id || null,
       row.created_at ? new Date(row.created_at) : new Date()
     ));
   }
+
+  async obtenerPorClienteId(clienteId: string): Promise<Cita[]> {
+    const { data, error } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('cliente_id', clienteId)
+      .order('fecha_hora_inicio', { ascending: false });
+
+    if (error) throw new Error(`Error obteniendo citas por cliente: ${error.message}`);
+
+    return (data || []).map(row => new Cita(
+      row.id,
+      row.cliente_id || '',
+      row.servicio_id || '',
+      row.profesional_id || '',
+      new Date(row.fecha_hora_inicio),
+      new Date(row.fecha_hora_fin),
+      row.duracion_min,
+      row.precio_total,
+      row.estado as EstadoCita,
+      row.expires_at ? new Date(row.expires_at) : null,
+      row.grupo_id,
+      row.reserva_titular_id || null,
+      row.created_at ? new Date(row.created_at) : new Date()
+    ));
+  }
+
+  async actualizarEstado(citaId: string, estado: EstadoCita): Promise<void> {
+    const { error } = await supabase
+      .from('citas')
+      .update({ estado })
+      .eq('id', citaId);
+
+    if (error) throw new Error(`Error actualizando estado de cita: ${error.message}`);
+  }
+
+  async obtenerPorId(citaId: string): Promise<Cita | null> {
+    const { data, error } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('id', citaId)
+      .maybeSingle();
+
+    if (error) throw new Error(`Error obteniendo cita por ID: ${error.message}`);
+    if (!data) return null;
+
+    return new Cita(
+      data.id,
+      data.cliente_id || '',
+      data.servicio_id || '',
+      data.profesional_id || '',
+      new Date(data.fecha_hora_inicio),
+      new Date(data.fecha_hora_fin),
+      data.duracion_min,
+      data.precio_total,
+      data.estado as EstadoCita,
+      data.expires_at ? new Date(data.expires_at) : null,
+      data.grupo_id,
+      data.reserva_titular_id || null,
+      data.created_at ? new Date(data.created_at) : new Date()
+    );
+  }
 }
+
+

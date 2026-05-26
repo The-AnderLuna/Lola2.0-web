@@ -108,6 +108,45 @@ export default function FlujoReserva() {
   const [datosAmiga, setDatosAmiga] = useState({ nombre: "", telefono: "" });
   const [codigoPaisAmiga, setCodigoPaisAmiga] = useState('+57');
 
+  // Estados de cupones
+  const [codigoCupon, setCodigoCupon] = useState('');
+  const [cuponActivo, setCuponActivo] = useState<any>(null);
+  const [cuponError, setCuponError] = useState<string | null>(null);
+  const [validandoCupon, setValidandoCupon] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('lola_client_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed) setClientData(prev => ({ ...prev, ...parsed }));
+      }
+    } catch (e) { }
+  }, []);
+
+  const phoneDigits = clientData.telefono.replace(/\D/g, '');
+
+  // Autollenado desde la base de datos cuando el número de teléfono esté completo
+  useEffect(() => {
+    if (codigoPais === '+57' && phoneDigits.length === 10) {
+      const fullPhone = `+57${phoneDigits}`;
+      fetch(`/api/clientes/buscar?telefono=${encodeURIComponent(fullPhone)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.encontrado && data.cliente) {
+            setClientData(prev => ({
+              ...prev,
+              nombre: prev.nombre || data.cliente.nombre,
+              email: prev.email || data.cliente.email,
+              cedula: prev.cedula || data.cliente.cedula,
+              cumpleanos: prev.cumpleanos || data.cliente.cumpleanos
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [phoneDigits, codigoPais]);
+
   // Estados del calendario real
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -128,6 +167,37 @@ export default function FlujoReserva() {
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 0));
+
+  const validarCupon = async () => {
+    if (!codigoCupon.trim() || totalPrecioSinDescuento === 0) return;
+    setValidandoCupon(true);
+    setCuponError(null);
+    try {
+      const url = new URL('/api/cupones/validar', window.location.origin);
+      url.searchParams.append('codigo', codigoCupon.toUpperCase());
+      url.searchParams.append('total', totalPrecioSinDescuento.toString());
+      const telLimpio = `${codigoPais}${clientData.telefono.replace(/\s/g, '')}`;
+      url.searchParams.append('telefono', telLimpio);
+
+      const res = await fetch(url.toString());
+      const data = await res.json();
+      if (res.ok && data.valido) {
+        setCuponActivo(data);
+      } else {
+        setCuponError(data.error || 'Cupón inválido');
+      }
+    } catch (err) {
+      setCuponError('Error validando cupón');
+    } finally {
+      setValidandoCupon(false);
+    }
+  };
+
+  const removerCupon = () => {
+    setCuponActivo(null);
+    setCodigoCupon('');
+    setCuponError(null);
+  };
 
   // 1. Inicialización y manejo de navegación hacia atrás/adelante (PopState)
   useEffect(() => {
@@ -451,10 +521,27 @@ export default function FlujoReserva() {
 
   const isVipDaySelected = selectedDate && [2, 4, 6].includes(selectedDate.getDay());
   const hasMileServices = selectedServices.some(s => s.responsable === 'Mile' || s.nombre.toLowerCase().includes('mile'));
-  const vipFee = (vipFeeAccepted && hasMileServicesWithStaffAlternative && isVipDaySelected) ? 20000 : 0;
+  
+  const getPotentialVipFee = () => {
+    return selectedServices.reduce((total, srv) => {
+      const isMile = srv.responsable === 'Mile' || srv.nombre.toLowerCase().includes('- mile');
+      if (!isMile) return total;
+      
+      if (srv.precio >= 100000) return total + 15000;
+      if (srv.precio >= 50000) return total + 10000;
+      if (srv.precio >= 5000) return total + 5000;
+      return total;
+    }, 0);
+  };
+  const potentialVipFee = getPotentialVipFee();
+  const vipFee = (vipFeeAccepted && hasMileServicesWithStaffAlternative && isVipDaySelected) ? potentialVipFee : 0;
 
-  const totalPrecio = selectedServices.reduce((sum, s) => sum + s.precio, 0) + vipFee;
-  const totalAbono = selectedServices.reduce((sum, s) => sum + s.abonoRequerido, 0) + vipFee;
+  const totalPrecioSinDescuento = selectedServices.reduce((sum, s) => sum + s.precio, 0) + vipFee;
+  const totalAbonoSinDescuento = selectedServices.reduce((sum, s) => sum + s.abonoRequerido, 0) + vipFee;
+  
+  const totalPrecio = cuponActivo ? cuponActivo.nuevoTotal : totalPrecioSinDescuento;
+  const totalAbono = cuponActivo ? cuponActivo.nuevoAbono : totalAbonoSinDescuento;
+
   const totalDuracion = selectedServices.reduce((sum, s) => sum + s.duracionMin + s.bufferMin, 0);
   // Servicios de la titular (excluye los de la amiga)
   const serviciosTitular = esReservaCompartida
@@ -726,7 +813,6 @@ export default function FlujoReserva() {
 
   // --- VALIDACIONES PASO 3 ---
   const isEmailValid = clientData.email.trim() === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientData.email);
-  const phoneDigits = clientData.telefono.replace(/\D/g, '');
   const isPhoneValid = clientData.telefono.trim() === '' ? false : (codigoPais === '+57' ? phoneDigits.length === 10 : phoneDigits.length >= 8);
   const isCedulaValid = clientData.cedula.trim() === '' ? false : /^\d{5,15}$/.test(clientData.cedula.replace(/\D/g, ''));
   const phoneDigitsAmiga = datosAmiga.telefono.replace(/\D/g, '');
@@ -1781,7 +1867,7 @@ export default function FlujoReserva() {
                     <h3 className="text-2xl font-bold text-text-primary mb-3">Exclusividad VIP</h3>
                     <p className="text-text-secondary text-sm mb-6 leading-relaxed">
                       Los <span className="text-text-primary font-bold">Martes, Jueves y Sábados</span> son exclusivos de nuestro Staff. <br /><br />
-                      Agendar con <span className="text-gold font-bold">Mile</span> en estos días requiere un <span className="font-bold text-text-primary">Pase VIP</span> de <span className="text-gold font-bold text-lg">$20.000</span>.
+                      Agendar con <span className="text-gold font-bold">Mile</span> en estos días requiere un <span className="font-bold text-text-primary">Pase VIP</span> de <span className="text-gold font-bold text-lg">{formatCurrency(potentialVipFee)}</span>.
                     </p>
                     <div className="flex flex-col gap-3">
                       {canSwapToStaff && (
@@ -1792,7 +1878,7 @@ export default function FlujoReserva() {
                       )}
                       <div className="flex gap-3">
                         <button onClick={() => setPendingVipDay(null)} className="flex-1 py-3.5 bg-bg-surface border border-border-subtle rounded-xl text-text-primary font-bold hover:bg-bg-elevated transition-colors text-sm">Cancelar</button>
-                        <button onClick={() => { setVipFeeAccepted(true); handleSelectDate(pendingVipDay, true); setPendingVipDay(null); }} className="flex-[1.5] py-3.5 bg-gold text-black rounded-xl font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-all text-sm">Pagar +$20.000 (Mile)</button>
+                        <button onClick={() => { setVipFeeAccepted(true); handleSelectDate(pendingVipDay, true); setPendingVipDay(null); }} className="flex-[1.5] py-3.5 bg-gold text-black rounded-xl font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-all text-sm">Pagar +{formatCurrency(potentialVipFee)} (Mile)</button>
                       </div>
                     </div>
                   </div>
@@ -1972,101 +2058,155 @@ export default function FlujoReserva() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
 
-                {/* COLUMNA IZQUIERDA: RESUMEN (TICKET) */}
-                <div className="bg-bg-card border border-border-subtle rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                {/* COLUMNA IZQUIERDA */}
+                <div className="flex flex-col gap-6">
 
-                  <h3 className="text-lg font-bold text-gold uppercase tracking-widest mb-6 flex items-center gap-2 relative z-10">
-                    <FileText className="w-5 h-5" /> Resumen de Reserva
-                  </h3>
+                  {/* TICKET DE RESUMEN */}
+                  <div className="bg-bg-card border border-border-subtle rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
 
-                  <div className="space-y-4 relative z-10">
-                    <div className="bg-bg-surface rounded-2xl p-4 border border-border-subtle">
-                      {esReservaCompartida ? (
-                        <>
-                          <p className="text-xs text-gold uppercase tracking-wider font-bold mb-3 border-b border-gold/20 pb-2 flex items-center gap-2"><User className="w-3.5 h-3.5" /> Tus servicios ({serviciosTitular.length})</p>
-                          <div className="space-y-3 mb-4">
-                            {serviciosTitular.map(srv => (
-                              <div key={srv.uid} className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
-                                  <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
-                                </div>
-                                <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
-                              </div>
-                            ))}
-                          </div>
-                          <p className="text-xs text-gold uppercase tracking-wider font-bold mb-3 border-b border-gold/20 pb-2 flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Servicios de {datosAmiga.nombre || 'tu amiga'} ({serviciosAmiga.length})</p>
-                          <div className="space-y-3">
-                            {serviciosAmiga.map(srv => (
-                              <div key={`amiga-${srv.uid}`} className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
-                                  <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
-                                </div>
-                                <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 border-b border-border-subtle pb-2">Servicios ({selectedServices.length})</p>
-                          <div className="space-y-3">
-                            {selectedServices.map(srv => (
-                              <div key={srv.uid} className="flex justify-between items-start">
-                                <div>
-                                  <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
-                                  <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
-                                </div>
-                                <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                      <div className="border-t border-border-subtle mt-4 pt-3 flex justify-between items-center">
-                        <p className="font-bold text-text-secondary text-xs uppercase tracking-wider">Costo Total</p>
-                        <p className="font-bold text-text-primary">{formatCurrency(totalPrecio)}</p>
-                      </div>
-                    </div>
+                    <h3 className="text-lg font-bold text-gold uppercase tracking-widest mb-6 flex items-center gap-2 relative z-10">
+                      <FileText className="w-5 h-5" /> Resumen de Reserva
+                    </h3>
 
-                    <div className="bg-bg-surface rounded-2xl p-4 border border-border-subtle space-y-3">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="w-4 h-4 text-gold" />
-                        <div>
-                          <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Día</p>
-                          <p className="font-medium text-text-primary capitalize text-sm">{selectedDate?.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                    <div className="space-y-4 relative z-10">
+                      <div className="bg-bg-surface rounded-2xl p-4 border border-border-subtle">
+                        {esReservaCompartida ? (
+                          <>
+                            <p className="text-xs text-gold uppercase tracking-wider font-bold mb-3 border-b border-gold/20 pb-2 flex items-center gap-2"><User className="w-3.5 h-3.5" /> Tus servicios ({serviciosTitular.length})</p>
+                            <div className="space-y-3 mb-4">
+                              {serviciosTitular.map(srv => (
+                                <div key={srv.uid} className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
+                                    <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
+                                  </div>
+                                  <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-gold uppercase tracking-wider font-bold mb-3 border-b border-gold/20 pb-2 flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Servicios de {datosAmiga.nombre || 'tu amiga'} ({serviciosAmiga.length})</p>
+                            <div className="space-y-3">
+                              {serviciosAmiga.map(srv => (
+                                <div key={`amiga-${srv.uid}`} className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
+                                    <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
+                                  </div>
+                                  <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 border-b border-border-subtle pb-2">Servicios ({selectedServices.length})</p>
+                            <div className="space-y-3">
+                              {selectedServices.map(srv => (
+                                <div key={srv.uid} className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
+                                    <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
+                                  </div>
+                                  <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                        <div className="border-t border-border-subtle mt-4 pt-3 flex justify-between items-center">
+                          <p className="font-bold text-text-secondary text-xs uppercase tracking-wider">Costo Total</p>
+                          <p className="font-bold text-text-primary">{formatCurrency(totalPrecio)}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-4 h-4 text-gold" />
-                        <div>
-                          <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Hora</p>
-                          <p className="font-medium text-text-primary text-sm">{formatearHora(selectedTime)}</p>
+
+                      <div className="bg-bg-surface rounded-2xl p-4 border border-border-subtle space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-4 h-4 text-gold" />
+                          <div>
+                            <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Día</p>
+                            <p className="font-medium text-text-primary capitalize text-sm">{selectedDate?.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <User className="w-4 h-4 text-gold" />
-                        <div>
-                          <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Cliente</p>
-                          <p className="font-medium text-text-primary text-sm">{clientData.nombre}</p>
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-4 h-4 text-gold" />
+                          <div>
+                            <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Hora</p>
+                            <p className="font-medium text-text-primary text-sm">{formatearHora(selectedTime)}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <User className="w-4 h-4 text-gold" />
+                          <div>
+                            <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Cliente</p>
+                            <p className="font-medium text-text-primary text-sm">{clientData.nombre}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* ABONO REQUERIDO */}
+                  <div className="w-full bg-gold/10 border border-gold/30 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-lg">
+                    <div>
+                      <p className="text-xs text-text-secondary font-bold uppercase tracking-wider">Abono requerido hoy</p>
+                      <p className="text-[10px] text-gold/80 mt-1 uppercase tracking-widest font-semibold">Asegura tus espacios</p>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      {cuponActivo && (
+                        <p className="text-sm font-semibold text-text-muted line-through mb-0.5">{formatCurrency(totalAbonoSinDescuento)}</p>
+                      )}
+                      <p className="text-3xl font-bold text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">{formatCurrency(totalAbono)}</p>
+                    </div>
+                  </div>
+
                 </div>
 
                 {/* COLUMNA DERECHA: MÉTODO DE PAGO Y CONFIRMACIÓN */}
                 <div className="flex flex-col gap-6">
 
-                  {/* ABONO REQUERIDO */}
-                  <div className="w-full bg-gold/10 border border-gold/30 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-                    <div>
-                      <p className="text-xs text-text-secondary font-bold uppercase tracking-wider">Abono requerido hoy</p>
-                      <p className="text-[10px] text-gold/80 mt-1 uppercase tracking-widest font-semibold">Asegura tus espacios</p>
+                  {/* SECCIÓN CUPÓN */}
+                  <div className="bg-bg-card border border-border-subtle rounded-3xl p-6 shadow-xl">
+                    <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-4 flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><path d="M12 2v20"/><path d="m17 5-5-3-5 3v14l5 3 5-3z"/></svg>
+                      ¿Tienes un cupón?
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={codigoCupon}
+                        onChange={(e) => setCodigoCupon(e.target.value.toUpperCase())}
+                        placeholder="Ingresa tu código"
+                        className="flex-1 bg-bg-surface border border-border-subtle rounded-xl px-4 py-3 text-sm focus:border-gold outline-none uppercase font-semibold tracking-wider text-text-primary"
+                        disabled={validandoCupon || cuponActivo !== null}
+                      />
+                      {cuponActivo ? (
+                        <button
+                          onClick={removerCupon}
+                          className="px-4 py-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl font-bold text-sm hover:bg-rose-500/20 transition-all"
+                        >
+                          Quitar
+                        </button>
+                      ) : (
+                        <button
+                          onClick={validarCupon}
+                          disabled={!codigoCupon.trim() || validandoCupon}
+                          className="px-6 py-3 bg-gold/10 text-gold border border-gold/30 rounded-xl font-bold text-sm hover:bg-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {validandoCupon ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Aplicar'}
+                        </button>
+                      )}
                     </div>
-                    <p className="text-3xl font-bold text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">{formatCurrency(totalAbono)}</p>
+                    {cuponError && (
+                      <p className="text-rose-400 text-xs mt-2 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" /> {cuponError}
+                      </p>
+                    )}
+                    {cuponActivo && (
+                      <p className="text-green-400 text-xs mt-2 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {cuponActivo.mensaje}
+                      </p>
+                    )}
                   </div>
 
                   {/* SELECCIÓN DE MÉTODO */}
@@ -2192,11 +2332,16 @@ export default function FlujoReserva() {
                                 serviciosAmigaIds: serviciosAmiga.map(s => s.id),
                               } : {}),
                               metodoPago,
-                              totalAbono
+                              totalAbono,
+                              cuponId: cuponActivo?.id,
+                              totalPrecio
                             })
                           });
                           const data = await res.json();
                           if (res.ok && data.success) {
+                            try {
+                              localStorage.setItem('lola_client_data', JSON.stringify(clientData));
+                            } catch (e) { }
                             sessionStorage.removeItem('lola_lock_id');
                             if (lockTimeoutId) {
                               clearTimeout(lockTimeoutId);
