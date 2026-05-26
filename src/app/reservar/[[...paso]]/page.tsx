@@ -136,6 +136,7 @@ export default function FlujoReserva() {
     }, []);
 
     const phoneDigits = clientData.telefono.replace(/\D/g, '');
+    const phoneDigitsAmiga = datosAmiga.telefono.replace(/\D/g, '');
 
     // Autollenado desde la base de datos cuando el número de teléfono esté completo
     useEffect(() => {
@@ -157,6 +158,24 @@ export default function FlujoReserva() {
                 .catch(() => { });
         }
     }, [phoneDigits, codigoPais]);
+
+    // Autollenado para la amiga
+    useEffect(() => {
+        if (codigoPaisAmiga === '+57' && phoneDigitsAmiga.length === 10) {
+            const fullPhone = `+57${phoneDigitsAmiga}`;
+            fetch(`/api/clientes/buscar?telefono=${encodeURIComponent(fullPhone)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.encontrado && data.cliente) {
+                        setDatosAmiga(prev => ({
+                            ...prev,
+                            nombre: prev.nombre || data.cliente.nombre
+                        }));
+                    }
+                })
+                .catch(() => { });
+        }
+    }, [phoneDigitsAmiga, codigoPaisAmiga]);
 
     // Estados del calendario real
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -836,7 +855,6 @@ export default function FlujoReserva() {
     const isEmailValid = clientData.email.trim() === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientData.email);
     const isPhoneValid = clientData.telefono.trim() === '' ? false : (codigoPais === '+57' ? phoneDigits.length === 10 : phoneDigits.length >= 8);
     const isCedulaValid = clientData.cedula.trim() === '' ? false : /^\d{5,15}$/.test(clientData.cedula.replace(/\D/g, ''));
-    const phoneDigitsAmiga = datosAmiga.telefono.replace(/\D/g, '');
     const isPhoneAmigaValid = datosAmiga.telefono.trim() === '' ? false : (codigoPaisAmiga === '+57' ? phoneDigitsAmiga.length === 10 : phoneDigitsAmiga.length >= 8);
     const isStep3Valid = clientData.nombre.trim() !== '' &&
         clientData.cumpleanos !== '' &&
