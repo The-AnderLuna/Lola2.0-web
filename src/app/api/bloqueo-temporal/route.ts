@@ -163,8 +163,10 @@ export async function POST(request: NextRequest) {
         let slotInicio = tiempoActualMin;
         let encontroHueco = false;
         
-        // El primer servicio de cada persona DEBE empezar exactamente en la hora solicitada
-        const limiteBusqueda = i === 0 ? baseStartMin : baseStartMin + 240;
+        // El primer servicio de la PRIMERA persona DEBE empezar exactamente en la hora solicitada.
+        // Para personas adicionales (amiga), su primer servicio puede deslizarse hacia adelante
+        // si el profesional está ocupado por la titular.
+        const limiteBusqueda = (i === 0 && pIndex === 0) ? baseStartMin : baseStartMin + 240;
         
         while (slotInicio <= limiteBusqueda) {
           const slotFin = slotInicio + srv.duracionMin;

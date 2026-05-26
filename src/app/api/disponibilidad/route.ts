@@ -179,6 +179,7 @@ export async function GET(request: NextRequest) {
         horarios: parsedHorarios,
         bloques: [...bloquesSupabase, ...bloquesGoogle]
       };
+      console.log(`[disponibilidad] Prof ${pid}: ${parsedHorarios.length} bloques horario, ${bloquesSupabase.length} citas, ${bloquesGoogle.length} gcal`);
     }
 
     // --- CÁLCULO DEL SPAN TEÓRICO MÍNIMO ---
@@ -188,7 +189,7 @@ export async function GET(request: NextRequest) {
       let maxFinT = -Infinity;
       const bloquesVirtualesT: { [pid: string]: { inicio: number, fin: number }[] } = {};
       for (const pid of profIds) bloquesVirtualesT[pid] = [];
-      
+
       for (const personaServicios of personas) {
         let tiempoActualT = 0;
         for (const srv of personaServicios) {
@@ -210,6 +211,7 @@ export async function GET(request: NextRequest) {
       minSpanTeorico = maxFinT === -Infinity ? 0 : (maxFinT - minInicioT);
     }
     const maxSpanPermitido = minSpanTeorico + 15; // 15 minutos de tolerancia global
+
 
     // --- CÁLCULO DE PUNTOS CANDIDATOS ---
     const ahora = new Date();
@@ -250,14 +252,14 @@ export async function GET(request: NextRequest) {
         for (let i = 0; i < personaServicios.length; i++) {
           const srv = personaServicios[i];
           const pData = profData[srv.profesionalId];
-          
+
           let slotInicio = tiempoActual;
           let encontroHueco = false;
           // Buscar un hueco libre hacia adelante (máximo 4 horas para tener flexibilidad de empaquetado)
           const limiteBusqueda = slot + 240;
           while (slotInicio <= limiteBusqueda) {
             const slotFin = slotInicio + srv.duracionMin;
-            
+
             // ¿En horario?
             const enHorario = pData.horarios.some(h => slotInicio >= h.inicio && slotFin <= h.fin);
             if (!enHorario) {
@@ -283,7 +285,7 @@ export async function GET(request: NextRequest) {
             if (i === 0 && slotInicio === slot) {
               alguienEmpiezaEnSlot = true;
             }
-            
+
             bloquesVirtuales[srv.profesionalId].push({ inicio: slotInicio, fin: slotFin });
             tiempoActual = slotFin; // El siguiente servicio de ESTA persona empieza cuando termine este
             break;
@@ -294,7 +296,7 @@ export async function GET(request: NextRequest) {
             break;
           }
         }
-        
+
         if (!secuenciaValida) break;
       }
 
@@ -319,6 +321,7 @@ export async function GET(request: NextRequest) {
     }
 
     const slotsUnicos = [...new Set(slotsDisponibles)].sort();
+
 
     return NextResponse.json({
       slots: slotsUnicos,
