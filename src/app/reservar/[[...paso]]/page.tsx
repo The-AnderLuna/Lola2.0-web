@@ -607,6 +607,22 @@ export default function FlujoReserva() {
         ];
     };
 
+    const obtenerHoraServicio = (srv: CartService) => {
+        const cita = lockedCitas.find(lc => lc.uid === srv.uid);
+        if (!cita) return "";
+        try {
+            const d = new Date(cita.inicio);
+            return d.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'America/Bogota'
+            });
+        } catch (e) {
+            return "";
+        }
+    };
+
     // --- LÓGICA DEL CALENDARIO ---
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -2281,21 +2297,19 @@ export default function FlujoReserva() {
                                             let titularHora = selectedTime ? formatearHora(selectedTime) : '';
                                             let amigaHora = titularHora;
                                             
-                                            if (esReservaCompartida && serviciosAmiga.length > 0 && serviciosTitular.length > 0 && selectedTime) {
-                                                const getProfId = (s: any) => {
-                                                    const sIsStaff = s.nombre.toLowerCase().includes('staff') || s.responsable?.toLowerCase() === 'staff';
-                                                    const sIsMile = s.nombre.toLowerCase().includes('mile') || s.responsable?.toLowerCase() === 'mile';
-                                                    return (sIsStaff && !sIsMile) ? 'STAFF' : 'MILE';
-                                                };
-                                                const profTitular = getProfId(serviciosTitular[0]);
-                                                const profAmiga = getProfId(serviciosAmiga[0]);
+                                            if (esReservaCompartida && serviciosAmiga.length > 0 && serviciosTitular.length > 0 && lockedCitas.length > 0) {
+                                                const citasTitular = lockedCitas.filter(lc => serviciosTitular.some(s => s.uid === lc.uid));
+                                                const citasAmiga = lockedCitas.filter(lc => serviciosAmiga.some(s => s.uid === lc.uid));
                                                 
-                                                if (profTitular === profAmiga) {
-                                                    const duracion = serviciosTitular[0].duracionMin + serviciosTitular[0].bufferMin;
-                                                    const [h, m] = selectedTime.split(':').map(Number);
-                                                    const d = new Date();
-                                                    d.setHours(h, m + duracion, 0, 0);
-                                                    amigaHora = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                                                if (citasTitular.length > 0) {
+                                                    citasTitular.sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime());
+                                                    const d = new Date(citasTitular[0].inicio);
+                                                    titularHora = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
+                                                }
+                                                if (citasAmiga.length > 0) {
+                                                    citasAmiga.sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime());
+                                                    const d = new Date(citasAmiga[0].inicio);
+                                                    amigaHora = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Bogota' });
                                                 }
                                             }
 
@@ -2309,45 +2323,84 @@ export default function FlujoReserva() {
                                                             <p className="text-xs text-text-muted font-semibold bg-bg-base px-2 py-1 rounded-md flex items-center gap-1"><Clock className="w-3 h-3 text-gold" /> {titularHora}</p>
                                                         </div>
                                                         <div className="space-y-3 mb-4">
-                                                            {serviciosTitular.map(srv => (
-                                                                <div key={srv.uid} className="flex justify-between items-start">
-                                                                    <div>
-                                                                        <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
-                                                                        <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
+                                                            {serviciosTitular.map(srv => {
+                                                                const horaSrv = obtenerHoraServicio(srv);
+                                                                return (
+                                                                    <div key={srv.uid} className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
+                                                                            <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
+                                                                                <span>{formatearDuracion(srv.duracionMin)}</span>
+                                                                                {horaSrv && (
+                                                                                    <>
+                                                                                        <span className="text-text-muted">•</span>
+                                                                                        <span className="text-gold font-medium flex items-center gap-1">
+                                                                                            <Clock className="w-3 h-3 text-gold/80" /> {horaSrv}
+                                                                                        </span>
+                                                                                    </>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
                                                                     </div>
-                                                                    <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
-                                                                </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                         <div className="flex justify-between items-center mb-3 border-b border-gold/20 pb-2">
                                                             <p className="text-xs text-gold uppercase tracking-wider font-bold flex items-center gap-2"><Users className="w-3.5 h-3.5" /> Servicios de {datosAmiga.nombre || 'tu amiga'} ({serviciosAmiga.length})</p>
                                                             <p className="text-xs text-text-muted font-semibold bg-bg-base px-2 py-1 rounded-md flex items-center gap-1"><Clock className="w-3 h-3 text-gold" /> {amigaHora}</p>
                                                         </div>
                                                         <div className="space-y-3">
-                                                            {serviciosAmiga.map(srv => (
-                                                                <div key={`amiga-${srv.uid}`} className="flex justify-between items-start">
-                                                                    <div>
-                                                                        <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
-                                                                        <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
+                                                            {serviciosAmiga.map(srv => {
+                                                                const horaSrv = obtenerHoraServicio(srv);
+                                                                return (
+                                                                    <div key={`amiga-${srv.uid}`} className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
+                                                                            <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
+                                                                                <span>{formatearDuracion(srv.duracionMin)}</span>
+                                                                                {horaSrv && (
+                                                                                    <>
+                                                                                        <span className="text-text-muted">•</span>
+                                                                                        <span className="text-gold font-medium flex items-center gap-1">
+                                                                                            <Clock className="w-3 h-3 text-gold/80" /> {horaSrv}
+                                                                                        </span>
+                                                                                    </>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
                                                                     </div>
-                                                                    <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
-                                                                </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <p className="text-xs text-text-muted uppercase tracking-wider font-semibold mb-3 border-b border-border-subtle pb-2">Servicios ({selectedServices.length})</p>
                                                         <div className="space-y-3">
-                                                            {selectedServices.map(srv => (
-                                                                <div key={srv.uid} className="flex justify-between items-start">
-                                                                    <div>
-                                                                        <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
-                                                                        <p className="text-xs text-text-secondary">{formatearDuracion(srv.duracionMin)}</p>
+                                                            {selectedServices.map(srv => {
+                                                                const horaSrv = obtenerHoraServicio(srv);
+                                                                return (
+                                                                    <div key={srv.uid} className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
+                                                                            <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
+                                                                                <span>{formatearDuracion(srv.duracionMin)}</span>
+                                                                                {horaSrv && (
+                                                                                    <>
+                                                                                        <span className="text-text-muted">•</span>
+                                                                                        <span className="text-gold font-medium flex items-center gap-1">
+                                                                                            <Clock className="w-3 h-3 text-gold/80" /> {horaSrv}
+                                                                                        </span>
+                                                                                    </>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
                                                                     </div>
-                                                                    <p className="font-semibold text-text-primary text-sm">{formatCurrency(srv.precio)}</p>
-                                                                </div>
-                                                            ))}
+                                                                );
+                                                            })}
                                                         </div>
                                                     </>
                                                 )}
@@ -2598,12 +2651,21 @@ export default function FlujoReserva() {
 
                                                         let urlMsg: string;
                                                         if (esReservaCompartida && serviciosAmiga.length > 0) {
-                                                            const srvTitularTexto = serviciosTitular.map(s => s.nombre).join(', ');
-                                                            const srvAmigaTexto = serviciosAmiga.map(s => s.nombre).join(', ');
-                                                            urlMsg = `Hola Lola! 👋%0A%0A🎀 *RESERVA COMPARTIDA*%0A%0A👤 Titular: ${clientData.nombre}%0A📝 Cédula: ${clientData.cedula}%0A💇‍♀️ Servicios: ${srvTitularTexto}%0A%0A👤 Amiga: ${datosAmiga.nombre}%0A💇‍♀️ Servicios: ${srvAmigaTexto}%0A%0A⏰ Cuándo: ${fechaTexto} a las ${formatearHora(selectedTime)}%0A💳 Método: ${metodoPago.toUpperCase()}%0A💰 Abono Total: $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
+                                                            const srvTitularTexto = serviciosTitular.map(s => {
+                                                                const horaSrv = obtenerHoraServicio(s);
+                                                                return `%0A  - ${s.nombre}${horaSrv ? ` (${horaSrv})` : ''}`;
+                                                            }).join('');
+                                                            const srvAmigaTexto = serviciosAmiga.map(s => {
+                                                                const horaSrv = obtenerHoraServicio(s);
+                                                                return `%0A  - ${s.nombre}${horaSrv ? ` (${horaSrv})` : ''}`;
+                                                            }).join('');
+                                                            urlMsg = `Hola Lola! 👋%0A%0A🎀 *RESERVA COMPARTIDA*%0A%0A👤 *Titular:* ${clientData.nombre}%0A📝 *Cédula:* ${clientData.cedula}%0A💇‍♀️ *Servicios:*${srvTitularTexto}%0A%0A👤 *Amiga:* ${datosAmiga.nombre}%0A💇‍♀️ *Servicios:*${srvAmigaTexto}%0A%0A⏰ *Cuándo:* ${fechaTexto} (Inicia ${formatearHora(selectedTime)})%0A💳 *Método:* ${metodoPago.toUpperCase()}%0A💰 *Abono Total:* $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
                                                         } else {
-                                                            const serviciosTexto = selectedServices.map(s => s.nombre).join(', ');
-                                                            urlMsg = `Hola Lola! 👋%0A%0AAcabo de pre-agendar mi cita.%0A👤 Nombre: ${clientData.nombre}%0A📝 Cédula: ${clientData.cedula}%0A💇‍♀️ Servicio: ${serviciosTexto}%0A⏰ Cuándo: ${fechaTexto} a las ${formatearHora(selectedTime)}%0A💳 Método de Abono: ${metodoPago.toUpperCase()}%0A💰 Valor del Abono: $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
+                                                            const serviciosTexto = selectedServices.map(s => {
+                                                                const horaSrv = obtenerHoraServicio(s);
+                                                                return `%0A  - ${s.nombre}${horaSrv ? ` (${horaSrv})` : ''}`;
+                                                            }).join('');
+                                                            urlMsg = `Hola Lola! 👋%0A%0A*NUEVA RESERVA*%0A%0A👤 *Nombre:* ${clientData.nombre}%0A📝 *Cédula:* ${clientData.cedula}%0A💇‍♀️ *Servicios:*${serviciosTexto}%0A⏰ *Cuándo:* ${fechaTexto} (Inicia ${formatearHora(selectedTime)})%0A💳 *Método de Abono:* ${metodoPago.toUpperCase()}%0A💰 *Valor del Abono:* $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
                                                         }
                                                         const wppNumber = configData?.whatsapp_numero || '573043908714';
                                                         window.location.href = `https://wa.me/${wppNumber}?text=${urlMsg}`;
