@@ -274,6 +274,7 @@ export async function POST(request: NextRequest) {
       expiresInSeconds: 600,
       citas: citasAInsertar.map(c => ({
         uid: c._uid,
+        id: c.id,
         inicio: c.fecha_hora_inicio,
         fin: c.fecha_hora_fin
       }))

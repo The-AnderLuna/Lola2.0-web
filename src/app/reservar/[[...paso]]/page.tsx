@@ -165,6 +165,7 @@ export default function FlujoReserva() {
     const [daysWithSlots, setDaysWithSlots] = useState<Set<string>>(new Set());
     const [loadingDays, setLoadingDays] = useState(false);
     const [bloqueoId, setBloqueoId] = useState<string | null>(null);
+    const [lockedCitas, setLockedCitas] = useState<any[]>([]);
     const [lockingTime, setLockingTime] = useState<string | null>(null);
     const [lockTimeoutId, setLockTimeoutId] = useState<NodeJS.Timeout | null>(null);
     const [lockExpiresAt, setLockExpiresAt] = useState<number | null>(null);
@@ -1985,6 +1986,7 @@ export default function FlujoReserva() {
                                                                                     }
                                                                                     if (data.bloqueoId) {
                                                                                         setBloqueoId(data.bloqueoId);
+                                                                                        if (data.citas) setLockedCitas(data.citas);
                                                                                         sessionStorage.setItem('lola_lock_id', data.bloqueoId);
                                                                                         setSelectedTime(time);
 
@@ -2544,12 +2546,14 @@ export default function FlujoReserva() {
                                                         headers: { 'Content-Type': 'application/json' },
                                                         body: JSON.stringify({
                                                             bloqueoId,
-                                                            cliente: { ...clientData, telefono: `${codigoPais}${clientData.telefono.replace(/\\s/g, '')}` },
+                                                            cliente: { ...clientData, telefono: `${codigoPais}${clientData.telefono.replace(/\s/g, '')}` },
                                                             ...(esReservaCompartida && datosAmiga.nombre ? {
-                                                                amiga: { nombre: datosAmiga.nombre, telefono: `${codigoPaisAmiga}${datosAmiga.telefono.replace(/\\s/g, '')}` },
-                                                                serviciosTitularIds: serviciosTitular.map(s => s.id),
-                                                                serviciosAmigaIds: serviciosAmiga.map(s => s.id),
-                                                            } : {}),
+                                                                amiga: { nombre: datosAmiga.nombre, telefono: `${codigoPaisAmiga}${datosAmiga.telefono.replace(/\s/g, '')}` },
+                                                                serviciosTitularIds: serviciosTitular.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id),
+                                                                serviciosAmigaIds: serviciosAmiga.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id)
+                                                            } : {
+                                                                serviciosTitularIds: serviciosTitular.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id)
+                                                            }),
                                                             metodoPago,
                                                             totalAbono,
                                                             cuponId: cuponActivo?.id,
