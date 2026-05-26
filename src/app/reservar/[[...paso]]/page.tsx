@@ -557,7 +557,7 @@ export default function FlujoReserva() {
     const vipFee = (vipFeeAccepted && hasMileServicesWithStaffAlternative && isVipDaySelected) ? potentialVipFee : 0;
 
     const totalPrecioSinDescuento = selectedServices.reduce((sum, s) => sum + s.precio, 0) + vipFee;
-    const totalAbonoSinDescuento = selectedServices.reduce((sum, s) => sum + s.abonoRequerido, 0) + vipFee;
+    const totalAbonoSinDescuento = selectedServices.reduce((sum, s) => sum + (s.precio * 0.5), 0) + vipFee;
 
     const totalPrecio = cuponActivo ? cuponActivo.nuevoTotal : totalPrecioSinDescuento;
     const totalAbono = cuponActivo ? cuponActivo.nuevoAbono : totalAbonoSinDescuento;
@@ -568,7 +568,7 @@ export default function FlujoReserva() {
         ? selectedServices.filter(s => !serviciosAmiga.some(a => a.uid === s.uid))
         : selectedServices;
     const totalPrecioAmiga = serviciosAmiga.reduce((sum, s) => sum + s.precio, 0);
-    const totalAbonoAmiga = serviciosAmiga.reduce((sum, s) => sum + s.abonoRequerido, 0);
+    const totalAbonoAmiga = serviciosAmiga.reduce((sum, s) => sum + (s.precio * 0.5), 0);
     const totalPrecioTitular = esReservaCompartida ? totalPrecio - totalPrecioAmiga : totalPrecio;
     const totalAbonoTitular = esReservaCompartida ? totalAbono - totalAbonoAmiga : totalAbono;
 
@@ -1165,7 +1165,7 @@ export default function FlujoReserva() {
                                                                 const maxPrice = Math.max(...grupo.servicios.map(s => s.precio));
                                                                 const priceDisplay = minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`;
                                                                 const minDuration = Math.min(...grupo.servicios.map(s => s.duracionMin));
-                                                                const abonoDisplay = Math.min(...grupo.servicios.map(s => s.abonoRequerido));
+                                                                const abonoDisplay = Math.min(...grupo.servicios.map(s => (s.precio * 0.5)));
 
                                                                 return (
                                                                     <button
@@ -1268,7 +1268,7 @@ export default function FlujoReserva() {
                                                             const maxPrice = Math.max(...grupo.servicios.map(s => s.precio));
                                                             const priceDisplay = minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`;
                                                             const minDuration = Math.min(...grupo.servicios.map(s => s.duracionMin + s.bufferMin));
-                                                            const abonoDisplay = Math.min(...grupo.servicios.map(s => s.abonoRequerido));
+                                                            const abonoDisplay = Math.min(...grupo.servicios.map(s => (s.precio * 0.5)));
 
                                                             return (
                                                                 <button
@@ -1787,7 +1787,7 @@ export default function FlujoReserva() {
                                                 </div>
                                                 <div className="flex items-center gap-4 text-[10px] uppercase tracking-wider font-semibold">
                                                     <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-text-muted" /> {formatearDuracion(srv.duracionMin + srv.bufferMin)}</span>
-                                                    <span className="flex items-center gap-1 text-gold/80"><Info className="w-3 h-3" /> Abono: {formatCurrency(srv.abonoRequerido)}</span>
+                                                    <span className="flex items-center gap-1 text-gold/80"><Info className="w-3 h-3" /> Abono: {formatCurrency(srv.precio * 0.5)}</span>
                                                 </div>
                                             </button>
                                         );
