@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // 1.2 Registrar uso de cupón
     if (cuponId) {
-      const { error: errRpc } = await supabase.rpc('increment_cupon_uso', { c_id: cuponId });
+      const { error: errRpc } = await supabase.rpc('increment_cupon_uso', { cupon_id: cuponId });
       if (errRpc) console.error("Error al incrementar uso de cupón:", errRpc);
       
       const { error: errHistorial } = await supabase.from('cupones_historial').insert({
