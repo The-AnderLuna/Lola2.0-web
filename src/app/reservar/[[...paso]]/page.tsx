@@ -594,12 +594,12 @@ export default function FlujoReserva() {
 
     const buildPersonasPayload = () => {
         if (!esReservaCompartida || serviciosAmiga.length === 0) return null;
-        const mapSrv = (s: Servicio) => {
+        const mapSrv = (s: CartService) => {
             const sIsStaff = s.nombre.toLowerCase().includes('staff') || s.responsable?.toLowerCase() === 'staff';
             const sIsMile = s.nombre.toLowerCase().includes('mile') || s.responsable?.toLowerCase() === 'mile';
             let pId = 'c2c0f778-c2fe-4f65-ab37-3b589cb997c2';
             if (sIsStaff && !sIsMile) pId = 'cc7bdd66-d98e-4c66-ae1d-b975e005bf56';
-            return { profesionalId: pId, duracionMin: s.duracionMin + s.bufferMin, servicioId: s.id, precioTotal: s.precio };
+            return { uid: s.uid, profesionalId: pId, duracionMin: s.duracionMin + s.bufferMin, servicioId: s.id, precioTotal: s.precio };
         };
         return [
             serviciosTitular.map(mapSrv),
@@ -2005,7 +2005,7 @@ export default function FlujoReserva() {
                                                                                                         const sIsMile = s.nombre.toLowerCase().includes('mile') || s.responsable?.toLowerCase() === 'mile';
                                                                                                         let pId = 'c2c0f778-c2fe-4f65-ab37-3b589cb997c2';
                                                                                                         if (sIsStaff && !sIsMile) pId = 'cc7bdd66-d98e-4c66-ae1d-b975e005bf56';
-                                                                                                        return { profesionalId: pId, duracionMin: s.duracionMin + s.bufferMin, servicioId: s.id, precioTotal: s.precio };
+                                                                                                        return { uid: s.uid, profesionalId: pId, duracionMin: s.duracionMin + s.bufferMin, servicioId: s.id, precioTotal: s.precio };
                                                                                                     })
                                                                                                 }),
                                                                                         }),
@@ -2627,7 +2627,7 @@ export default function FlujoReserva() {
                                                             }),
                                                             metodoPago,
                                                             totalAbono,
-                                                            cuponId: cuponActivo?.id,
+                                                            cuponId: cuponActivo?.cuponId,
                                                             totalPrecio
                                                         })
                                                     });
