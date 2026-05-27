@@ -47,20 +47,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
     }
 
-    // Si usó un cupón, lo registramos incrementando su uso
-    if (cuponId) {
-      await supabase.rpc('increment_cupon_uso', { cupon_id: cuponId });
-    }
-
     // 1. Cliente (Titular)
     const clienteId = await findOrCreateCliente(cliente);
 
-    // Si usó un cupón, registramos el uso en el historial del cliente para evitar re-usos
+    // 1.2 Registrar uso de cupón
     if (cuponId) {
-      await supabase.from('cupones_historial').insert({
+      const { error: errRpc } = await supabase.rpc('increment_cupon_uso', { c_id: cuponId });
+      if (errRpc) console.error("Error al incrementar uso de cupón:", errRpc);
+      
+      const { error: errHistorial } = await supabase.from('cupones_historial').insert({
         cupon_id: cuponId,
         cliente_id: clienteId
       });
+      if (errHistorial) console.error("Error al guardar historial de cupón:", errHistorial);
     }
 
     // 1.5 Verificar anti-fraude SOLO para la titular
