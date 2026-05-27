@@ -151,6 +151,8 @@ export async function POST(request: NextRequest) {
     const bloquesVirtuales: { [pid: string]: { inicio: number, fin: number }[] } = {};
     for (const pid of profIds) bloquesVirtuales[pid] = [];
 
+    let minInicioReal = Infinity;
+
     // Recrear el algoritmo Tetris para insertar los bloques exactos
     for (let pIndex = 0; pIndex < personas.length; pIndex++) {
       const personaServicios = personas[pIndex];
@@ -163,10 +165,8 @@ export async function POST(request: NextRequest) {
         let slotInicio = tiempoActualMin;
         let encontroHueco = false;
         
-        // El primer servicio de la PRIMERA persona DEBE empezar exactamente en la hora solicitada.
-        // Para personas adicionales (amiga), su primer servicio puede deslizarse hacia adelante
-        // si el profesional está ocupado por la titular.
-        const limiteBusqueda = (i === 0 && pIndex === 0) ? baseStartMin : baseStartMin + 240;
+        // Permitimos que TODOS los servicios se deslicen si el profesional está ocupado por la otra persona
+        const limiteBusqueda = baseStartMin + 240;
         
         while (slotInicio <= limiteBusqueda) {
           const slotFin = slotInicio + srv.duracionMin;
@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
           encontroHueco = true;
           bloquesVirtuales[srv.profesionalId].push({ inicio: slotInicio, fin: slotFin });
           tiempoActualMin = slotFin;
+          minInicioReal = Math.min(minInicioReal, slotInicio);
           
           // Convertir minutos a ISO
           const stH = Math.floor(slotInicio / 60);
@@ -216,6 +217,14 @@ export async function POST(request: NextRequest) {
           );
         }
       }
+    }
+
+    // Validar que el grupo en conjunto empiece EXACTAMENTE a la hora solicitada
+    if (minInicioReal !== baseStartMin) {
+      return NextResponse.json(
+        { error: 'SLOT_TOMADO', message: 'Alguien más tomó este horario mientras elegías. Por favor selecciona otra hora.' },
+        { status: 409 }
+      );
     }
 
     const citasDb = citasAInsertar.map(({ _uid, ...rest }) => rest);
