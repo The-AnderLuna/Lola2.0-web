@@ -27,5 +27,11 @@ Durante este segundo sprint, nos enfocamos en habilitar las reservas compartidas
 - **Relaciones de Clientes:** En la tabla `citas`, se implementó correctamente el modelo donde la Amiga se guarda en la tabla `clientes`, y sus citas se ligan a ella mediante `cliente_id`, estableciendo un lazo con la Titular a través del campo `reserva_titular_id`.
 - **Limpieza de Logs:** Se eliminaron todos los console.logs intensivos de depuración en producción para dejar un código limpio y eficiente.
 
+## 5. Automatización y Mantenimiento Automático (Cron Jobs)
+Para evitar que la base de datos se llene de "basura" por intentos fallidos de reserva (bloqueos temporales abandonados y preagendas expiradas por falta de pago), se habilitaron tareas programadas automáticas directamente en el motor de PostgreSQL:
+- **Activación de `pg_cron`**: Se instaló y habilitó la extensión `pg_cron` en la base de datos de producción en Supabase.
+- **Job de Liberación Dinámica (`limpieza-locks-frecuente`)**: Configurado para ejecutarse **cada 10 minutos** (`*/10 * * * *`). Llama a la función `cleanup_expired_locks()`, cancelando de forma silenciosa e inmediata en segundo plano cualquier bloqueo temporal (>10 min) o preagenda (>1 hora) que haya expirado sin completarse. Esto independiza la liberación de horarios de las visitas del usuario en la web.
+- **Job de Purga Nocturna (`borrado-basura-nocturno`)**: Configurado para ejecutarse **todos los días a las 2:00 AM** (`0 2 * * *`). Realiza un borrado físico (`DELETE`) de todos los registros en estado `CANCELADA_SISTEMA`, asegurando que la tabla `citas` se mantenga ligera, rápida y óptima a largo plazo sin acumulación inútil de datos.
+
 ## Estado Final del Sprint
-El flujo "End-to-End" de Reservas Compartidas ahora está **100% funcional**, desde la selección del catálogo hasta la reserva asíncrona concurrente, validación contra bloqueos simultáneos (protección contra doble reserva), y enrutamiento a WhatsApp con los datos consolidados.
+El flujo "End-to-End" de Reservas Compartidas ahora está **100% funcional**, desde la selección del catálogo hasta la reserva asíncrona concurrente, validación contra bloqueos simultáneos (protección contra doble reserva), y enrutamiento a WhatsApp con los datos consolidados. Adicionalmente, la base de datos ha quedado blindada contra la degradación de rendimiento a través del mantenimiento programado autónomo.

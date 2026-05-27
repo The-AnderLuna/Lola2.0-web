@@ -119,6 +119,10 @@ export default function FlujoReserva() {
     const [datosAmiga, setDatosAmiga] = useState({ nombre: "", telefono: "" });
     const [codigoPaisAmiga, setCodigoPaisAmiga] = useState('+57');
 
+    // Estados de confirmación
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [confirmedWppUrl, setConfirmedWppUrl] = useState('');
+
     // Estados de cupones
     const [codigoCupon, setCodigoCupon] = useState('');
     const [cuponActivo, setCuponActivo] = useState<any>(null);
@@ -301,7 +305,7 @@ export default function FlujoReserva() {
 
     // Actualizador visual del tiempo de reserva (Timer)
     useEffect(() => {
-        if (!lockExpiresAt) {
+        if (!lockExpiresAt || isConfirmed) {
             setTimeLeftStr(null);
             return;
         }
@@ -320,7 +324,7 @@ export default function FlujoReserva() {
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [lockExpiresAt]);
+    }, [lockExpiresAt, isConfirmed]);
 
     // Fetch Services on Mount
     useEffect(() => {
@@ -899,7 +903,7 @@ export default function FlujoReserva() {
             </header>
 
             {/* Timer Banner de Pre-Agenda */}
-            {step > 2 && timeLeftStr && (
+            {step > 2 && timeLeftStr && !isConfirmed && (
                 <div className="w-full bg-rose-500/10 border-b border-rose-500/20 px-4 py-2.5 flex items-center justify-center gap-2 text-rose-400 text-xs md:text-sm font-semibold tracking-wide animate-in slide-in-from-top-2 z-40 relative">
                     <Clock className="w-4 h-4 animate-pulse" />
                     <span>Espacio reservado temporalmente. Tienes <span className="font-bold tabular-nums">{timeLeftStr}</span> para confirmar.</span>
@@ -1781,6 +1785,14 @@ export default function FlujoReserva() {
                                             {errorModalMsg}
                                         </p>
                                     </div>
+                                    {errorModalMsg.includes('Actualmente tienes una reserva pendiente de pago') && (
+                                        <Link
+                                            href="/mis-citas"
+                                            className="w-full mt-2 py-3.5 bg-gold/10 text-gold border border-gold/30 font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-gold/20 transition-all flex items-center justify-center gap-2 mb-2"
+                                        >
+                                            <Calendar className="w-4 h-4" /> Ir a Mis Citas
+                                        </Link>
+                                    )}
                                     <button
                                         onClick={() => setShowErrorModal(false)}
                                         className="mt-2 w-full py-3.5 bg-bg-surface border border-border-subtle text-text-primary font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-bg-elevated transition-all"
@@ -2274,6 +2286,35 @@ export default function FlujoReserva() {
 
                     {/* STEP 4: CONFIRMACIÓN */}
                     {step === 4 && (
+                        isConfirmed ? (
+                            <div className="max-w-md mx-auto mt-12 bg-bg-card border border-gold/30 rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(212,175,55,0.15)] relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold to-transparent"></div>
+                                <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <CheckCircle2 className="w-10 h-10 text-gold" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-text-primary mb-2">¡Cita Pre-agendada!</h2>
+                                <p className="text-text-secondary text-sm mb-6 leading-relaxed">
+                                    Tu cita ya está pre-agendada. Para que sea confirmada y <strong className="text-rose-400">no se libere dentro de una hora</strong>, envía tu comprobante lo más pronto posible a Lola.
+                                    <strong className="text-text-primary block mt-2">Usa el botón para generar los detalles de la cita y Lola te indicará los siguientes pasos.</strong>
+                                </p>
+                                
+                                <button
+                                    onClick={() => window.open(confirmedWppUrl, '_blank')}
+                                    className="w-full py-4 bg-[#25D366] text-white font-bold text-sm uppercase tracking-wider rounded-xl shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:shadow-[0_0_30px_rgba(37,211,102,0.6)] transition-all hover:-translate-y-1 flex items-center justify-center gap-2 mb-4"
+                                >
+                                    Enviar WhatsApp a Lola <ArrowRight className="w-5 h-5" />
+                                </button>
+
+                                <Link href="/mis-citas" className="w-full py-3 bg-bg-surface border border-gold/30 text-gold font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-gold/10 transition-all flex items-center justify-center gap-2">
+                                    <Calendar className="w-4 h-4" /> Ir a Mis Citas
+                                </Link>
+
+                                <p className="text-[10px] text-text-muted mt-6">
+                                    <Info className="w-3.5 h-3.5 inline mr-1" />
+                                    Asegúrate de enviar el mensaje que se generará automáticamente.
+                                </p>
+                            </div>
+                        ) : (
                         <div className="space-y-8">
                             <div className="text-center mb-8">
                                 <h1 className="text-3xl font-bold text-text-primary mb-2">Finaliza tu Reserva</h1>
@@ -2601,7 +2642,12 @@ export default function FlujoReserva() {
                                                 <div className="flex flex-col gap-2 text-center py-2">
                                                     <Activity className="w-8 h-8 text-gold mx-auto mb-2 opacity-80" />
                                                     <p className="text-text-secondary">Has seleccionado pagar con <strong className="text-text-primary capitalize">{metodoPago}</strong>.</p>
-                                                    <p className="text-xs text-text-muted"><Info className="w-3.5 h-3.5 inline mr-1" />Al confirmar, te enviaremos un link de pago por WhatsApp para completar tu reserva.</p>
+                                                    {metodoPago === 'sistecredito' && (
+                                                        <p className="text-xs text-text-muted"><Info className="w-3.5 h-3.5 inline mr-1" />Al confirmar, te redirigiremos a WhatsApp. Necesitaremos tu cédula para validar tu cupo disponible y generarte un link de pago.</p>
+                                                    )}
+                                                    {metodoPago === 'tarjeta' && (
+                                                        <p className="text-xs text-text-muted"><Info className="w-3.5 h-3.5 inline mr-1" />El pago con tarjeta se realiza de manera presencial en el local. Tu cita requerirá aprobación manual por parte de Milena tras enviar el WhatsApp.</p>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -2647,8 +2693,10 @@ export default function FlujoReserva() {
                                                         const fechaTexto = selectedDate ? selectedDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
 
                                                         let textAdicional = `¡Quedo atenta para enviar el comprobante!`;
-                                                        if (metodoPago === 'tarjeta' || metodoPago === 'sistecredito') {
-                                                            textAdicional = `Por favor envíame el link de pago para completar la reserva.`;
+                                                        if (metodoPago === 'sistecredito') {
+                                                            textAdicional = `Mi método de pago es SisteCrédito. Te envío mi cédula para que verifiquen mi cupo y me puedan generar el link de pago.`;
+                                                        } else if (metodoPago === 'tarjeta') {
+                                                            textAdicional = `Mi método de pago es Tarjeta. Entiendo que el pago es presencial en el local y quedo atenta a la confirmación de la cita.`;
                                                         }
 
                                                         let urlMsg: string;
@@ -2670,7 +2718,13 @@ export default function FlujoReserva() {
                                                             urlMsg = `Hola Lola! 👋%0A%0A*NUEVA RESERVA*%0A%0A👤 *Nombre:* ${clientData.nombre}%0A📝 *Cédula:* ${clientData.cedula}%0A💇‍♀️ *Servicios:*${serviciosTexto}%0A⏰ *Cuándo:* ${fechaTexto} (Inicia ${formatearHora(selectedTime)})%0A💳 *Método de Abono:* ${metodoPago.toUpperCase()}%0A💰 *Valor del Abono:* $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
                                                         }
                                                         const wppNumber = configData?.whatsapp_numero || '573043908714';
-                                                        window.location.href = `https://wa.me/${wppNumber}?text=${urlMsg}`;
+                                                        const finalUrl = `https://wa.me/${wppNumber}?text=${urlMsg}`;
+                                                        
+                                                        setConfirmedWppUrl(finalUrl);
+                                                        setIsConfirmed(true);
+                                                        setLockExpiresAt(null);
+                                                        window.open(finalUrl, '_blank');
+                                                        btn.innerHTML = '<span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> ¡Pre-agendada!</span>';
                                                     } else {
                                                         setErrorModalMsg(data.error || 'Ocurrió un error. Tu tiempo de reserva pudo haber expirado.');
                                                         setShowErrorModal(true);
@@ -2697,6 +2751,7 @@ export default function FlujoReserva() {
 
                             </div>
                         </div>
+                        )
                     )}
 
                 </div>

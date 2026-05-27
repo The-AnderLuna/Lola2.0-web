@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       const servicios = cita.servicios as any;
       const servicioNombre = Array.isArray(servicios) ? servicios[0]?.nombre : servicios?.nombre;
       
-      const mensaje = `Actualmente tienes una reserva pendiente de pago para "${servicioNombre || 'tu servicio'}" el ${fechaTexto} a las ${horaTexto}. Por favor envía el comprobante de esa reserva a WhatsApp o comunícate con nosotros para cancelarla y agendar una nueva.`;
+      const mensaje = `Actualmente tienes una reserva pendiente de pago para "${servicioNombre || 'tu servicio'}" el ${fechaTexto} a las ${horaTexto}. Por favor envía el comprobante de esa reserva a WhatsApp o visita la sección de Mis Citas para cancelarla y agendar una nueva.`;
       return NextResponse.json({ error: mensaje }, { status: 403 });
     }
 

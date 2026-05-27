@@ -128,7 +128,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-    });
+    }).replace(/\u202f|\u00a0/g, ' ');
   };
 
   const capitalizeFirst = (str: string) => {
