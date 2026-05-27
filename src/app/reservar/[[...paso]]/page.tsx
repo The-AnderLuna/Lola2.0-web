@@ -2576,7 +2576,9 @@ export default function FlujoReserva() {
                                                                     onClick={(e) => {
                                                                         e.preventDefault();
                                                                         const num = metodoPago === 'nequi' ? configData?.nequi_numero : configData?.daviplata_numero;
-                                                                        if (num) navigator.clipboard.writeText(num.replace(/\s/g, ''));
+                                                                        if (num && navigator.clipboard) {
+                                                                            navigator.clipboard.writeText(num.replace(/\s/g, '')).catch(() => {});
+                                                                        }
 
                                                                         // Visual feedback
                                                                         const btn = e.currentTarget;
