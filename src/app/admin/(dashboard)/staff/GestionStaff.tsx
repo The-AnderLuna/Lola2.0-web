@@ -30,6 +30,7 @@ export default function GestionStaff() {
   const [selectedProfForDias, setSelectedProfForDias] = useState<Profesional | null>(null);
   const [diasBloqueados, setDiasBloqueados] = useState<{id: string, fecha: string, motivo: string}[]>([]);
   const [nuevaFechaBloqueo, setNuevaFechaBloqueo] = useState('');
+  const [nuevaFechaBloqueoFin, setNuevaFechaBloqueoFin] = useState('');
   const [nuevoMotivoBloqueo, setNuevoMotivoBloqueo] = useState('');
   const [loadingDias, setLoadingDias] = useState(false);
 
@@ -96,17 +97,32 @@ export default function GestionStaff() {
     if (!selectedProfForDias || !nuevaFechaBloqueo) return;
     setSaving(true);
     try {
+      const fechas = [];
+      const start = new Date(nuevaFechaBloqueo + 'T00:00:00');
+      const end = nuevaFechaBloqueoFin ? new Date(nuevaFechaBloqueoFin + 'T00:00:00') : start;
+      
+      if (end < start) {
+        showToast('La fecha de fin debe ser mayor a la de inicio', 'error');
+        setSaving(false);
+        return;
+      }
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        fechas.push(d.toISOString().split('T')[0]);
+      }
+
       const res = await fetch('/api/dias-bloqueados', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fecha: nuevaFechaBloqueo, profesional_id: selectedProfForDias.id, motivo: nuevoMotivoBloqueo })
+        body: JSON.stringify({ fechas, profesional_id: selectedProfForDias.id, motivo: nuevoMotivoBloqueo })
       });
       if (res.ok) {
         const json = await res.json();
-        setDiasBloqueados([...diasBloqueados, json.data].sort((a, b) => a.fecha.localeCompare(b.fecha)));
+        setDiasBloqueados([...diasBloqueados, ...json.data].sort((a, b) => a.fecha.localeCompare(b.fecha)));
         setNuevaFechaBloqueo('');
+        setNuevaFechaBloqueoFin('');
         setNuevoMotivoBloqueo('');
-        showToast('Día bloqueado agregado', 'success');
+        showToast('Bloqueo(s) agregado(s)', 'success');
       } else {
         showToast('Error al agregar día', 'error');
       }
@@ -258,10 +274,14 @@ export default function GestionStaff() {
             <h4 className="text-xs font-semibold text-text-primary mb-3">Agregar Bloqueo</h4>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div>
-                <label className="block text-[10px] uppercase text-text-secondary mb-1">Fecha</label>
+                <label className="block text-[10px] uppercase text-text-secondary mb-1">Fecha (Inicio)</label>
                 <input type="date" value={nuevaFechaBloqueo} onChange={e => setNuevaFechaBloqueo(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm text-text-primary focus:outline-none" style={{ background: 'rgba(34, 34, 40, 0.8)', border: '1px solid rgba(255,255,255,0.07)' }} />
               </div>
               <div>
+                <label className="block text-[10px] uppercase text-text-secondary mb-1">Fecha Fin (Opcional)</label>
+                <input type="date" min={nuevaFechaBloqueo} value={nuevaFechaBloqueoFin} onChange={e => setNuevaFechaBloqueoFin(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm text-text-primary focus:outline-none" style={{ background: 'rgba(34, 34, 40, 0.8)', border: '1px solid rgba(255,255,255,0.07)' }} />
+              </div>
+              <div className="col-span-2">
                 <label className="block text-[10px] uppercase text-text-secondary mb-1">Motivo (Opcional)</label>
                 <input type="text" placeholder="Ej. Viaje" value={nuevoMotivoBloqueo} onChange={e => setNuevoMotivoBloqueo(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm text-text-primary focus:outline-none" style={{ background: 'rgba(34, 34, 40, 0.8)', border: '1px solid rgba(255,255,255,0.07)' }} />
               </div>

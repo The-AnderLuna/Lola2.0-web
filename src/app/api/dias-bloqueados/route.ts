@@ -33,17 +33,20 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fecha, profesional_id, motivo } = body;
+    const { fecha, fechas, profesional_id, motivo } = body;
 
-    if (!fecha || !profesional_id) {
-      return NextResponse.json({ error: 'Fecha y profesional_id son obligatorios' }, { status: 400 });
+    const fechasArray = fechas || (fecha ? [fecha] : []);
+
+    if (fechasArray.length === 0 || !profesional_id) {
+      return NextResponse.json({ error: 'Fecha(s) y profesional_id son obligatorios' }, { status: 400 });
     }
+
+    const inserts = fechasArray.map((f: string) => ({ fecha: f, profesional_id, motivo }));
 
     const { data, error } = await supabase
       .from('dias_bloqueados')
-      .insert([{ fecha, profesional_id, motivo }])
-      .select()
-      .single();
+      .insert(inserts)
+      .select();
 
     if (error) throw error;
 
