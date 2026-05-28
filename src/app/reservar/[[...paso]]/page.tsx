@@ -194,9 +194,33 @@ export default function FlujoReserva() {
                 }
             }
 
-            // 5. Hora seleccionada
+            // 5. Hora seleccionada y Bloqueo
             const savedTime = sessionStorage.getItem('lola_booking_time');
             if (savedTime) setSelectedTime(savedTime);
+            
+            const savedLock = sessionStorage.getItem('lola_lock_id');
+            const savedLockExpires = sessionStorage.getItem('lola_lock_expires_at');
+            if (savedLock && savedLockExpires) {
+                const expiresAt = parseInt(savedLockExpires, 10);
+                if (Date.now() < expiresAt) {
+                    setBloqueoId(savedLock);
+                    setLockExpiresAt(expiresAt);
+                    // Opcional: configurar el timeout para expirar en el frontend
+                    const expSecs = (expiresAt - Date.now()) / 1000;
+                    if (expSecs > 0) {
+                        setTimeout(() => {
+                            // ... misma limpieza ...
+                            setBloqueoId(null);
+                            setLockExpiresAt(null);
+                            sessionStorage.removeItem('lola_lock_id');
+                            sessionStorage.removeItem('lola_lock_expires_at');
+                        }, expSecs * 1000);
+                    }
+                } else {
+                    sessionStorage.removeItem('lola_lock_id');
+                    sessionStorage.removeItem('lola_lock_expires_at');
+                }
+            }
 
             // 6. Datos del cliente (prioridad: sessionStorage > localStorage)
             const savedClient = sessionStorage.getItem('lola_booking_client');
@@ -946,24 +970,9 @@ export default function FlujoReserva() {
         }
     }, [step, year, month, fetchMonthAvailability]);
 
-    // Limpiar bloqueo huérfano en caso de recarga de página y al salir
-    useEffect(() => {
-        const orphanedLock = sessionStorage.getItem('lola_lock_id');
-        if (orphanedLock) {
-            fetch(`/api/bloqueo-temporal?id=${orphanedLock}`, { method: 'DELETE', keepalive: true })
-                .catch(() => { });
-            sessionStorage.removeItem('lola_lock_id');
-        }
-
-        const handleBeforeUnload = () => {
-            const currentLock = sessionStorage.getItem('lola_lock_id');
-            if (currentLock) {
-                fetch(`/api/bloqueo-temporal?id=${currentLock}`, { method: 'DELETE', keepalive: true });
-            }
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, []);
+    // El bloqueo huérfano ya no se limpia agresivamente al recargar o salir (beforeunload)
+    // para permitir que el usuario mantenga sus datos si refresca en el paso 4.
+    // El servidor liberará el bloqueo naturalmente cuando expire su tiempo (ej. 10 minutos).
 
 
     // ─── DÍAS VÁLIDOS SEGÚN PROFESIONALES SELECCIONADOS ───────────────────────
@@ -2239,13 +2248,16 @@ export default function FlujoReserva() {
 
                                                                                         // Set timeout para limpiar el estado si el backend expira el bloqueo
                                                                                         const expSecs = data.expiresInSeconds || 600;
-                                                                                        setLockExpiresAt(Date.now() + expSecs * 1000);
+                                                                                        const expTimestamp = Date.now() + expSecs * 1000;
+                                                                                        setLockExpiresAt(expTimestamp);
+                                                                                        sessionStorage.setItem('lola_lock_expires_at', expTimestamp.toString());
                                                                                         const timeoutId = setTimeout(() => {
                                                                                             setShowExpiredModal(true);
                                                                                             setSelectedTime(null);
                                                                                             setBloqueoId(null);
                                                                                             setLockExpiresAt(null);
                                                                                             sessionStorage.removeItem('lola_lock_id');
+                                                                                            sessionStorage.removeItem('lola_lock_expires_at');
                                                                                             setStep(prev => prev > 2 ? 2 : prev);
                                                                                         }, expSecs * 1000);
                                                                                         setLockTimeoutId(timeoutId);
@@ -2896,6 +2908,8 @@ export default function FlujoReserva() {
                                                             sessionStorage.removeItem('lola_booking_step');
                                                             sessionStorage.removeItem('lola_booking_slots');
                                                             sessionStorage.removeItem('lola_booking_codigo_pais');
+                                                            sessionStorage.removeItem('lola_lock_id');
+                                                            sessionStorage.removeItem('lola_lock_expires_at');
                                                         } catch (e) { }
 
                                                         sessionStorage.removeItem('lola_lock_id');
