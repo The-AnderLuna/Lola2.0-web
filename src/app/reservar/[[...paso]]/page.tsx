@@ -2668,14 +2668,13 @@ export default function FlujoReserva() {
                                                     <p className="text-xs text-text-muted"><Info className="w-3.5 h-3.5 inline mr-1" />Al confirmar, te redirigiremos a WhatsApp para enviar tu comprobante.</p>
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col gap-2 text-center py-2">
-                                                    <Activity className="w-8 h-8 text-gold mx-auto mb-2 opacity-80" />
-                                                    <p className="text-text-secondary">Has seleccionado pagar con <strong className="text-text-primary capitalize">{metodoPago}</strong>.</p>
+                                                <div className="flex flex-col gap-3 text-center py-4">
+                                                    <p className="text-text-primary text-base font-semibold">Has seleccionado pagar con <strong className="capitalize text-gold">{metodoPago}</strong>.</p>
                                                     {metodoPago === 'sistecredito' && (
-                                                        <p className="text-xs text-text-muted"><Info className="w-3.5 h-3.5 inline mr-1" />Al confirmar, te redirigiremos a WhatsApp. Necesitaremos tu cédula para validar tu cupo disponible y generarte un link de pago.</p>
+                                                        <p className="text-sm text-text-secondary leading-relaxed max-w-md mx-auto"><Info className="w-4 h-4 inline mr-1.5 text-gold/80" />Al confirmar, te redirigiremos a WhatsApp. Necesitaremos tu cédula para validar tu cupo disponible y generarte un link de pago.</p>
                                                     )}
                                                     {metodoPago === 'tarjeta' && (
-                                                        <p className="text-xs text-text-muted"><Info className="w-3.5 h-3.5 inline mr-1" />El pago con tarjeta se realiza de manera presencial en el local. Tu cita requerirá aprobación manual por parte de Milena tras enviar el WhatsApp.</p>
+                                                        <p className="text-sm text-text-secondary leading-relaxed max-w-md mx-auto"><Info className="w-4 h-4 inline mr-1.5 text-gold/80" />El pago con tarjeta se realiza de manera presencial en el local. Tu cita requerirá aprobación manual por parte de Milena tras enviar el WhatsApp.</p>
                                                     )}
                                                 </div>
                                             )}
