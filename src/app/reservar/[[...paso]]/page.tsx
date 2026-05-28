@@ -123,6 +123,7 @@ export default function FlujoReserva() {
     // --- REGLAS (puerta de entrada única, no parte del flujo de navegación) ---
     const [rulesAccepted, setRulesAccepted] = useState(false);
     const [rulesChecked, setRulesChecked] = useState(false);
+    const [isHydrated, setIsHydrated] = useState(false);
 
     // Estados de confirmación
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -211,6 +212,7 @@ export default function FlujoReserva() {
         } catch (e) {
             console.warn('Error hidratando estado desde sessionStorage:', e);
         }
+        setIsHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -1089,8 +1091,14 @@ export default function FlujoReserva() {
             {/* Main Content */}
             <main className="flex-1 w-full max-w-[1400px] mx-auto p-6 md:p-12 relative z-10">
 
-                {/* Progress Bar */}
-                {step > 0 && (
+                {!isHydrated ? (
+                    <div className="flex items-center justify-center min-h-[50vh]">
+                        <Loader2 className="w-10 h-10 text-gold animate-spin" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Progress Bar */}
+                        {step > 0 && (
                     <div className="flex items-center justify-between mb-12 relative">
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-bg-elevated -z-10 rounded-full">
                             <div className="h-full bg-gold transition-all duration-500 ease-out rounded-full" style={{ width: `${((step - 1) / 3) * 100}%` }}></div>
@@ -2946,6 +2954,8 @@ export default function FlujoReserva() {
                     )}
 
                 </div>
+                    </>
+                )}
             </main>
         </div>
     );
