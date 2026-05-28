@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CreditCard, ArrowRight, Clock, Star, MapPin, Phone, AtSign, Calendar, ChevronLeft, LayoutGrid, Users } from "lucide-react";
 import { RepositorioServicios } from "@/adaptadores/repositorios/RepositorioServicios";
+import { RepositorioConfiguracion } from "@/adaptadores/repositorios/RepositorioConfiguracion";
 import { Servicio } from "@/nucleo/entidades/Servicio";
 
 const CATEGORY_IMAGES: Record<string, string> = {
@@ -74,6 +75,20 @@ export default function ServiciosPage() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("categorias");
+  const [wppNumber, setWppNumber] = useState<string>("573218406428");
+
+  useEffect(() => {
+    async function loadConfig() {
+      try {
+        const repo = new RepositorioConfiguracion();
+        const config = await repo.obtenerConfiguracion();
+        if (config?.whatsapp_numero) {
+          setWppNumber(config.whatsapp_numero.replace(/\D/g, ''));
+        }
+      } catch (err) {}
+    }
+    loadConfig();
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -519,7 +534,7 @@ export default function ServiciosPage() {
             Escríbenos directamente por WhatsApp para una asesoría de diseño personalizada completamente gratis.
           </p>
           <a 
-            href="https://wa.me/573218406428" 
+            href={`https://wa.me/${wppNumber}`} 
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3.5 bg-bg-surface hover:bg-gold/10 text-gold font-bold text-xs uppercase tracking-wider rounded-xl border border-gold/30 transition-all"
