@@ -29,14 +29,26 @@ Hemos finalizado con éxito el Sprint 2, transformando el motor de reservas en u
     - Monto exacto del abono.
 - **Persistencia en DB:** Corregimos y agregamos las columnas `metodo_pago`, `notas` y `fecha_cumpleanos` en Supabase para que coincidan con la lógica de negocio.
 
+### 5. Estética y UI Premium
+- **Iconografía Mejorada:** Se reemplazaron emojis y elementos genéricos por iconos SVG minimalistas y elegantes (Lucide React) en las categorías de servicios, opciones de pago (Nequi, Daviplata, Tarjeta de Crédito, SisteCrédito) y cupones.
+- **Rediseño de Instrucciones de Pago:** Limpieza visual en las opciones de "Tarjeta" y "SisteCrédito", eliminando iconos innecesarios (Activity) y aumentando la legibilidad del texto de confirmación.
+
+### 6. Configuración Global Dinámica
+- **Número de WhatsApp Configurable:** Se añadió el campo `whatsapp_numero` a la base de datos (`configuracion`). Ahora se puede editar directamente desde el Panel de Administrador (pestaña "Bot Lola").
+- **Sincronización en Landing Pages:** Todas las páginas (Inicio, Servicios, Reservar) ahora consultan la base de datos para obtener el número de WhatsApp dinámicamente, asegurando que si se cambia en el panel, todo el sitio se actualice automáticamente.
+
+### 7. Gestión de Disponibilidad Avanzada
+- **Bloqueos de Días Completos:** Se agregó soporte para que el administrador pueda bloquear fechas completas por eventos o ausencias (ej: 12 de junio). Estos días ahora aparecen desactivados en el calendario del cliente, previniendo reservas en fechas no laborables.
+
 ## 🛠️ Decisiones Técnicas Clave
 - **Sin Registro Forzado:** Decidimos usar un "Shadow Registration". El cliente se crea o actualiza automáticamente durante el checkout usando su **Cédula/Teléfono** como identificador, eliminando la fricción de crear contraseñas.
 - **N8N como Orquestador:** Eliminamos webhooks automáticos desde el frontend para que la verificación sea 100% gatillada por el mensaje del cliente en WhatsApp, haciendo el bot de IA más eficiente.
+- **Componentes de Cliente para Data Global:** Se implementó `RepositorioConfiguracion` en componentes `"use client"` (`page.tsx`, `servicios/page.tsx`) con su respectivo `useEffect` para mantener la inyección de la configuración dinámica sin afectar el renderizado estático del Layout.
 
 ## 📊 Estado Final
 - **Estabilidad:** 100% (Validado con `tsc`).
-- **Número de Contacto:** Actualizado a `3043908714`.
+- **Número de Contacto:** Ahora es **100% dinámico** (Por defecto: `573218406428`).
 - **Tiempo de Bloqueo:** 10 Minutos (Producción).
 
 ---
-*Lola 2.0 ahora está lista para recibir sus primeros abonos reales.*
+*Lola 2.0 ahora es completamente autogestionable y lista para integraciones avanzadas.*
