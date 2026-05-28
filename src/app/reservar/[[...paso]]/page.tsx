@@ -134,6 +134,7 @@ export default function FlujoReserva() {
     const [cuponActivo, setCuponActivo] = useState<any>(null);
     const [cuponError, setCuponError] = useState<string | null>(null);
     const [showValuationModal, setShowValuationModal] = useState(false);
+    const [verrugasForm, setVerrugasForm] = useState({ duele: '', medico: '', molestia: '', nota: '' });
     const [validandoCupon, setValidandoCupon] = useState(false);
 
     useEffect(() => {
@@ -1926,13 +1927,20 @@ export default function FlujoReserva() {
                     )}
 
                     {/* MODAL: VALORACIÓN REQUERIDA */}
-                    {showValuationModal && (
+                    {showValuationModal && (() => {
+                        const valuationService = selectedServices.find(s => s.requiereHumano || s.precio === 0);
+                        const normalServices = selectedServices.filter(s => !(s.requiereHumano || s.precio === 0));
+                        const isVerrugas = valuationService?.nombre.toLowerCase().includes('verruga');
+                        const isTatuaje = valuationService?.nombre.toLowerCase().includes('tatuaje');
+                        const isVerrugasValid = isVerrugas ? (verrugasForm.duele !== '' && verrugasForm.medico !== '' && verrugasForm.molestia !== '') : true;
+
+                        return (
                         <div
                             className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
                             onClick={() => setShowValuationModal(false)}
                         >
                             <div
-                                className="bg-bg-card border border-gold/30 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-[0_0_40px_rgba(212,175,55,0.15)] relative overflow-hidden"
+                                className="bg-bg-card border border-gold/30 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-[0_0_40px_rgba(212,175,55,0.15)] relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
                                 onClick={e => e.stopPropagation()}
                             >
                                 {/* Header del Modal */}
@@ -1942,22 +1950,65 @@ export default function FlujoReserva() {
                                     </div>
                                     <h3 className="text-xl font-bold text-text-primary uppercase tracking-widest mb-2">Valoración Personalizada</h3>
                                     <p className="text-text-secondary text-sm leading-relaxed">
-                                        Para darte el mejor servicio, Mile necesita revisar tu caso y darte un precio exacto. Escríbele para continuar.
+                                        {isVerrugas 
+                                            ? "Procedimiento especializado. Para saber si eres apta, por favor responde estas breves preguntas:" 
+                                            : "Para darte el mejor servicio, Mile necesita revisar tu caso y darte un precio exacto."}
                                     </p>
                                 </div>
+
+                                {isVerrugas && (
+                                    <div className="flex flex-col gap-4 mb-6">
+                                        {/* Pregunta 1 */}
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-sm font-semibold text-text-primary">1. ¿Te duele la zona?</label>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => setVerrugasForm({...verrugasForm, duele: 'Sí'})} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${verrugasForm.duele === 'Sí' ? 'bg-gold/20 border-gold text-gold' : 'bg-transparent border-border-subtle text-text-muted hover:border-gold/50'}`}>Sí</button>
+                                                <button onClick={() => setVerrugasForm({...verrugasForm, duele: 'No'})} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${verrugasForm.duele === 'No' ? 'bg-gold/20 border-gold text-gold' : 'bg-transparent border-border-subtle text-text-muted hover:border-gold/50'}`}>No</button>
+                                            </div>
+                                        </div>
+                                        {/* Pregunta 2 */}
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-sm font-semibold text-text-primary">2. ¿Has ido al médico antes?</label>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => setVerrugasForm({...verrugasForm, medico: 'Sí'})} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${verrugasForm.medico === 'Sí' ? 'bg-gold/20 border-gold text-gold' : 'bg-transparent border-border-subtle text-text-muted hover:border-gold/50'}`}>Sí</button>
+                                                <button onClick={() => setVerrugasForm({...verrugasForm, medico: 'No'})} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${verrugasForm.medico === 'No' ? 'bg-gold/20 border-gold text-gold' : 'bg-transparent border-border-subtle text-text-muted hover:border-gold/50'}`}>No</button>
+                                            </div>
+                                        </div>
+                                        {/* Pregunta 3 */}
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-sm font-semibold text-text-primary">3. ¿Sientes molestia (picazón/ardor)?</label>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => setVerrugasForm({...verrugasForm, molestia: 'Sí'})} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${verrugasForm.molestia === 'Sí' ? 'bg-gold/20 border-gold text-gold' : 'bg-transparent border-border-subtle text-text-muted hover:border-gold/50'}`}>Sí</button>
+                                                <button onClick={() => setVerrugasForm({...verrugasForm, molestia: 'No'})} className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${verrugasForm.molestia === 'No' ? 'bg-gold/20 border-gold text-gold' : 'bg-transparent border-border-subtle text-text-muted hover:border-gold/50'}`}>No</button>
+                                            </div>
+                                        </div>
+                                        {/* Nota */}
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-sm font-semibold text-text-primary">Nota adicional (Opcional)</label>
+                                            <textarea 
+                                                value={verrugasForm.nota}
+                                                onChange={e => setVerrugasForm({...verrugasForm, nota: e.target.value})}
+                                                className="w-full bg-bg-surface border border-border-subtle rounded-xl p-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-gold transition-colors resize-none h-20 custom-scrollbar"
+                                                placeholder="Cualquier otro detalle que consideres importante..."
+                                            />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Botones */}
                                 <div className="flex flex-col gap-2.5 w-full pt-1">
                                     <button
+                                        disabled={!isVerrugasValid}
                                         onClick={() => {
-                                            const valuationService = selectedServices.find(s => s.requiereHumano || s.precio === 0);
-                                            const normalServices = selectedServices.filter(s => !(s.requiereHumano || s.precio === 0));
-                                            
                                             let msg = '';
-                                            if (valuationService?.nombre.toLowerCase().includes('tatuaje')) {
+                                            if (isTatuaje) {
                                                 msg = "Hola, me gustaría una valoración para remoción de tatuajes. Para tatuajes corporales, el precio y sesiones dependen del tamaño y tinta. 📸 Por favor envía una foto y medidas aproximadas para que Mile te haga una valoración personalizada.";
-                                            } else if (valuationService?.nombre.toLowerCase().includes('verruga')) {
-                                                msg = "Hola, me gustaría una valoración para eliminación de verrugas. ⚠️ Procedimiento especializado. Para darte precio y saber si eres apta, responde estas 4 preguntas:\n1. ¿Te duele la zona?\n2. ¿Has ido al médico antes?\n3. ¿Sientes molestia (picazón/ardor)?\n4. 📸 Envía foto clara.\nMile revisará tu caso.";
+                                            } else if (isVerrugas) {
+                                                msg = `Hola, me gustaría una valoración para eliminación de verrugas.\n\nMis respuestas:\n1. ¿Te duele la zona?: ${verrugasForm.duele}\n2. ¿Has ido al médico antes?: ${verrugasForm.medico}\n3. ¿Sientes molestia?: ${verrugasForm.molestia}`;
+                                                if (verrugasForm.nota.trim()) {
+                                                    msg += `\nNota: ${verrugasForm.nota.trim()}`;
+                                                }
+                                                msg += `\n\n📸 Te envío la foto a continuación para que Mile revise mi caso.`;
                                             } else {
                                                 msg = `Hola, me gustaría una valoración personalizada para el servicio de ${valuationService?.nombre || 'tratamiento especializado'}. Por favor indícame los pasos a seguir.`;
                                             }
@@ -1970,7 +2021,7 @@ export default function FlujoReserva() {
                                             window.open(url, '_blank');
                                             setShowValuationModal(false);
                                         }}
-                                        className="w-full py-4 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.55)] active:scale-[0.98]"
+                                        className="w-full py-4 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.55)] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                                     >
                                         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -1987,7 +2038,8 @@ export default function FlujoReserva() {
                                 </div>
                             </div>
                         </div>
-                    )}
+                        );
+                    })()}
 
                     {/* MODAL: RESERVA EN GRUPO (3+ cupos) */}
                     {showGrupoModal && (
