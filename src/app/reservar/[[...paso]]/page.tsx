@@ -1252,9 +1252,9 @@ export default function FlujoReserva() {
                                                 <UserX className="w-5 h-5 md:w-6 md:h-6 text-gold" />
                                             </div>
                                             <div className="flex-1">
-                                                <h4 className="font-bold text-text-primary mb-1.5 text-base md:text-lg">Sin Acompañantes ni Niños</h4>
+                                                <h4 className="font-bold text-text-primary mb-1.5 text-base md:text-lg">Acerca de Acompañantes</h4>
                                                 <p className="text-sm md:text-base leading-relaxed text-text-muted">
-                                                    Asiste a tu cita <strong>sin acompañantes ni niños</strong> para mantener un ambiente tranquilo y profesional.
+                                                    Para mantener un ambiente tranquilo, asiste a tu cita <strong>sin niños ni acompañantes</strong>, a menos que tu acompañante <strong>también vaya a realizarse un servicio</strong>.
                                                 </p>
                                             </div>
                                         </div>
