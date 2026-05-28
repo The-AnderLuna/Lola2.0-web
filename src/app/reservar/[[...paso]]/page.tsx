@@ -845,6 +845,20 @@ export default function FlujoReserva() {
             setVipFeeAccepted(false);
         }
 
+        // Si había un bloqueo activo y el usuario cambia de día o lo vuelve a seleccionar (reseteando la hora),
+        // debemos liberar el cupo en la base de datos para no dejarlo huérfano.
+        if (bloqueoId) {
+            fetch(`/api/bloqueo-temporal?id=${bloqueoId}`, { method: 'DELETE' }).catch(() => { });
+            setBloqueoId(null);
+            setLockExpiresAt(null);
+            sessionStorage.removeItem('lola_lock_id');
+            sessionStorage.removeItem('lola_lock_expires_at');
+            if (lockTimeoutId) {
+                clearTimeout(lockTimeoutId);
+                setLockTimeoutId(null);
+            }
+        }
+
         setSelectedDate(dateToSelect);
         setSelectedTime(null);
         setAvailableSlots([]);
