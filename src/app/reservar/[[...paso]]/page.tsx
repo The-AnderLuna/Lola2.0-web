@@ -143,6 +143,16 @@ export default function FlujoReserva() {
             const savedRules = sessionStorage.getItem('lola_booking_rules_accepted');
             if (savedRules === 'true') {
                 setRulesAccepted(true);
+                // Restaurar paso solo si se aceptaron las reglas (así evitamos el blanco)
+                const savedStepStr = sessionStorage.getItem('lola_booking_step');
+                let stepToSet = savedStepStr ? parseInt(savedStepStr, 10) : 0;
+                
+                // Si por alguna razón el paso guardado es 0 o inválido, leer URL
+                if (!stepToSet || stepToSet === 0) {
+                    const { pasoInicial } = analizarRutaYParametros(window.location.pathname, window.location.search);
+                    stepToSet = Math.max(pasoInicial, 1);
+                }
+                setStep(stepToSet);
             }
 
             // 2. Servicios seleccionados
