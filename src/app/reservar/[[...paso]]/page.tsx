@@ -323,7 +323,7 @@ export default function FlujoReserva() {
 
     const nextStep = () => {
         if (step === 1) {
-            const hasValuationService = selectedServices.some(s => s.precio === 0 && s.duracionMin === 0);
+            const hasValuationService = selectedServices.some(s => s.requiereHumano || s.precio === 0);
             if (hasValuationService) {
                 setShowValuationModal(true);
                 return;
@@ -588,10 +588,15 @@ export default function FlujoReserva() {
                     grupos.forEach(g => {
                         g.servicios.sort((a, b) => a.precio - b.precio);
                     });
-                    // Ordenar los grupos por su precio mínimo (el del primer servicio) de menor a mayor
+                    // Ordenar los grupos por su precio mínimo, pero trayendo los de valoración de primero
                     grupos.sort((a, b) => {
-                        const minA = a.servicios[0]?.precio || 0;
-                        const minB = b.servicios[0]?.precio || 0;
+                        const isValA = a.servicios.some(s => s.requiereHumano || s.precio === 0);
+                        const isValB = b.servicios.some(s => s.requiereHumano || s.precio === 0);
+                        if (isValA && !isValB) return -1;
+                        if (!isValA && isValB) return 1;
+                        
+                        const minA = Math.min(...a.servicios.map(s => s.precio));
+                        const minB = Math.min(...b.servicios.map(s => s.precio));
                         return minA - minB;
                     });
                 });
@@ -1446,7 +1451,7 @@ export default function FlujoReserva() {
                                                                 const minPrice = Math.min(...grupo.servicios.map(s => s.precio));
                                                                 const maxPrice = Math.max(...grupo.servicios.map(s => s.precio));
                                                                 const minDuration = Math.min(...grupo.servicios.map(s => s.duracionMin));
-                                                                const isValuation = minPrice === 0 && minDuration === 0;
+                                                                const isValuation = grupo.servicios.some(s => s.requiereHumano || s.precio === 0);
                                                                 const priceDisplay = isValuation ? "Valoración Requerida" : (minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`);
                                                                 const abonoDisplay = Math.min(...grupo.servicios.map(s => (s.precio * 0.5)));
 
@@ -1554,7 +1559,7 @@ export default function FlujoReserva() {
                                                             const minPrice = Math.min(...grupo.servicios.map(s => s.precio));
                                                             const maxPrice = Math.max(...grupo.servicios.map(s => s.precio));
                                                             const minDuration = Math.min(...grupo.servicios.map(s => s.duracionMin + s.bufferMin));
-                                                            const isValuation = minPrice === 0 && minDuration === 0;
+                                                            const isValuation = grupo.servicios.some(s => s.requiereHumano || s.precio === 0);
                                                             const priceDisplay = isValuation ? "Valoración Requerida" : (minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`);
                                                             const abonoDisplay = Math.min(...grupo.servicios.map(s => (s.precio * 0.5)));
 
@@ -1686,13 +1691,13 @@ export default function FlujoReserva() {
                                                                     </button>
                                                                     <h4 className="text-sm font-bold text-text-primary leading-tight mb-1 pr-7">{hasAlternatives ? baseName : grp.nombre}</h4>
                                                                     <span className="text-xs text-text-muted/60 font-semibold flex items-center gap-1 mb-4">
-                                                                        {grp.precio === 0 && grp.duracionMin === 0 ? null : (
+                                                                        {grp.requiereHumano || grp.precio === 0 ? null : (
                                                                             <><Clock className="w-2.5 h-2.5 text-gold/70" /> {formatearDuracion(grp.duracionMin + grp.bufferMin)} {grp.count > 1 && `(x${grp.count})`}</>
                                                                         )}
                                                                     </span>
                                                                     <div className="flex items-center justify-between pt-3 border-t border-white/[0.05]">
-                                                                        <span className={`font-bold ${grp.precio === 0 && grp.duracionMin === 0 ? 'text-sm text-gold' : 'text-base text-gold'}`}>
-                                                                            {grp.precio === 0 && grp.duracionMin === 0 ? "Valoración Requerida" : formatCurrency(grp.precio * grp.count)}
+                                                                        <span className={`font-bold ${grp.requiereHumano || grp.precio === 0 ? 'text-sm text-gold' : 'text-base text-gold'}`}>
+                                                                            {grp.requiereHumano || grp.precio === 0 ? "Valoración Requerida" : formatCurrency(grp.precio * grp.count)}
                                                                         </span>
                                                                         <div className="flex items-center gap-3">
                                                                             {hasAlternatives && (
@@ -1853,7 +1858,7 @@ export default function FlujoReserva() {
                                                                             </span>
                                                                             <span>{srvHasAlt ? srvBaseName : srv.nombre}</span>
                                                                         </span>
-                                                                        <span className={`font-bold flex-shrink-0 ${isAmiga ? 'text-gold' : 'text-text-muted'} ${srv.precio === 0 && srv.duracionMin === 0 ? 'text-[10px]' : ''}`}>{srv.precio === 0 && srv.duracionMin === 0 ? "Valoración" : formatCurrency(srv.precio)}</span>
+                                                                        <span className={`font-bold flex-shrink-0 ${isAmiga ? 'text-gold' : 'text-text-muted'} ${srv.requiereHumano || srv.precio === 0 ? 'text-[10px]' : ''}`}>{srv.requiereHumano || srv.precio === 0 ? "Valoración" : formatCurrency(srv.precio)}</span>
                                                                     </button>
                                                                     {/* Toggle profesional por servicio */}
                                                                     {srvHasAlt && (
@@ -1945,8 +1950,8 @@ export default function FlujoReserva() {
                                 <div className="flex flex-col gap-2.5 w-full pt-1">
                                     <button
                                         onClick={() => {
-                                            const valuationService = selectedServices.find(s => s.precio === 0 && s.duracionMin === 0);
-                                            const normalServices = selectedServices.filter(s => s.precio !== 0 || s.duracionMin !== 0);
+                                            const valuationService = selectedServices.find(s => s.requiereHumano || s.precio === 0);
+                                            const normalServices = selectedServices.filter(s => !(s.requiereHumano || s.precio === 0));
                                             
                                             let msg = '';
                                             if (valuationService?.nombre.toLowerCase().includes('tatuaje')) {
