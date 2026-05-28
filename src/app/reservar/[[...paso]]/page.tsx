@@ -1723,7 +1723,7 @@ export default function FlujoReserva() {
                                     {/* Botones */}
                                     <div className="flex flex-col gap-2.5 w-full pt-1">
                                         <a
-                                            href={`https://wa.me/${(configData?.whatsapp_numero || '573043908714').replace(/\D/g, '')}?text=${encodeURIComponent(`Hola 👋 Quiero coordinar una reserva grupal para *${grupoModalServicio || 'un servicio'}*. Somos 3 o más personas. ¿Cuándo tienen disponibilidad?`)}`}
+                                            href={`https://wa.me/${(configData?.whatsapp_numero || '573218406428').replace(/\D/g, '')}?text=${encodeURIComponent(`Hola 🎀 Quiero coordinar una reserva grupal para *${grupoModalServicio || 'un servicio'}*. Somos 3 o más personas. ¿Cuándo tienen disponibilidad?`)}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             onClick={() => setShowGrupoModal(false)}
@@ -2745,7 +2745,7 @@ export default function FlujoReserva() {
                                                             }).join('');
                                                             urlMsg = `Hola Lola! 👋%0A%0A*NUEVA RESERVA*%0A%0A👤 *Nombre:* ${clientData.nombre}%0A📝 *Cédula:* ${clientData.cedula}%0A💇‍♀️ *Servicios:*${serviciosTexto}%0A⏰ *Cuándo:* ${fechaTexto} (Inicia ${formatearHora(selectedTime)})%0A💳 *Método de Abono:* ${metodoPago.toUpperCase()}%0A💰 *Valor del Abono:* $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
                                                         }
-                                                        const wppNumber = configData?.whatsapp_numero || '573043908714';
+                                                        const wppNumber = configData?.whatsapp_numero || '573218406428';
                                                         const finalUrl = `https://wa.me/${wppNumber}?text=${urlMsg}`;
                                                         
                                                         setConfirmedWppUrl(finalUrl);

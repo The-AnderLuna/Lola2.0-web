@@ -24,6 +24,7 @@ interface Config {
   telegram_topic_pagos: number | null;
   telegram_topic_atencion_cliente: number | null;
   telegram_topic_pagos_restantes: number | null;
+  whatsapp_numero: string | null;
 }
 
 export default function PanelConfiguracion() {
@@ -120,7 +121,10 @@ export default function PanelConfiguracion() {
           <div className="space-y-5">
             <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2"><Bot className="w-4 h-4 text-gold" /> Bot Lola</h2>
             <Toggle label="Bot Activo" value={config.bot_activo ?? true} onChange={v => update('bot_activo', v)} />
-            <Field label="Porcentaje de Anticipo (%)" value={config.porcentaje_anticipo?.toString() || '0'} onChange={v => update('porcentaje_anticipo', parseFloat(v) || 0)} type="number" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Número de WhatsApp" value={config.whatsapp_numero || ''} onChange={v => update('whatsapp_numero', v)} />
+              <Field label="Porcentaje de Anticipo (%)" value={config.porcentaje_anticipo?.toString() || '0'} onChange={v => update('porcentaje_anticipo', parseFloat(v) || 0)} type="number" />
+            </div>
             <div>
               <label className="block text-xs text-text-secondary mb-1.5">Mensaje de Bienvenida</label>
               <textarea value={config.mensaje_bienvenida || ''} onChange={e => update('mensaje_bienvenida', e.target.value)} rows={4} className="w-full px-3 py-2.5 rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-gold/30 resize-none" style={{ background: 'rgba(34, 34, 40, 0.8)', border: '1px solid rgba(255,255,255,0.07)' }} />

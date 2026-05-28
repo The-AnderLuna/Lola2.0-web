@@ -263,7 +263,7 @@ export default function Home() {
                   <span className="text-[10px] text-text-muted block uppercase">Precio del Curso</span>
                   <span className="text-xl font-bold text-gold">$1.200.000 COP</span>
                 </div>
-                <a href="https://wa.me/573043908714?text=Hola%20Mile!%20Deseo%20más%20información%20sobre%20la%20Masterclass%20de%20Micropigmentación%20Inicial" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-105">
+                <a href="https://wa.me/573218406428?text=Hola%20Mile!%20Deseo%20más%20información%20sobre%20la%20Masterclass%20de%20Micropigmentación%20Inicial" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-105">
                   Consultar Cupos
                 </a>
               </div>
@@ -288,7 +288,7 @@ export default function Home() {
                   <span className="text-[10px] text-text-muted block uppercase">Precio del Curso</span>
                   <span className="text-xl font-bold text-gold">$800.000 COP</span>
                 </div>
-                <a href="https://wa.me/573043908714?text=Hola%20Mile!%20Deseo%20más%20información%20sobre%20el%20curso%20de%20Perfeccionamiento%20de%20Cejas%20Híbridas" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-105">
+                <a href="https://wa.me/573218406428?text=Hola%20Mile!%20Deseo%20más%20información%20sobre%20el%20curso%20de%20Perfeccionamiento%20de%20Cejas%20Híbridas" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-105">
                   Consultar Cupos
                 </a>
               </div>

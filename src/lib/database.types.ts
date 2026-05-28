@@ -185,6 +185,7 @@ export type Database = {
           titular_cuenta: string | null
           ubicacion_maps: string | null
           ubicacion_texto: string | null
+          whatsapp_numero: string | null
         }
         Insert: {
           acepta_sistecredito?: boolean | null
@@ -207,6 +208,7 @@ export type Database = {
           titular_cuenta?: string | null
           ubicacion_maps?: string | null
           ubicacion_texto?: string | null
+          whatsapp_numero?: string | null
         }
         Update: {
           acepta_sistecredito?: boolean | null
@@ -229,6 +231,7 @@ export type Database = {
           titular_cuenta?: string | null
           ubicacion_maps?: string | null
           ubicacion_texto?: string | null
+          whatsapp_numero?: string | null
         }
         Relationships: []
       }
