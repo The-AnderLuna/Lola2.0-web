@@ -353,20 +353,17 @@ export default function FlujoReserva() {
     }, [step]);
 
     // ── GUARDS DE PASO ──────────────────────────────────────────────────────
-    // Ejecutados una sola vez tras la hidratación (con pequeño delay para que
-    // los estados ya tengan sus valores del sessionStorage antes de validar).
+    // Validamos que no se pueda estar en un paso avanzado si faltan datos obligatorios.
+    // Usamos isHydrated para asegurar que leemos los estados ya restaurados.
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setStep(currentStep => {
-                if (currentStep >= 3 && selectedServices.length === 0) return 1;
-                if (currentStep === 3 && (!selectedDate || !selectedTime)) return 2;
-                if (currentStep === 4 && (!selectedDate || !selectedTime)) return 2;
-                return currentStep;
-            });
-        }, 100);
-        return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);  // Solo al montar, los estados ya vienen del sessionStorage
+        if (!isHydrated) return;
+
+        if (step >= 3 && selectedServices.length === 0) {
+            setStep(1);
+        } else if ((step === 3 || step === 4) && (!selectedDate || !selectedTime)) {
+            setStep(2);
+        }
+    }, [isHydrated, step, selectedServices.length, selectedDate, selectedTime]);
 
 
     const validarCupon = async () => {
