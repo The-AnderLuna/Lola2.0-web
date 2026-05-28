@@ -2400,7 +2400,7 @@ export default function FlujoReserva() {
                                                                         <div>
                                                                             <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
                                                                             <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
-                                                                                <span>{formatearDuracion(srv.duracionMin)}</span>
+                                                                                <span>{formatearDuracion(srv.duracionMin + srv.bufferMin)}</span>
                                                                                 {horaSrv && (
                                                                                     <>
                                                                                         <span className="text-text-muted">•</span>
@@ -2428,7 +2428,7 @@ export default function FlujoReserva() {
                                                                         <div>
                                                                             <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
                                                                             <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
-                                                                                <span>{formatearDuracion(srv.duracionMin)}</span>
+                                                                                <span>{formatearDuracion(srv.duracionMin + srv.bufferMin)}</span>
                                                                                 {horaSrv && (
                                                                                     <>
                                                                                         <span className="text-text-muted">•</span>
@@ -2456,7 +2456,7 @@ export default function FlujoReserva() {
                                                                         <div>
                                                                             <p className="font-bold text-text-primary text-sm">{srv.nombre}</p>
                                                                             <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
-                                                                                <span>{formatearDuracion(srv.duracionMin)}</span>
+                                                                                <span>{formatearDuracion(srv.duracionMin + srv.bufferMin)}</span>
                                                                                 {horaSrv && (
                                                                                     <>
                                                                                         <span className="text-text-muted">•</span>
