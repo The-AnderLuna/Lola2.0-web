@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
     Crown, ShoppingCart, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, User, Phone, Mail, FileText, Info, Loader2, ChevronRight, ChevronLeft, Feather, Eye, Droplets, Gift, Activity, Circle, CheckCircle, X, Search, AlertCircle, Copy, CreditCard, Wallet, Ban, CalendarClock, UserX, MapPin, Camera, Users, UserPlus, Plus, Minus, Trash2,
-    Sparkles, Syringe, Scissors, Sun, PersonStanding, ClipboardList, Tag, Ticket, SmartphoneNfc, Landmark, Smile, SprayCan, Gem
+    Sparkles, Syringe, Scissors, Sun, PersonStanding, ClipboardList, Tag, Ticket, SmartphoneNfc, Landmark, Smile, SprayCan, Gem, MessageCircle
 } from "lucide-react";
 import Link from "next/link";
 import { RepositorioServicios } from "@/adaptadores/repositorios/RepositorioServicios";
@@ -133,6 +133,7 @@ export default function FlujoReserva() {
     const [codigoCupon, setCodigoCupon] = useState('');
     const [cuponActivo, setCuponActivo] = useState<any>(null);
     const [cuponError, setCuponError] = useState<string | null>(null);
+    const [showValuationModal, setShowValuationModal] = useState(false);
     const [validandoCupon, setValidandoCupon] = useState(false);
 
     useEffect(() => {
@@ -320,7 +321,16 @@ export default function FlujoReserva() {
     const [showGrupoModal, setShowGrupoModal] = useState(false);
     const [grupoModalServicio, setGrupoModalServicio] = useState<string>('');
 
-    const nextStep = () => setStep(s => Math.min(s + 1, 4));
+    const nextStep = () => {
+        if (step === 1) {
+            const hasValuationService = selectedServices.some(s => s.precio === 0 && s.duracionMin === 0);
+            if (hasValuationService) {
+                setShowValuationModal(true);
+                return;
+            }
+        }
+        setStep(s => Math.min(s + 1, 4));
+    };
     // Piso en 1: las reglas son una puerta de entrada, no un paso de regreso
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
@@ -1435,8 +1445,9 @@ export default function FlujoReserva() {
 
                                                                 const minPrice = Math.min(...grupo.servicios.map(s => s.precio));
                                                                 const maxPrice = Math.max(...grupo.servicios.map(s => s.precio));
-                                                                const priceDisplay = minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`;
                                                                 const minDuration = Math.min(...grupo.servicios.map(s => s.duracionMin));
+                                                                const isValuation = minPrice === 0 && minDuration === 0;
+                                                                const priceDisplay = isValuation ? "Valoración Requerida" : (minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`);
                                                                 const abonoDisplay = Math.min(...grupo.servicios.map(s => (s.precio * 0.5)));
 
                                                                 return (
@@ -1480,20 +1491,24 @@ export default function FlujoReserva() {
                                                                                     </span>
                                                                                 )}
                                                                                 <div className="flex items-center gap-4 text-xs font-semibold text-text-muted">
-                                                                                    <span className="flex items-center gap-1.5">
-                                                                                        <Clock className="w-3.5 h-3.5 text-gold" /> {formatearDuracion(minDuration)}
-                                                                                    </span>
+                                                                                    {!isValuation && (
+                                                                                        <span className="flex items-center gap-1.5">
+                                                                                            <Clock className="w-3.5 h-3.5 text-gold" /> {formatearDuracion(minDuration)}
+                                                                                        </span>
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
 
                                                                         <div className="text-left md:text-right flex flex-col justify-end pl-10 md:pl-0 border-t md:border-t-0 border-border-subtle pt-3 md:pt-0">
-                                                                            <span className="text-text-primary text-xl font-bold mb-1 tracking-wide">{priceDisplay}</span>
-                                                                            <div className="flex items-center md:justify-end text-xs gap-1.5">
-                                                                                <Info className="w-3.5 h-3.5 text-text-muted" />
-                                                                                <span className="text-text-secondary uppercase tracking-wider font-semibold text-[10px]">Abono Requerido:</span>
-                                                                                <span className="text-gold font-bold">{formatCurrency(abonoDisplay)}</span>
-                                                                            </div>
+                                                                            <span className={`text-text-primary font-bold mb-1 tracking-wide ${isValuation ? 'text-sm md:text-base text-gold' : 'text-xl'}`}>{priceDisplay}</span>
+                                                                            {!isValuation && (
+                                                                                <div className="flex items-center md:justify-end text-xs gap-1.5">
+                                                                                    <Info className="w-3.5 h-3.5 text-text-muted" />
+                                                                                    <span className="text-text-secondary uppercase tracking-wider font-semibold text-[10px]">Abono Requerido:</span>
+                                                                                    <span className="text-gold font-bold">{formatCurrency(abonoDisplay)}</span>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     </button>
                                                                 );
@@ -1538,8 +1553,9 @@ export default function FlujoReserva() {
 
                                                             const minPrice = Math.min(...grupo.servicios.map(s => s.precio));
                                                             const maxPrice = Math.max(...grupo.servicios.map(s => s.precio));
-                                                            const priceDisplay = minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`;
                                                             const minDuration = Math.min(...grupo.servicios.map(s => s.duracionMin + s.bufferMin));
+                                                            const isValuation = minPrice === 0 && minDuration === 0;
+                                                            const priceDisplay = isValuation ? "Valoración Requerida" : (minPrice === maxPrice ? formatCurrency(minPrice) : `Desde ${formatCurrency(minPrice)}`);
                                                             const abonoDisplay = Math.min(...grupo.servicios.map(s => (s.precio * 0.5)));
 
                                                             return (
@@ -1583,20 +1599,24 @@ export default function FlujoReserva() {
                                                                                 </span>
                                                                             )}
                                                                             <div className="flex items-center gap-4 text-xs font-semibold text-text-muted">
-                                                                                <span className="flex items-center gap-1.5">
-                                                                                    <Clock className="w-3.5 h-3.5 text-gold" /> {formatearDuracion(minDuration)}
-                                                                                </span>
+                                                                                {!isValuation && (
+                                                                                    <span className="flex items-center gap-1.5">
+                                                                                        <Clock className="w-3.5 h-3.5 text-gold" /> {formatearDuracion(minDuration)}
+                                                                                    </span>
+                                                                                )}
                                                                             </div>
                                                                         </div>
                                                                     </div>
 
                                                                     <div className="text-left md:text-right flex flex-col justify-end pl-10 md:pl-0 border-t md:border-t-0 border-border-subtle pt-3 md:pt-0">
-                                                                        <span className="text-text-primary text-xl font-bold mb-1 tracking-wide">{priceDisplay}</span>
-                                                                        <div className="flex items-center md:justify-end text-xs gap-1.5">
-                                                                            <Info className="w-3.5 h-3.5 text-text-muted" />
-                                                                            <span className="text-text-secondary uppercase tracking-wider font-semibold text-[10px]">Abono Requerido:</span>
-                                                                            <span className="text-gold font-bold">{formatCurrency(abonoDisplay)}</span>
-                                                                        </div>
+                                                                        <span className={`text-text-primary font-bold mb-1 tracking-wide ${isValuation ? 'text-sm md:text-base text-gold' : 'text-xl'}`}>{priceDisplay}</span>
+                                                                        {!isValuation && (
+                                                                            <div className="flex items-center md:justify-end text-xs gap-1.5">
+                                                                                <Info className="w-3.5 h-3.5 text-text-muted" />
+                                                                                <span className="text-text-secondary uppercase tracking-wider font-semibold text-[10px]">Abono Requerido:</span>
+                                                                                <span className="text-gold font-bold">{formatCurrency(abonoDisplay)}</span>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </button>
                                                             );
@@ -1666,10 +1686,14 @@ export default function FlujoReserva() {
                                                                     </button>
                                                                     <h4 className="text-sm font-bold text-text-primary leading-tight mb-1 pr-7">{hasAlternatives ? baseName : grp.nombre}</h4>
                                                                     <span className="text-xs text-text-muted/60 font-semibold flex items-center gap-1 mb-4">
-                                                                        <Clock className="w-2.5 h-2.5 text-gold/70" /> {formatearDuracion(grp.duracionMin + grp.bufferMin)} {grp.count > 1 && `(x${grp.count})`}
+                                                                        {grp.precio === 0 && grp.duracionMin === 0 ? null : (
+                                                                            <><Clock className="w-2.5 h-2.5 text-gold/70" /> {formatearDuracion(grp.duracionMin + grp.bufferMin)} {grp.count > 1 && `(x${grp.count})`}</>
+                                                                        )}
                                                                     </span>
                                                                     <div className="flex items-center justify-between pt-3 border-t border-white/[0.05]">
-                                                                        <span className="text-base font-bold text-gold">{formatCurrency(grp.precio * grp.count)}</span>
+                                                                        <span className={`font-bold ${grp.precio === 0 && grp.duracionMin === 0 ? 'text-sm text-gold' : 'text-base text-gold'}`}>
+                                                                            {grp.precio === 0 && grp.duracionMin === 0 ? "Valoración Requerida" : formatCurrency(grp.precio * grp.count)}
+                                                                        </span>
                                                                         <div className="flex items-center gap-3">
                                                                             {hasAlternatives && (
                                                                                 <div className="relative flex bg-bg-base border border-white/[0.08] rounded-full p-0.5 shadow-inner overflow-hidden">
@@ -1829,7 +1853,7 @@ export default function FlujoReserva() {
                                                                             </span>
                                                                             <span>{srvHasAlt ? srvBaseName : srv.nombre}</span>
                                                                         </span>
-                                                                        <span className={`font-bold flex-shrink-0 ${isAmiga ? 'text-gold' : 'text-text-muted'}`}>{formatCurrency(srv.precio)}</span>
+                                                                        <span className={`font-bold flex-shrink-0 ${isAmiga ? 'text-gold' : 'text-text-muted'} ${srv.precio === 0 && srv.duracionMin === 0 ? 'text-[10px]' : ''}`}>{srv.precio === 0 && srv.duracionMin === 0 ? "Valoración" : formatCurrency(srv.precio)}</span>
                                                                     </button>
                                                                     {/* Toggle profesional por servicio */}
                                                                     {srvHasAlt && (
@@ -1893,6 +1917,70 @@ export default function FlujoReserva() {
                                     </div>
                                 </>
                             )}
+                        </div>
+                    )}
+
+                    {/* MODAL: VALORACIÓN REQUERIDA */}
+                    {showValuationModal && (
+                        <div
+                            className="fixed inset-0 z-[100] flex items-center justify-center p-5 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+                            onClick={() => setShowValuationModal(false)}
+                        >
+                            <div
+                                className="bg-bg-card border border-gold/30 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-[0_0_40px_rgba(212,175,55,0.15)] relative overflow-hidden"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                {/* Header del Modal */}
+                                <div className="flex flex-col items-center text-center mb-6 relative z-10">
+                                    <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mb-4">
+                                        <MessageCircle className="w-8 h-8 text-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-text-primary uppercase tracking-widest mb-2">Valoración Personalizada</h3>
+                                    <p className="text-text-secondary text-sm leading-relaxed">
+                                        Para darte el mejor servicio, Mile necesita revisar tu caso y darte un precio exacto. Escríbele para continuar.
+                                    </p>
+                                </div>
+
+                                {/* Botones */}
+                                <div className="flex flex-col gap-2.5 w-full pt-1">
+                                    <button
+                                        onClick={() => {
+                                            const valuationService = selectedServices.find(s => s.precio === 0 && s.duracionMin === 0);
+                                            const normalServices = selectedServices.filter(s => s.precio !== 0 || s.duracionMin !== 0);
+                                            
+                                            let msg = '';
+                                            if (valuationService?.nombre.toLowerCase().includes('tatuaje')) {
+                                                msg = "Hola, me gustaría una valoración para remoción de tatuajes. Para tatuajes corporales, el precio y sesiones dependen del tamaño y tinta. 📸 Por favor envía una foto y medidas aproximadas para que Mile te haga una valoración personalizada.";
+                                            } else if (valuationService?.nombre.toLowerCase().includes('verruga')) {
+                                                msg = "Hola, me gustaría una valoración para eliminación de verrugas. ⚠️ Procedimiento especializado. Para darte precio y saber si eres apta, responde estas 4 preguntas:\n1. ¿Te duele la zona?\n2. ¿Has ido al médico antes?\n3. ¿Sientes molestia (picazón/ardor)?\n4. 📸 Envía foto clara.\nMile revisará tu caso.";
+                                            } else {
+                                                msg = `Hola, me gustaría una valoración personalizada para el servicio de ${valuationService?.nombre || 'tratamiento especializado'}. Por favor indícame los pasos a seguir.`;
+                                            }
+
+                                            if (normalServices.length > 0) {
+                                                msg += `\n\nAdicionalmente, también me gustaría agendar: ${normalServices.map(s => s.nombre).join(', ')}.`;
+                                            }
+
+                                            const url = `https://wa.me/${(configData?.whatsapp_numero || '573218406428').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`;
+                                            window.open(url, '_blank');
+                                            setShowValuationModal(false);
+                                        }}
+                                        className="w-full py-4 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.55)] active:scale-[0.98]"
+                                    >
+                                        <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                                            <path d="M12 2C6.477 2 2 6.477 2 12c0 1.755.456 3.4 1.263 4.847L2 22l5.253-1.229C8.636 21.554 10.28 22 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.24c-1.503 0-2.973-.393-4.26-1.137l-.306-.176-3.171.81.844-3.08-.198-.31A8.258 8.258 0 0 1 3.76 12c0-4.549 3.7-8.24 8.24-8.24 4.549 0 8.24 3.691 8.24 8.24 0 4.549-3.691 8.24-8.24 8.24z"/>
+                                        </svg>
+                                        Hablar por WhatsApp
+                                    </button>
+                                    <button
+                                        onClick={() => setShowValuationModal(false)}
+                                        className="w-full py-3.5 bg-transparent border border-border-subtle text-text-secondary rounded-2xl font-bold text-sm hover:bg-bg-surface hover:text-text-primary transition-all duration-300"
+                                    >
+                                        Atrás
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
