@@ -120,6 +120,10 @@ export default function FlujoReserva() {
     const [datosAmiga, setDatosAmiga] = useState({ nombre: "", telefono: "" });
     const [codigoPaisAmiga, setCodigoPaisAmiga] = useState('+57');
 
+    // --- REGLAS (puerta de entrada única, no parte del flujo de navegación) ---
+    const [rulesAccepted, setRulesAccepted] = useState(false);
+    const [rulesChecked, setRulesChecked] = useState(false);
+
     // Estados de confirmación
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [confirmedWppUrl, setConfirmedWppUrl] = useState('');
@@ -131,14 +135,75 @@ export default function FlujoReserva() {
     const [validandoCupon, setValidandoCupon] = useState(false);
 
     useEffect(() => {
+        // ── HIDRATACIÓN DESDE SESSION STORAGE ────────────────────────────────
+        // Restaurar TODO el estado del flujo al recargar la página.
+        // sessionStorage persiste durante la sesión (pestaña abierta) y se limpia al cerrar.
         try {
-            const saved = localStorage.getItem('lola_client_data');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (parsed) setClientData(prev => ({ ...prev, ...parsed }));
+            // 1. Reglas aceptadas
+            const savedRules = sessionStorage.getItem('lola_booking_rules_accepted');
+            if (savedRules === 'true') {
+                setRulesAccepted(true);
             }
-        } catch (e) { }
+
+            // 2. Servicios seleccionados
+            const savedServices = sessionStorage.getItem('lola_booking_services');
+            if (savedServices) {
+                const parsed = JSON.parse(savedServices);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setSelectedServices(parsed);
+                }
+            }
+
+            // 3. Servicios de la amiga + datos reserva compartida
+            const savedShared = sessionStorage.getItem('lola_booking_shared');
+            if (savedShared) {
+                const parsed = JSON.parse(savedShared);
+                if (parsed) {
+                    if (parsed.esReservaCompartida) setEsReservaCompartida(true);
+                    if (Array.isArray(parsed.serviciosAmiga)) setServiciosAmiga(parsed.serviciosAmiga);
+                    if (parsed.datosAmiga) setDatosAmiga(parsed.datosAmiga);
+                    if (parsed.codigoPaisAmiga) setCodigoPaisAmiga(parsed.codigoPaisAmiga);
+                }
+            }
+
+            // 4. Fecha seleccionada
+            const savedDate = sessionStorage.getItem('lola_booking_date');
+            if (savedDate) {
+                const d = new Date(savedDate);
+                if (!isNaN(d.getTime())) {
+                    setSelectedDate(d);
+                    setCurrentDate(new Date(d.getFullYear(), d.getMonth(), 1));
+                }
+            }
+
+            // 5. Hora seleccionada
+            const savedTime = sessionStorage.getItem('lola_booking_time');
+            if (savedTime) setSelectedTime(savedTime);
+
+            // 6. Datos del cliente (prioridad: sessionStorage > localStorage)
+            const savedClient = sessionStorage.getItem('lola_booking_client');
+            if (savedClient) {
+                const parsed = JSON.parse(savedClient);
+                if (parsed) setClientData(prev => ({ ...prev, ...parsed }));
+            } else {
+                // Fallback a localStorage (datos persistentes entre sesiones)
+                const savedLocal = localStorage.getItem('lola_client_data');
+                if (savedLocal) {
+                    const parsed = JSON.parse(savedLocal);
+                    if (parsed) setClientData(prev => ({ ...prev, ...parsed }));
+                }
+            }
+
+            // 7. Código de país
+            const savedCodigoPais = sessionStorage.getItem('lola_booking_codigo_pais');
+            if (savedCodigoPais) setCodigoPais(savedCodigoPais);
+
+        } catch (e) {
+            console.warn('Error hidratando estado desde sessionStorage:', e);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
 
     const phoneDigits = clientData.telefono.replace(/\D/g, '');
     const phoneDigitsAmiga = datosAmiga.telefono.replace(/\D/g, '');
@@ -205,7 +270,75 @@ export default function FlujoReserva() {
     const [grupoModalServicio, setGrupoModalServicio] = useState<string>('');
 
     const nextStep = () => setStep(s => Math.min(s + 1, 4));
-    const prevStep = () => setStep(s => Math.max(s - 1, 0));
+    // Piso en 1: las reglas son una puerta de entrada, no un paso de regreso
+    const prevStep = () => setStep(s => Math.max(s - 1, 1));
+
+    // ── ESCRITURA A sessionStorage ──────────────────────────────────────────
+    // Cada vez que cambia un estado relevante lo guardamos para sobrevivir recargas.
+
+    useEffect(() => {
+        try { sessionStorage.setItem('lola_booking_services', JSON.stringify(selectedServices)); } catch (e) { }
+    }, [selectedServices]);
+
+    useEffect(() => {
+        try {
+            if (selectedDate) {
+                sessionStorage.setItem('lola_booking_date', selectedDate.toISOString());
+            } else {
+                sessionStorage.removeItem('lola_booking_date');
+            }
+        } catch (e) { }
+    }, [selectedDate]);
+
+    useEffect(() => {
+        try {
+            if (selectedTime) {
+                sessionStorage.setItem('lola_booking_time', selectedTime);
+            } else {
+                sessionStorage.removeItem('lola_booking_time');
+            }
+        } catch (e) { }
+    }, [selectedTime]);
+
+    useEffect(() => {
+        try { sessionStorage.setItem('lola_booking_client', JSON.stringify(clientData)); } catch (e) { }
+    }, [clientData]);
+
+    useEffect(() => {
+        try { sessionStorage.setItem('lola_booking_codigo_pais', codigoPais); } catch (e) { }
+    }, [codigoPais]);
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('lola_booking_shared', JSON.stringify({
+                esReservaCompartida,
+                serviciosAmiga,
+                datosAmiga,
+                codigoPaisAmiga,
+            }));
+        } catch (e) { }
+    }, [esReservaCompartida, serviciosAmiga, datosAmiga, codigoPaisAmiga]);
+
+    useEffect(() => {
+        try { sessionStorage.setItem('lola_booking_step', String(step)); } catch (e) { }
+    }, [step]);
+
+    // ── GUARDS DE PASO ──────────────────────────────────────────────────────
+    // Ejecutados una sola vez tras la hidratación (con pequeño delay para que
+    // los estados ya tengan sus valores del sessionStorage antes de validar).
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setStep(currentStep => {
+                if (currentStep >= 3 && selectedServices.length === 0) return 1;
+                if (currentStep === 3 && (!selectedDate || !selectedTime)) return 2;
+                if (currentStep === 4 && (!selectedDate || !selectedTime)) return 2;
+                return currentStep;
+            });
+        }, 100);
+        return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);  // Solo al montar, los estados ya vienen del sessionStorage
+
 
     const validarCupon = async () => {
         if (!codigoCupon.trim() || totalPrecioSinDescuento === 0) return;
@@ -243,10 +376,14 @@ export default function FlujoReserva() {
         const manejarRetrocesoNavegador = (evento: PopStateEvent) => {
             // Intentamos recuperar del estado guardado por el navegador
             if (evento.state && typeof evento.state.step === "number") {
-                setStep(evento.state.step);
+                const targetStep = evento.state.step;
+                // Si las reglas ya fueron aceptadas, nunca volver al paso 0
+                const rulesOk = sessionStorage.getItem('lola_booking_rules_accepted') === 'true';
+                setStep(rulesOk ? Math.max(targetStep, 1) : targetStep);
             } else {
                 const { pasoInicial } = analizarRutaYParametros(window.location.pathname, window.location.search);
-                setStep(pasoInicial);
+                const rulesOk = sessionStorage.getItem('lola_booking_rules_accepted') === 'true';
+                setStep(rulesOk ? Math.max(pasoInicial, 1) : pasoInicial);
             }
 
             if (evento.state && (evento.state.categoria === null || typeof evento.state.categoria === "string")) {
@@ -258,12 +395,11 @@ export default function FlujoReserva() {
         };
 
         // Al cargar la página por primera vez: leemos la URL para saber dónde arrancar
+        // La hidratación de sessionStorage ya habrá corrido antes y seteado rulesAccepted
         const { pasoInicial, categoriaInicial } = analizarRutaYParametros(window.location.pathname, window.location.search);
-        setStep(pasoInicial);
         setActiveCategory(categoriaInicial);
+        // No forzamos el paso aquí — el efecto de hidratación + guard ya lo manejan
 
-        // Sobrescribimos el estado inicial del navegador sin agregar un nuevo registro a la pila.
-        // Esto evita el bucle infinito al presionar "Atrás".
         window.history.replaceState(
             { step: pasoInicial, categoria: categoriaInicial },
             "",
@@ -277,7 +413,8 @@ export default function FlujoReserva() {
     // 2. Sincronización Programática: Actualizar la URL cuando avanzamos/retrocedemos usando los botones de la app
     useEffect(() => {
         const rutaPasoDestino = mapeoPasoARuta[step];
-        let rutaDestinoUrl = "/reservar"; // Base limpia para el paso 0
+        // Si ya aceptó las reglas, el paso 0 no tiene URL propia — usamos /reservar/catalogo
+        let rutaDestinoUrl = rulesAccepted ? "/reservar/catalogo" : "/reservar";
 
         // Si estamos en paso 1 o superior, agregamos la subruta correspondiente
         if (step > 0 && rutaPasoDestino) {
@@ -964,7 +1101,7 @@ export default function FlujoReserva() {
                 <div className="animate-in slide-in-from-right-8 fade-in duration-500">
 
                     {/* STEP 0: REGLAS DE AGENDAMIENTO */}
-                    {step === 0 && (
+                    {!rulesAccepted && (
                         <>
                             <div className="max-w-2xl mx-auto py-4 px-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="bg-bg-card border border-gold/30 rounded-3xl p-6 md:p-10 shadow-[0_0_50px_rgba(212,175,55,0.12)] relative overflow-hidden">
@@ -1077,6 +1214,8 @@ export default function FlujoReserva() {
                                         <input
                                             type="checkbox"
                                             id="accept-rules"
+                                            checked={rulesChecked}
+                                            onChange={e => setRulesChecked(e.target.checked)}
                                             className="mt-1 accent-gold h-5 w-5 rounded border-gray-300 text-gold focus:ring-gold cursor-pointer"
                                         />
                                         <span className="text-sm md:text-base leading-relaxed text-text-muted">
@@ -1086,8 +1225,9 @@ export default function FlujoReserva() {
 
                                     <button
                                         onClick={() => {
-                                            const chk = document.getElementById('accept-rules') as HTMLInputElement;
-                                            if (chk && chk.checked) {
+                                            if (rulesChecked) {
+                                                try { sessionStorage.setItem('lola_booking_rules_accepted', 'true'); } catch (e) { }
+                                                setRulesAccepted(true);
                                                 setStep(1);
                                             } else {
                                                 setShowRulesError(true);
@@ -1128,7 +1268,7 @@ export default function FlujoReserva() {
                     )}
 
                     {/* STEP 1: SERVICIOS */}
-                    {step === 1 && (
+                    {rulesAccepted && step === 1 && (
                         <div className="space-y-8">
                             {cargandoServicios ? (
                                 <div className="flex flex-col items-center justify-center py-20">
@@ -1874,7 +2014,7 @@ export default function FlujoReserva() {
                     )}
 
                     {/* STEP 2: CALENDARIO */}
-                    {step === 2 && (
+                    {rulesAccepted && step === 2 && (
                         <div className="space-y-8">
                             <div className="text-center mb-8">
                                 <h1 className="text-3xl font-bold text-text-primary mb-2">¿Cuándo te esperamos?</h1>
@@ -2153,7 +2293,7 @@ export default function FlujoReserva() {
                     )}
 
                     {/* STEP 3: DATOS DEL CLIENTE */}
-                    {step === 3 && (
+                    {rulesAccepted && step === 3 && (
                         <div className="space-y-8">
                             <div className="text-center mb-8">
                                 <h1 className="text-3xl font-bold text-text-primary mb-2">Tus Datos</h1>
@@ -2314,7 +2454,7 @@ export default function FlujoReserva() {
                     )}
 
                     {/* STEP 4: CONFIRMACIÓN */}
-                    {step === 4 && (
+                    {rulesAccepted && step === 4 && (
                         isConfirmed ? (
                             <div className="max-w-md mx-auto mt-12 bg-bg-card border border-gold/30 rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(212,175,55,0.15)] relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold to-transparent"></div>
@@ -2712,6 +2852,19 @@ export default function FlujoReserva() {
                                                         try {
                                                             localStorage.setItem('lola_client_data', JSON.stringify(clientData));
                                                         } catch (e) { }
+                                                        
+                                                        // Limpiar sesión de reserva al completar exitosamente
+                                                        try {
+                                                            sessionStorage.removeItem('lola_booking_services');
+                                                            sessionStorage.removeItem('lola_booking_date');
+                                                            sessionStorage.removeItem('lola_booking_time');
+                                                            sessionStorage.removeItem('lola_booking_rules_accepted');
+                                                            sessionStorage.removeItem('lola_booking_client');
+                                                            sessionStorage.removeItem('lola_booking_shared');
+                                                            sessionStorage.removeItem('lola_booking_step');
+                                                            sessionStorage.removeItem('lola_booking_codigo_pais');
+                                                        } catch (e) { }
+
                                                         sessionStorage.removeItem('lola_lock_id');
                                                         if (lockTimeoutId) {
                                                             clearTimeout(lockTimeoutId);
