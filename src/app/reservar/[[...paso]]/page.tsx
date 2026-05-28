@@ -803,12 +803,15 @@ export default function FlujoReserva() {
     const DIAS_MILE = new Set([1, 2, 3, 4, 5, 6]); // Lunes a Sábado (atención total)
     const DIAS_STAFF = new Set([2, 4, 6]); // Martes, Jueves, Sábado (exclusivo Staff)
 
-    const tieneMile = selectedServices.some(s =>
-        s.responsable?.toLowerCase() === 'mile' || s.nombre.toLowerCase().includes('mile')
-    );
-    const tieneStaff = selectedServices.some(s =>
-        s.responsable?.toLowerCase() === 'staff' || s.nombre.toLowerCase().includes('staff')
-    );
+    const requiredProfIds = new Set(selectedServices.map(s => {
+        const sIsStaff = s.nombre.toLowerCase().includes('staff') || s.responsable?.toLowerCase() === 'staff';
+        const sIsMile = s.nombre.toLowerCase().includes('mile') || s.responsable?.toLowerCase() === 'mile';
+        if (sIsStaff && !sIsMile) return 'cc7bdd66-d98e-4c66-ae1d-b975e005bf56'; // Staff
+        return 'c2c0f778-c2fe-4f65-ab37-3b589cb997c2'; // Mile
+    }));
+
+    const tieneMile = requiredProfIds.has('c2c0f778-c2fe-4f65-ab37-3b589cb997c2');
+    const tieneStaff = requiredProfIds.has('cc7bdd66-d98e-4c66-ae1d-b975e005bf56');
 
     // Calcular los días de semana habilitados
     const diasHabilitados = (() => {
