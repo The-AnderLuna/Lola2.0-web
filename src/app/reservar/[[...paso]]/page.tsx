@@ -205,6 +205,12 @@ export default function FlujoReserva() {
                 if (Date.now() < expiresAt) {
                     setBloqueoId(savedLock);
                     setLockExpiresAt(expiresAt);
+                    
+                    const savedLockedCitas = sessionStorage.getItem('lola_locked_citas');
+                    if (savedLockedCitas) {
+                        try { setLockedCitas(JSON.parse(savedLockedCitas)); } catch (e) { }
+                    }
+
                     // Opcional: configurar el timeout para expirar en el frontend
                     const expSecs = (expiresAt - Date.now()) / 1000;
                     if (expSecs > 0) {
@@ -214,11 +220,13 @@ export default function FlujoReserva() {
                             setLockExpiresAt(null);
                             sessionStorage.removeItem('lola_lock_id');
                             sessionStorage.removeItem('lola_lock_expires_at');
+                            sessionStorage.removeItem('lola_locked_citas');
                         }, expSecs * 1000);
                     }
                 } else {
                     sessionStorage.removeItem('lola_lock_id');
                     sessionStorage.removeItem('lola_lock_expires_at');
+                    sessionStorage.removeItem('lola_locked_citas');
                 }
             }
 
@@ -853,6 +861,7 @@ export default function FlujoReserva() {
             setLockExpiresAt(null);
             sessionStorage.removeItem('lola_lock_id');
             sessionStorage.removeItem('lola_lock_expires_at');
+            sessionStorage.removeItem('lola_locked_citas');
             if (lockTimeoutId) {
                 clearTimeout(lockTimeoutId);
                 setLockTimeoutId(null);
@@ -2190,6 +2199,8 @@ export default function FlujoReserva() {
                                                                                 setSelectedTime(null);
                                                                                 setLockExpiresAt(null);
                                                                                 sessionStorage.removeItem('lola_lock_id');
+                                                                                sessionStorage.removeItem('lola_lock_expires_at');
+                                                                                sessionStorage.removeItem('lola_locked_citas');
                                                                                 if (lockTimeoutId) {
                                                                                     clearTimeout(lockTimeoutId);
                                                                                     setLockTimeoutId(null);
@@ -2214,6 +2225,8 @@ export default function FlujoReserva() {
                                                                             setBloqueoId(null);
                                                                             setLockExpiresAt(null);
                                                                             sessionStorage.removeItem('lola_lock_id');
+                                                                            sessionStorage.removeItem('lola_lock_expires_at');
+                                                                            sessionStorage.removeItem('lola_locked_citas');
                                                                             if (lockTimeoutId) {
                                                                                 clearTimeout(lockTimeoutId);
                                                                                 setLockTimeoutId(null);
@@ -2256,7 +2269,10 @@ export default function FlujoReserva() {
                                                                                     }
                                                                                     if (data.bloqueoId) {
                                                                                         setBloqueoId(data.bloqueoId);
-                                                                                        if (data.citas) setLockedCitas(data.citas);
+                                                                                        if (data.citas) {
+                                                                                            setLockedCitas(data.citas);
+                                                                                            sessionStorage.setItem('lola_locked_citas', JSON.stringify(data.citas));
+                                                                                        }
                                                                                         sessionStorage.setItem('lola_lock_id', data.bloqueoId);
                                                                                         setSelectedTime(time);
 
@@ -2272,6 +2288,7 @@ export default function FlujoReserva() {
                                                                                             setLockExpiresAt(null);
                                                                                             sessionStorage.removeItem('lola_lock_id');
                                                                                             sessionStorage.removeItem('lola_lock_expires_at');
+                                                                                            sessionStorage.removeItem('lola_locked_citas');
                                                                                             setStep(prev => prev > 2 ? 2 : prev);
                                                                                         }, expSecs * 1000);
                                                                                         setLockTimeoutId(timeoutId);
@@ -2924,6 +2941,7 @@ export default function FlujoReserva() {
                                                             sessionStorage.removeItem('lola_booking_codigo_pais');
                                                             sessionStorage.removeItem('lola_lock_id');
                                                             sessionStorage.removeItem('lola_lock_expires_at');
+                                                            sessionStorage.removeItem('lola_locked_citas');
                                                         } catch (e) { }
 
                                                         sessionStorage.removeItem('lola_lock_id');
