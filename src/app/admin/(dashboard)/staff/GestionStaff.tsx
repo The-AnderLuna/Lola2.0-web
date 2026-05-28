@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserCog, Plus, Edit3, Calendar, ToggleLeft, ToggleRight } from 'lucide-react';
+import { UserCog, Plus, Edit3, Calendar, ToggleLeft, ToggleRight, CalendarOff, Trash2 } from 'lucide-react';
 import Modal from '@/components/admin/Modal';
 import EmptyState from '@/components/admin/EmptyState';
 import { useToast } from '@/components/admin/Toast';
@@ -24,6 +24,14 @@ export default function GestionStaff() {
   const [form, setForm] = useState({ nombre: '', rol: 'Staff', calendario_id: '' });
   const [horarios, setHorarios] = useState<Record<number, { activo: boolean; inicio: string; fin: string }>>({});
   const [saving, setSaving] = useState(false);
+
+  // Estado para Días Libres
+  const [diasModalOpen, setDiasModalOpen] = useState(false);
+  const [selectedProfForDias, setSelectedProfForDias] = useState<Profesional | null>(null);
+  const [diasBloqueados, setDiasBloqueados] = useState<{id: string, fecha: string, motivo: string}[]>([]);
+  const [nuevaFechaBloqueo, setNuevaFechaBloqueo] = useState('');
+  const [nuevoMotivoBloqueo, setNuevoMotivoBloqueo] = useState('');
+  const [loadingDias, setLoadingDias] = useState(false);
 
   useEffect(() => { fetchStaff(); }, []);
 
@@ -65,6 +73,63 @@ export default function GestionStaff() {
       const res = await fetch('/api/admin/staff', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: p.id, activo: !p.activo }) });
       if (res.ok) { showToast(p.activo ? 'Profesional desactivado' : 'Profesional activado', 'success'); fetchStaff(); }
     } catch { showToast('Error', 'error'); }
+  };
+
+  const openDiasLibres = async (p: Profesional) => {
+    setSelectedProfForDias(p);
+    setDiasModalOpen(true);
+    setLoadingDias(true);
+    try {
+      const res = await fetch(`/api/dias-bloqueados?profesional_id=${p.id}`);
+      if (res.ok) {
+        const json = await res.json();
+        setDiasBloqueados(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingDias(false);
+    }
+  };
+
+  const handleAddDiaLibre = async () => {
+    if (!selectedProfForDias || !nuevaFechaBloqueo) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/dias-bloqueados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha: nuevaFechaBloqueo, profesional_id: selectedProfForDias.id, motivo: nuevoMotivoBloqueo })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setDiasBloqueados([...diasBloqueados, json.data].sort((a, b) => a.fecha.localeCompare(b.fecha)));
+        setNuevaFechaBloqueo('');
+        setNuevoMotivoBloqueo('');
+        showToast('Día bloqueado agregado', 'success');
+      } else {
+        showToast('Error al agregar día', 'error');
+      }
+    } catch (e) {
+      showToast('Error de conexión', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteDiaLibre = async (id: string) => {
+    if (!confirm('¿Seguro que deseas eliminar este bloqueo?')) return;
+    try {
+      const res = await fetch(`/api/dias-bloqueados?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setDiasBloqueados(diasBloqueados.filter(d => d.id !== id));
+        showToast('Día bloqueado eliminado', 'success');
+      } else {
+        showToast('Error al eliminar', 'error');
+      }
+    } catch (e) {
+      showToast('Error de conexión', 'error');
+    }
   };
 
   return (
@@ -122,9 +187,14 @@ export default function GestionStaff() {
                 </div>
               )}
 
-              <button onClick={() => openEdit(p)} className="flex items-center gap-1.5 text-xs text-text-muted hover:text-gold transition-colors">
-                <Edit3 className="w-3 h-3" /> Editar
-              </button>
+              <div className="flex gap-4">
+                <button onClick={() => openEdit(p)} className="flex items-center gap-1.5 text-xs text-text-muted hover:text-gold transition-colors">
+                  <Edit3 className="w-3 h-3" /> Editar
+                </button>
+                <button onClick={() => openDiasLibres(p)} className="flex items-center gap-1.5 text-xs text-text-muted hover:text-red-400 transition-colors">
+                  <CalendarOff className="w-3 h-3" /> Días Libres
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -178,6 +248,50 @@ export default function GestionStaff() {
             <button onClick={handleSave} disabled={saving || !form.nombre} className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50 active:scale-[0.97]" style={{ background: 'linear-gradient(135deg, #D4AF37, #A8860A)', color: '#0A0A0B' }}>
               {saving ? 'Guardando...' : (editing ? 'Guardar' : 'Crear')}
             </button>
+          </div>
+        </div>
+      </Modal>
+      {/* Modal de Días Libres */}
+      <Modal isOpen={diasModalOpen} onClose={() => setDiasModalOpen(false)} title={`Días Libres: ${selectedProfForDias?.nombre}`} size="md">
+        <div className="space-y-5">
+          <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+            <h4 className="text-xs font-semibold text-text-primary mb-3">Agregar Bloqueo</h4>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-[10px] uppercase text-text-secondary mb-1">Fecha</label>
+                <input type="date" value={nuevaFechaBloqueo} onChange={e => setNuevaFechaBloqueo(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm text-text-primary focus:outline-none" style={{ background: 'rgba(34, 34, 40, 0.8)', border: '1px solid rgba(255,255,255,0.07)' }} />
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase text-text-secondary mb-1">Motivo (Opcional)</label>
+                <input type="text" placeholder="Ej. Viaje" value={nuevoMotivoBloqueo} onChange={e => setNuevoMotivoBloqueo(e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm text-text-primary focus:outline-none" style={{ background: 'rgba(34, 34, 40, 0.8)', border: '1px solid rgba(255,255,255,0.07)' }} />
+              </div>
+            </div>
+            <button onClick={handleAddDiaLibre} disabled={saving || !nuevaFechaBloqueo} className="w-full py-2 bg-white/10 hover:bg-white/20 text-xs font-semibold text-text-primary rounded-lg transition-colors disabled:opacity-50">
+              {saving ? 'Guardando...' : 'Bloquear Fecha'}
+            </button>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-semibold text-text-primary mb-3">Fechas Bloqueadas</h4>
+            {loadingDias ? (
+              <div className="text-center py-4 text-xs text-text-muted">Cargando...</div>
+            ) : diasBloqueados.length === 0 ? (
+              <div className="text-center py-4 text-xs text-text-muted">No hay fechas bloqueadas</div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                {diasBloqueados.map(d => (
+                  <div key={d.id} className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/5">
+                    <div>
+                      <div className="text-sm font-semibold text-red-400">{d.fecha}</div>
+                      {d.motivo && <div className="text-xs text-text-secondary mt-0.5">{d.motivo}</div>}
+                    </div>
+                    <button onClick={() => handleDeleteDiaLibre(d.id)} className="p-2 hover:bg-red-500/20 text-text-muted hover:text-red-400 rounded-md transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Modal>

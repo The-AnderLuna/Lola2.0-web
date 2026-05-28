@@ -187,6 +187,7 @@ export default function FlujoReserva() {
     const [slotsError, setSlotsError] = useState<string | null>(null);
     const [daysWithSlots, setDaysWithSlots] = useState<Set<string>>(new Set());
     const [loadingDays, setLoadingDays] = useState(false);
+    const [diasBloqueadosCargados, setDiasBloqueadosCargados] = useState<{fecha: string, profesional_id: string}[]>([]);
     const [bloqueoId, setBloqueoId] = useState<string | null>(null);
     const [lockedCitas, setLockedCitas] = useState<any[]>([]);
     const [lockingTime, setLockingTime] = useState<string | null>(null);
@@ -757,9 +758,16 @@ export default function FlujoReserva() {
     }, [step, selectedDate, selectedServices]);
     // Cargar días disponibles del mes al entrar al Step 2 o cambiar mes
     const fetchMonthAvailability = useCallback(async () => {
-        // DESHABILITADO PARA MEJORAR RENDIMIENTO:
-        // Ya no hacemos 30 peticiones concurrentes a la API. 
-        // Ahora permitimos hacer clic en cualquier día futuro y validamos los cupos instantáneamente al hacer clic.
+        // Cargar días bloqueados globales o por empleado
+        try {
+            const res = await fetch('/api/dias-bloqueados');
+            if (res.ok) {
+                const json = await res.json();
+                setDiasBloqueadosCargados(json.data || []);
+            }
+        } catch (e) {
+            console.error("Error al cargar días bloqueados:", e);
+        }
         setLoadingDays(false);
     }, []);
 
@@ -814,7 +822,19 @@ export default function FlujoReserva() {
         return new Set([1, 2, 3, 4, 5, 6]);
     })();
 
-    const isDayEnabled = (dayOfWeek: number) => diasHabilitados.has(dayOfWeek);
+    const isDayEnabled = (dayOfWeek: number, dayDateStr: string) => {
+        if (!diasHabilitados.has(dayOfWeek)) return false;
+        
+        // Verificar días bloqueados
+        const bloqueosDelDia = diasBloqueadosCargados.filter(d => d.fecha === dayDateStr);
+        if (bloqueosDelDia.length > 0) {
+            const mileId = 'c2c0f778-c2fe-4f65-ab37-3b589cb997c2';
+            const staffId = 'cc7bdd66-d98e-4c66-ae1d-b975e005bf56';
+            if (tieneMile && bloqueosDelDia.some(b => b.profesional_id === mileId)) return false;
+            if (tieneStaff && bloqueosDelDia.some(b => b.profesional_id === staffId)) return false;
+        }
+        return true;
+    };
     // ──────────────────────────────────────────────────────────────────────────
 
     const calendarDays = [];
@@ -823,8 +843,9 @@ export default function FlujoReserva() {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateObj = new Date(year, month, day);
         const dayOfWeek = dateObj.getDay();
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const isPast = dateObj < new Date(new Date().setHours(0, 0, 0, 0));
-        const isDisabled = isPast || !isDayEnabled(dayOfWeek);
+        const isDisabled = isPast || !isDayEnabled(dayOfWeek, dateStr);
         const isSelected = selectedDate?.getDate() === day && selectedDate?.getMonth() === month;
 
         calendarDays.push(

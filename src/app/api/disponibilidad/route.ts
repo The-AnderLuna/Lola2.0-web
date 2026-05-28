@@ -126,6 +126,19 @@ export async function GET(request: NextRequest) {
     const diaSemana = fechaObj.getDay();
 
     const profIds = [...new Set(personas.flat().map(s => s.profesionalId))];
+
+    // Verificar si algún profesional requerido tiene este día bloqueado (Días Libres)
+    const { data: diasBloqueados } = await supabase
+      .from('dias_bloqueados')
+      .select('profesional_id')
+      .eq('fecha', fecha)
+      .in('profesional_id', profIds);
+
+    if (diasBloqueados && diasBloqueados.length > 0) {
+      console.log(`[disponibilidad] Fecha ${fecha} bloqueada para los profesionales:`, diasBloqueados.map(d => d.profesional_id));
+      return NextResponse.json({ slots: [], fecha, disponible: false });
+    }
+
     const profData: Record<string, { horarios: { inicio: number, fin: number }[], bloques: { inicio: number, fin: number }[] }> = {};
 
     for (const pid of profIds) {
