@@ -184,6 +184,13 @@ export default function FlujoReserva() {
                 if (!isNaN(d.getTime())) {
                     setSelectedDate(d);
                     setCurrentDate(new Date(d.getFullYear(), d.getMonth(), 1));
+
+                    const savedSlots = sessionStorage.getItem('lola_booking_slots');
+                    if (savedSlots) {
+                        try {
+                            setAvailableSlots(JSON.parse(savedSlots));
+                        } catch (e) { }
+                    }
                 }
             }
 
@@ -301,6 +308,16 @@ export default function FlujoReserva() {
             }
         } catch (e) { }
     }, [selectedDate]);
+
+    useEffect(() => {
+        try {
+            if (availableSlots.length > 0) {
+                sessionStorage.setItem('lola_booking_slots', JSON.stringify(availableSlots));
+            } else {
+                sessionStorage.removeItem('lola_booking_slots');
+            }
+        } catch (e) { }
+    }, [availableSlots]);
 
     useEffect(() => {
         try {
@@ -2880,6 +2897,7 @@ export default function FlujoReserva() {
                                                             sessionStorage.removeItem('lola_booking_client');
                                                             sessionStorage.removeItem('lola_booking_shared');
                                                             sessionStorage.removeItem('lola_booking_step');
+                                                            sessionStorage.removeItem('lola_booking_slots');
                                                             sessionStorage.removeItem('lola_booking_codigo_pais');
                                                         } catch (e) { }
 
