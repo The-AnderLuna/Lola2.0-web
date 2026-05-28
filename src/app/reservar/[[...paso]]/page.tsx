@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-    Crown, ShoppingCart, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, User, Phone, Mail, FileText, Info, Loader2, ChevronRight, ChevronLeft, Feather, Eye, Droplets, Gift, Activity, Circle, CheckCircle, X, Search, AlertCircle, Copy, CreditCard, Wallet, Ban, CalendarClock, UserX, MapPin, Camera, Users, UserPlus, Plus, Minus, Trash2
+    Crown, ShoppingCart, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, User, Phone, Mail, FileText, Info, Loader2, ChevronRight, ChevronLeft, Feather, Eye, Droplets, Gift, Activity, Circle, CheckCircle, X, Search, AlertCircle, Copy, CreditCard, Wallet, Ban, CalendarClock, UserX, MapPin, Camera, Users, UserPlus, Plus, Minus, Trash2,
+    Sparkles, Syringe, Scissors, Sun, PersonStanding, ClipboardList, Tag, Ticket, SmartphoneNfc, Landmark, Smile, SprayCan, Gem
 } from "lucide-react";
 import Link from "next/link";
 import { RepositorioServicios } from "@/adaptadores/repositorios/RepositorioServicios";
@@ -536,12 +537,16 @@ export default function FlujoReserva() {
 
     const getCategoryIcon = (categoryName: string) => {
         const name = categoryName.toLowerCase();
-        if (name.includes('cejas') || name.includes('pestañas')) return <Eye className="w-6 h-6 text-gold" />;
-        if (name.includes('facial') || name.includes('estética')) return <Activity className="w-6 h-6 text-gold" />;
-        if (name.includes('labios') || name.includes('despigmentación')) return <Droplets className="w-6 h-6 text-gold" />;
-        if (name.includes('depilación')) return <Feather className="w-6 h-6 text-gold" />;
-        if (name.includes('promo')) return <Gift className="w-6 h-6 text-gold" />;
-        return <Activity className="w-6 h-6 text-gold" />;
+        if (name.includes('cejas') || name.includes('pestañas')) return <Sparkles className="w-6 h-6 text-gold" />;
+        if (name.includes('labios')) return <Smile className="w-6 h-6 text-gold" />;
+        if (name.includes('facial') || name.includes('limpieza')) return <SprayCan className="w-6 h-6 text-gold" />;
+        if (name.includes('medicina') || name.includes('estética')) return <Syringe className="w-6 h-6 text-gold" />;
+        if (name.includes('depilación')) return <Scissors className="w-6 h-6 text-gold" />;
+        if (name.includes('despigmentación')) return <Sun className="w-6 h-6 text-gold" />;
+        if (name.includes('corporal')) return <PersonStanding className="w-6 h-6 text-gold" />;
+        if (name.includes('valoración') || name.includes('valoracion')) return <ClipboardList className="w-6 h-6 text-gold" />;
+        if (name.includes('promo')) return <Tag className="w-6 h-6 text-gold" />;
+        return <Gem className="w-6 h-6 text-gold" />;
     };
 
     const isServiceSelected = (id: string) => selectedServices.some(s => s.id === id);
@@ -2525,7 +2530,7 @@ export default function FlujoReserva() {
                                     {/* SECCIÓN CUPÓN */}
                                     <div className="bg-bg-card border border-border-subtle rounded-3xl p-6 shadow-xl">
                                         <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-4 flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold"><path d="M12 2v20" /><path d="m17 5-5-3-5 3v14l5 3 5-3z" /></svg>
+                                            <Ticket className="w-4 h-4 text-gold" />
                                             ¿Tienes un cupón?
                                         </p>
                                         <div className="flex gap-2">
@@ -2572,44 +2577,44 @@ export default function FlujoReserva() {
                                         <div className="grid grid-cols-2 gap-3 mb-6">
                                             <button
                                                 onClick={() => setMetodoPago('nequi')}
-                                                className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all ${metodoPago === 'nequi'
+                                                className={`py-3 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${metodoPago === 'nequi'
                                                     ? 'bg-[#E3007E]/10 border-[#E3007E] text-[#E3007E] shadow-[0_0_15px_rgba(227,0,126,0.2)] scale-[1.02]'
                                                     : 'bg-bg-base border-border-subtle text-text-secondary hover:border-[#E3007E]/50'
                                                     }`}
                                             >
-                                                Nequi
+                                                <SmartphoneNfc className="w-5 h-5" /> Nequi
                                             </button>
                                             <button
                                                 onClick={() => setMetodoPago('daviplata')}
-                                                className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all ${metodoPago === 'daviplata'
+                                                className={`py-3 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${metodoPago === 'daviplata'
                                                     ? 'bg-[#ED1C24]/10 border-[#ED1C24] text-[#ED1C24] shadow-[0_0_15px_rgba(237,28,36,0.2)] scale-[1.02]'
                                                     : 'bg-bg-base border-border-subtle text-text-secondary hover:border-[#ED1C24]/50'
                                                     }`}
                                             >
-                                                Daviplata
+                                                <Wallet className="w-5 h-5" /> Daviplata
                                             </button>
 
                                             {(!configData || configData.acepta_tarjeta !== false) && (
                                                 <button
                                                     onClick={() => setMetodoPago('tarjeta')}
-                                                    className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all ${metodoPago === 'tarjeta'
+                                                    className={`py-3 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${metodoPago === 'tarjeta'
                                                         ? 'bg-gold/10 border-gold text-gold shadow-[0_0_15px_rgba(212,175,55,0.2)] scale-[1.02]'
                                                         : 'bg-bg-base border-border-subtle text-text-secondary hover:border-gold/50'
                                                         }`}
                                                 >
-                                                    Tarjeta
+                                                    <CreditCard className="w-5 h-5" /> Tarjeta
                                                 </button>
                                             )}
 
                                             {(!configData || configData.acepta_sistecredito !== false) && totalPrecio > 200000 && (
                                                 <button
                                                     onClick={() => setMetodoPago('sistecredito')}
-                                                    className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all ${metodoPago === 'sistecredito'
+                                                    className={`py-3 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition-all ${metodoPago === 'sistecredito'
                                                         ? 'bg-[#00A650]/10 border-[#00A650] text-[#00A650] shadow-[0_0_15px_rgba(0,166,80,0.2)] scale-[1.02]'
                                                         : 'bg-bg-base border-border-subtle text-text-secondary hover:border-[#00A650]/50'
                                                         }`}
                                                 >
-                                                    SisteCrédito
+                                                    <Landmark className="w-5 h-5" /> SisteCrédito
                                                 </button>
                                             )}
                                         </div>
