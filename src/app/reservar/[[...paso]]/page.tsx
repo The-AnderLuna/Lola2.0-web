@@ -9,6 +9,7 @@ import Link from "next/link";
 import { RepositorioServicios } from "@/adaptadores/repositorios/RepositorioServicios";
 import { RepositorioConfiguracion } from "@/adaptadores/repositorios/RepositorioConfiguracion";
 import { Servicio } from "@/nucleo/entidades/Servicio";
+import { supabase } from "@/lib/supabaseClient";
 
 type CartService = Servicio & { uid: string };
 
@@ -642,6 +643,29 @@ export default function FlujoReserva() {
             }
         }
         cargarServicios();
+    }, []);
+
+    // Supabase Realtime para actualización en vivo de horarios
+    useEffect(() => {
+        const channel = supabase
+            .channel('realtime_horarios_config')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'horarios' }, async () => {
+                console.log("Cambio detectado en horarios, recargando...");
+                const configRepo = new RepositorioConfiguracion();
+                const configDb = await configRepo.obtenerConfiguracion();
+                if (configDb) setConfigData(configDb);
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracion' }, async () => {
+                console.log("Cambio detectado en configuracion, recargando...");
+                const configRepo = new RepositorioConfiguracion();
+                const configDb = await configRepo.obtenerConfiguracion();
+                if (configDb) setConfigData(configDb);
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     // Preselección por URL query params (preselect o servicio o categoria)
