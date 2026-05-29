@@ -1952,6 +1952,8 @@ export default function FlujoReserva() {
                                     <p className="text-text-secondary text-sm leading-relaxed">
                                         {isVerrugas 
                                             ? "Procedimiento especializado. Para saber si eres apta, por favor responde estas breves preguntas:" 
+                                            : isTatuaje
+                                            ? "Para tatuajes corporales, el precio y sesiones dependen del tamaño y tinta. Recuerda enviar una foto y medidas aproximadas por WhatsApp para que Mile te haga una valoración."
                                             : "Para darte el mejor servicio, Mile necesita revisar tu caso y darte un precio exacto."}
                                     </p>
                                 </div>
@@ -2002,7 +2004,7 @@ export default function FlujoReserva() {
                                         onClick={() => {
                                             let msg = '';
                                             if (isTatuaje) {
-                                                msg = "Hola, me gustaría una valoración para remoción de tatuajes. Para tatuajes corporales, el precio y sesiones dependen del tamaño y tinta. 📸 Por favor envía una foto y medidas aproximadas para que Mile te haga una valoración personalizada.";
+                                                msg = "Hola, me gustaría una valoración para remoción de tatuajes.";
                                             } else if (isVerrugas) {
                                                 msg = `Hola, me gustaría una valoración para eliminación de verrugas.\n\nMis respuestas:\n1. ¿Te duele la zona?: ${verrugasForm.duele}\n2. ¿Has ido al médico antes?: ${verrugasForm.medico}\n3. ¿Sientes molestia?: ${verrugasForm.molestia}`;
                                                 if (verrugasForm.nota.trim()) {
