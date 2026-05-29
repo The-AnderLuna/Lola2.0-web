@@ -796,16 +796,33 @@ export default function FlujoReserva() {
 
     const getCategoryIcon = (categoryName: string) => {
         const name = categoryName.toLowerCase();
-        if (name.includes('cejas') || name.includes('pestañas')) return <Sparkles className="w-6 h-6 text-gold" />;
-        if (name.includes('labios')) return <Smile className="w-6 h-6 text-gold" />;
-        if (name.includes('facial') || name.includes('limpieza')) return <SprayCan className="w-6 h-6 text-gold" />;
-        if (name.includes('medicina') || name.includes('estética')) return <Syringe className="w-6 h-6 text-gold" />;
-        if (name.includes('depilación')) return <Scissors className="w-6 h-6 text-gold" />;
-        if (name.includes('despigmentación')) return <Sun className="w-6 h-6 text-gold" />;
-        if (name.includes('corporal')) return <PersonStanding className="w-6 h-6 text-gold" />;
-        if (name.includes('valoración') || name.includes('valoracion')) return <ClipboardList className="w-6 h-6 text-gold" />;
-        if (name.includes('promo')) return <Tag className="w-6 h-6 text-gold" />;
-        return <Gem className="w-6 h-6 text-gold" />;
+        const iconMap: Record<string, string> = {
+            'cejas': '/icons/categorias/cejas.png',
+            'pestañas': '/icons/categorias/pestanas.png',
+            'labios': '/icons/categorias/labios.png',
+            'faciales': '/icons/categorias/faciales.png',
+            'facial': '/icons/categorias/faciales.png',
+            'medicina estética': '/icons/categorias/medicina-estetica.png',
+            'depilación': '/icons/categorias/depilacion.png',
+            'corporal': '/icons/categorias/corporal.png',
+            'despigmentación': '/icons/categorias/despigmentacion.png',
+            'láser': '/icons/categorias/laser.png',
+            'laser': '/icons/categorias/laser.png',
+            'valoraciones': '/icons/categorias/valoraciones.png',
+            'valoración': '/icons/categorias/valoraciones.png',
+        };
+
+        const matchedKey = Object.keys(iconMap).find(key => name.includes(key));
+        const src = matchedKey ? iconMap[matchedKey] : '/icons/categorias/cejas.png';
+
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={src}
+                alt={categoryName}
+                className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]"
+            />
+        );
     };
 
     const isServiceSelected = (id: string) => selectedServices.some(s => s.id === id);
