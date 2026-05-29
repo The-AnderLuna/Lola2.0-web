@@ -1525,9 +1525,6 @@ export default function FlujoReserva() {
                                                     </button>
 
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center border border-gold/20">
-                                                            {activeCategory && getCategoryIcon(activeCategory)}
-                                                        </div>
                                                         <div>
                                                             <h2 className="text-2xl font-bold text-text-primary uppercase tracking-widest">
                                                                 {categorias.find(c => c.id === activeCategory)?.nombre}
@@ -1654,15 +1651,23 @@ export default function FlujoReserva() {
                                                             <button
                                                                 key={categoria.id}
                                                                 onClick={() => setActiveCategory(categoria.id)}
-                                                                className="flex flex-col items-center justify-center text-center p-4 md:p-6 rounded-3xl bg-bg-card border border-border-subtle hover:border-gold/50 hover:bg-bg-elevated transition-all group shadow-sm hover:shadow-[0_5px_20px_rgba(212,175,55,0.08)] aspect-square relative overflow-hidden"
+                                                                className="flex flex-col items-center justify-center text-center p-5 md:p-7 rounded-3xl bg-bg-card border border-border-subtle hover:border-gold/50 hover:bg-bg-elevated transition-all group shadow-sm hover:shadow-[0_5px_20px_rgba(212,175,55,0.08)] aspect-square relative overflow-hidden"
                                                             >
-                                                                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-150 pointer-events-none"></div>
+                                                                {/* Decoración de esquina */}
+                                                                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/8 to-transparent rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-150 pointer-events-none"></div>
+                                                                <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-gold/5 to-transparent rounded-tr-full -ml-3 -mb-3 pointer-events-none"></div>
 
-                                                                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-bg-surface border border-gold/10 flex items-center justify-center mb-4 md:mb-5 group-hover:border-gold/30 group-hover:scale-110 transition-all duration-500 relative z-10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                                                                    {getCategoryIcon(categoria.nombre)}
-                                                                </div>
-                                                                <h3 className="text-xs md:text-sm font-bold text-text-primary uppercase tracking-widest relative z-10 leading-tight">{categoria.nombre}</h3>
-                                                                <p className="text-[10px] text-text-muted font-medium mt-2 relative z-10">{categoria.grupos.length} opciones</p>
+                                                                {/* Línea decorativa superior */}
+                                                                <div className="w-8 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent mb-4 group-hover:w-12 transition-all duration-500"></div>
+
+                                                                {/* Nombre de la categoría */}
+                                                                <h3 className="text-sm md:text-base font-bold text-text-primary uppercase tracking-[0.2em] relative z-10 leading-tight group-hover:text-gold transition-colors duration-300">{categoria.nombre}</h3>
+
+                                                                {/* Línea decorativa inferior */}
+                                                                <div className="w-6 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent mt-3 mb-2 group-hover:w-10 transition-all duration-500"></div>
+
+                                                                {/* Cantidad de opciones */}
+                                                                <p className="text-[10px] md:text-[11px] text-text-muted font-medium tracking-widest uppercase relative z-10">{categoria.grupos.length} opciones</p>
                                                             </button>
                                                         ))}
                                                     </div>
