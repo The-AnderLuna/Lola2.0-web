@@ -1664,7 +1664,7 @@ export default function FlujoReserva() {
                                                                         <img 
                                                                             src={categoria.nombre.toLowerCase().includes('valoraci') ? "/icons/categorias/valoraciones.png" : "/icons/categorias/medicina-estetica.png"} 
                                                                             alt={categoria.nombre} 
-                                                                            className="w-full h-full object-contain" 
+                                                                            className={`w-full h-full object-contain ${categoria.nombre.toLowerCase().includes('medicina') ? 'scale-125' : ''}`} 
                                                                         />
                                                                     </div>
                                                                 ) : (
