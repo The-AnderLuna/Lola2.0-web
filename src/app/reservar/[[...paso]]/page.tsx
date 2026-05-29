@@ -2469,6 +2469,14 @@ export default function FlujoReserva() {
                                             })}
                                         </div>
                                     )}
+                                    
+                                    {/* Horario de Atención Informativo */}
+                                    <div className="mt-6 pt-4 border-t border-border-subtle/30 text-center">
+                                        <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
+                                            <Info className="w-3.5 h-3.5" />
+                                            Horario de atención: Lunes a Sábado, 9:00 AM - 7:00 PM
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
