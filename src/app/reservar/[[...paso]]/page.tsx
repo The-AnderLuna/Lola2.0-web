@@ -673,12 +673,14 @@ export default function FlujoReserva() {
             .channel('realtime_horarios_config')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'horarios' }, async () => {
                 console.log("Cambio detectado en horarios, recargando...");
+                await new Promise(resolve => setTimeout(resolve, 500));
                 const configRepo = new RepositorioConfiguracion();
                 const configDb = await configRepo.obtenerConfiguracion();
                 if (configDb) setConfigData(configDb);
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracion' }, async () => {
                 console.log("Cambio detectado en configuracion, recargando...");
+                await new Promise(resolve => setTimeout(resolve, 500));
                 const configRepo = new RepositorioConfiguracion();
                 const configDb = await configRepo.obtenerConfiguracion();
                 if (configDb) setConfigData(configDb);
@@ -999,7 +1001,8 @@ export default function FlujoReserva() {
                 if (personasPayload) {
                     params = new URLSearchParams({
                         fecha: dateStr,
-                        personas: JSON.stringify(personasPayload)
+                        personas: JSON.stringify(personasPayload),
+                        t: Date.now().toString()
                     });
                 } else {
                     const serviciosSecuencia = selectedServices.map(s => {
@@ -1011,7 +1014,8 @@ export default function FlujoReserva() {
                     });
                     params = new URLSearchParams({
                         fecha: dateStr,
-                        servicios: JSON.stringify(serviciosSecuencia)
+                        servicios: JSON.stringify(serviciosSecuencia),
+                        t: Date.now().toString()
                     });
                 }
 
@@ -1032,8 +1036,9 @@ export default function FlujoReserva() {
         // Realtime para actualizar cupos al instante si alguien más reserva
         const channel = supabase
             .channel('realtime_citas_slots')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'citas' }, () => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'citas' }, async () => {
                 console.log("Cambio detectado en citas, actualizando cupos en vivo...");
+                await new Promise(resolve => setTimeout(resolve, 500));
                 fetchQuietly();
             })
             .subscribe();
@@ -1048,7 +1053,7 @@ export default function FlujoReserva() {
     const fetchMonthAvailability = useCallback(async () => {
         // Cargar días bloqueados globales o por empleado
         try {
-            const res = await fetch('/api/dias-bloqueados');
+            const res = await fetch(`/api/dias-bloqueados?t=${Date.now()}`);
             if (res.ok) {
                 const json = await res.json();
                 setDiasBloqueadosCargados(json.data || []);
@@ -1068,8 +1073,9 @@ export default function FlujoReserva() {
         // Realtime para días bloqueados
         const channel = supabase
             .channel('realtime_bloqueos')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'bloqueos_dias' }, () => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bloqueos_dias' }, async () => {
                 console.log("Cambio en bloqueos_dias detectado. Recargando...");
+                await new Promise(resolve => setTimeout(resolve, 500));
                 if (step === 2) fetchMonthAvailability();
             })
             .subscribe();
