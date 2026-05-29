@@ -1063,7 +1063,11 @@ export default function FlujoReserva() {
         const dateObj = new Date(year, month, day);
         const dayOfWeek = dateObj.getDay();
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const isPast = dateObj < new Date(new Date().setHours(0, 0, 0, 0));
+        const now = new Date();
+        const currentHour = now.getHours();
+        const isToday = dateObj.getDate() === now.getDate() && dateObj.getMonth() === now.getMonth() && dateObj.getFullYear() === now.getFullYear();
+        // Bloquear días pasados o el día de hoy si ya pasaron las 7 PM (19:00)
+        const isPast = dateObj < new Date(now.setHours(0, 0, 0, 0)) || (isToday && currentHour >= 19);
         const isDisabled = isPast || !isDayEnabled(dayOfWeek, dateStr);
         const isSelected = selectedDate?.getDate() === day && selectedDate?.getMonth() === month;
 
