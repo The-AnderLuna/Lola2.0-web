@@ -639,6 +639,7 @@ export default function FlujoReserva() {
                     'corporal',
                     'despigmentación',
                     'láser',
+                    'cauterización',
                     'valoraciones'
                 ];
 
@@ -1676,7 +1677,7 @@ export default function FlujoReserva() {
                                                                         src={`/icons/categorias/${getCategoryIconFilename(categoria.nombre)}.png`}
                                                                         alt={categoria.nombre} 
                                                                         className={`w-full h-full object-contain ${
-                                                                            (categoria.nombre.toLowerCase().includes('ceja') || categoria.nombre.toLowerCase().includes('pesta') || categoria.nombre.toLowerCase().includes('depilaci')) ? 'scale-[1.4]' : 
+                                                                            (categoria.nombre.toLowerCase().includes('ceja') || categoria.nombre.toLowerCase().includes('pesta') || categoria.nombre.toLowerCase().includes('depilaci') || categoria.nombre.toLowerCase().includes('cauterizaci')) ? 'scale-[1.4]' : 
                                                                             categoria.nombre.toLowerCase().includes('medicina') ? 'scale-125' : 
                                                                             'scale-125' // Default scale for all to make them look good
                                                                         }`} 
