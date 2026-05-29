@@ -41,3 +41,8 @@ Para evitar que la base de datos se llene de "basura" por intentos fallidos de r
 
 ## Estado Final del Sprint
 El flujo "End-to-End" de Reservas Compartidas ahora está **100% funcional**, desde la selección del catálogo hasta la reserva asíncrona concurrente, validación contra bloqueos simultáneos (protección contra doble reserva), y enrutamiento a WhatsApp con los datos consolidados. La base de datos ha quedado blindada con mantenimiento autónomo y el portal de cliente (Dashboard) opera de manera resiliente, sin fallas de hidratación ni modales atascados.
+
+## 7. Flexibilidad de Horarios y Textos Dinámicos
+- **Reducción de Buffer de Reserva:** Se redujo el tiempo de anticipación ("buffer") requerido para una cita de 30 minutos a **15 minutos**. Esto optimiza la disponibilidad para clientes de cercanía sin saturar el sistema.
+- **Información Dinámica en Calendario:** El recuadro informativo de horarios (Paso 2) ahora consulta la base de datos en tiempo real (tabla `horarios`), en lugar de tener valores fijos. Muestra con precisión el nombre y hora del profesional involucrado de acuerdo con los servicios escogidos y el día específico seleccionado en el calendario (ej: *Horario de atención hoy: Mile de 9:00 AM a 10:00 PM*).
+- **Cierre Dinámico del Día:** El front-end inhabilita el botón de "hoy" (o lo muestra sin cupos) si la hora actual supera la hora de cierre parametrizada en la base de datos para ese específico día de la semana.
