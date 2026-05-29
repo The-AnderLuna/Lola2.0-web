@@ -643,6 +643,19 @@ export default function FlujoReserva() {
             }
         }
         cargarServicios();
+
+        // Realtime para actualizar catálogo en vivo si cambian precios o se borran servicios
+        const channel = supabase
+            .channel('realtime_servicios')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'servicios' }, () => {
+                console.log("Cambio en servicios detectado. Recargando catálogo...");
+                cargarServicios();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     // Supabase Realtime para actualización en vivo de horarios
@@ -1042,6 +1055,19 @@ export default function FlujoReserva() {
         if (step === 2) {
             fetchMonthAvailability();
         }
+
+        // Realtime para días bloqueados
+        const channel = supabase
+            .channel('realtime_bloqueos')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bloqueos_dias' }, () => {
+                console.log("Cambio en bloqueos_dias detectado. Recargando...");
+                if (step === 2) fetchMonthAvailability();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [step, year, month, fetchMonthAvailability]);
 
     // El bloqueo huérfano ya no se limpia agresivamente al recargar o salir (beforeunload)
