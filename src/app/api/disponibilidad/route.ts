@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
     const ahora = new Date();
     const ahoraLocal = new Date(ahora.getTime() + ZONA_OFFSET_H * 3600000);
     const esHoy = fecha === `${ahoraLocal.getUTCFullYear()}-${String(ahoraLocal.getUTCMonth() + 1).padStart(2, '0')}-${String(ahoraLocal.getUTCDate()).padStart(2, '0')}`;
-    const minutosActuales = esHoy ? ahoraLocal.getUTCHours() * 60 + ahoraLocal.getUTCMinutes() + 30 : 0;
+    const minutosActuales = esHoy ? ahoraLocal.getUTCHours() * 60 + ahoraLocal.getUTCMinutes() + 15 : 0;
 
     const puntosExactos = new Set<number>();
     for (const pid of profIds) {

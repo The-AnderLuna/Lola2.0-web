@@ -2483,19 +2483,50 @@ export default function FlujoReserva() {
                                     
                                     {/* Horario de Atención Informativo */}
                                     <div className="mt-6 pt-4 border-t border-border-subtle/30 text-center">
-                                        <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
-                                            <Info className="w-3.5 h-3.5" />
-                                            Horario de atención: {(() => {
-                                                if (!configData?.horarios || configData.horarios.length === 0) return 'Lunes a Sábado, 9:00 AM - 7:00 PM';
-                                                const minTime = configData.horarios.reduce((min, h) => h.hora_inicio < min ? h.hora_inicio : min, '23:59:59');
-                                                const maxTime = configData.horarios.reduce((max, h) => h.hora_fin > max ? h.hora_fin : max, '00:00:00');
+                                        <p className="text-xs text-text-muted flex items-center justify-center gap-1.5 flex-wrap">
+                                            <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                                            {(() => {
+                                                const targetDate = selectedDate || new Date();
+                                                const dayNum = targetDate.getDay() || 7;
+                                                const diasNombres = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                                                
+                                                const now = new Date();
+                                                const isToday = targetDate.getDate() === now.getDate() && targetDate.getMonth() === now.getMonth() && targetDate.getFullYear() === now.getFullYear();
+                                                const dayName = isToday ? 'hoy' : `el ${diasNombres[dayNum]}`;
+
+                                                let pIds = ['c2c0f778-c2fe-4f65-ab37-3b589cb997c2'];
+                                                if (selectedServices.length > 0) {
+                                                    const mapSrv = (s: any) => {
+                                                        const sIsStaff = s.nombre.toLowerCase().includes('staff') || s.responsable?.toLowerCase() === 'staff';
+                                                        const sIsMile = s.nombre.toLowerCase().includes('mile') || s.responsable?.toLowerCase() === 'mile';
+                                                        if (sIsStaff && !sIsMile) return 'cc7bdd66-d98e-4c66-ae1d-b975e005bf56';
+                                                        return 'c2c0f778-c2fe-4f65-ab37-3b589cb997c2';
+                                                    };
+                                                    pIds = Array.from(new Set(selectedServices.map(mapSrv)));
+                                                }
+
                                                 const formatTime = (time: string) => {
                                                     let [h, m] = time.split(':').map(Number);
                                                     const ampm = h >= 12 ? 'PM' : 'AM';
                                                     h = h % 12 || 12;
                                                     return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
                                                 };
-                                                return `Lunes a Sábado, ${formatTime(minTime)} - ${formatTime(maxTime)}`;
+
+                                                const names: Record<string, string> = {
+                                                    'c2c0f778-c2fe-4f65-ab37-3b589cb997c2': 'Mile',
+                                                    'cc7bdd66-d98e-4c66-ae1d-b975e005bf56': 'Staff'
+                                                };
+
+                                                if (!configData?.horarios || configData.horarios.length === 0) return <span>Horario de atención {dayName}: 9:00 AM - 7:00 PM</span>;
+
+                                                const texts = pIds.map(pid => {
+                                                    const h = configData.horarios!.find(x => x.dia_semana === dayNum && x.profesional_id === pid);
+                                                    if (!h) return null;
+                                                    return `${names[pid]} de ${formatTime(h.hora_inicio)} a ${formatTime(h.hora_fin)}`;
+                                                }).filter(Boolean);
+
+                                                if (texts.length === 0) return <span>No hay atención programada {dayName} para el servicio seleccionado</span>;
+                                                return <span>Horario de atención {dayName}: {texts.join(', ')}</span>;
                                             })()}
                                         </p>
                                     </div>
