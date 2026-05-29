@@ -537,25 +537,34 @@ export default function FlujoReserva() {
 
     // Fetch Services on Mount
     useEffect(() => {
-        async function cargarServicios() {
+        async function cargarServicios(fromRealtime = false) {
             try {
                 setSlotsError(null);
-                // 1. Intentar cargar del caché inmediatamente
-                try {
-                    const cached = localStorage.getItem('lola_categorias_cache');
-                    if (cached) {
-                        const parsed = JSON.parse(cached);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            setCategorias(parsed);
-                            setCargandoServicios(false);
+                // 1. Intentar cargar del caché inmediatamente (solo si no viene de realtime)
+                if (!fromRealtime) {
+                    try {
+                        const cached = localStorage.getItem('lola_categorias_cache');
+                        if (cached) {
+                            const parsed = JSON.parse(cached);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                setCategorias(parsed);
+                                setCargandoServicios(false);
+                            }
                         }
+                    } catch (e) {
+                        console.warn("Error leyendo caché:", e);
+                        localStorage.removeItem('lola_categorias_cache');
                     }
-                } catch (e) {
-                    console.warn("Error leyendo caché:", e);
-                    localStorage.removeItem('lola_categorias_cache');
+                } else {
+                    // Si viene de realtime, obligar a que se muestre el esqueleto de carga
+                    setCargandoServicios(true);
                 }
 
                 // 2. Traer de la DB
+                // Añadimos un pequeño delay si viene de realtime para asegurar que la BD terminó de hacer commit
+                if (fromRealtime) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
                 const repo = new RepositorioServicios();
                 const serviciosDb = await repo.obtenerActivos();
 
@@ -649,7 +658,7 @@ export default function FlujoReserva() {
             .channel('realtime_servicios')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicios' }, () => {
                 console.log("Cambio en servicios detectado. Recargando catálogo...");
-                cargarServicios();
+                cargarServicios(true);
             })
             .subscribe();
 
