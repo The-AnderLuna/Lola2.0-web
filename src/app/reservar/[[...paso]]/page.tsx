@@ -2215,7 +2215,10 @@ export default function FlujoReserva() {
                                         </p>
                                     </div>
                                     <button
-                                        onClick={() => setShowExpiredModal(false)}
+                                        onClick={() => {
+                                            setShowExpiredModal(false);
+                                            setStep(2);
+                                        }}
                                         className="mt-2 w-full py-3.5 bg-gradient-to-r from-amber-600 to-amber-400 text-black font-bold text-sm uppercase tracking-wider rounded-xl hover:opacity-90 transition-all"
                                     >
                                         Elegir otra hora
