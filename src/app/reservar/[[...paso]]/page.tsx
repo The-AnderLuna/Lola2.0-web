@@ -1928,10 +1928,10 @@ export default function FlujoReserva() {
 
                     {/* MODAL: VALORACIÓN REQUERIDA */}
                     {showValuationModal && (() => {
-                        const valuationService = selectedServices.find(s => s.requiereHumano || s.precio === 0);
+                        const valuationServices = selectedServices.filter(s => s.requiereHumano || s.precio === 0);
                         const normalServices = selectedServices.filter(s => !(s.requiereHumano || s.precio === 0));
-                        const isVerrugas = valuationService?.nombre.toLowerCase().includes('verruga');
-                        const isTatuaje = valuationService?.nombre.toLowerCase().includes('tatuaje');
+                        const isVerrugas = valuationServices.some(s => s.nombre.toLowerCase().includes('verruga'));
+                        const isTatuaje = valuationServices.some(s => s.nombre.toLowerCase().includes('tatuaje'));
                         const isVerrugasValid = isVerrugas ? (verrugasForm.duele !== '' && verrugasForm.medico !== '' && verrugasForm.molestia !== '') : true;
 
                         return (
@@ -2002,17 +2002,15 @@ export default function FlujoReserva() {
                                     <button
                                         disabled={!isVerrugasValid}
                                         onClick={() => {
-                                            let msg = '';
-                                            if (isTatuaje) {
-                                                msg = "Hola, me gustaría una valoración para remoción de tatuajes.";
-                                            } else if (isVerrugas) {
-                                                msg = `Hola, me gustaría una valoración para eliminación de verrugas.\n\nMis respuestas:\n1. ¿Te duele la zona?: ${verrugasForm.duele}\n2. ¿Has ido al médico antes?: ${verrugasForm.medico}\n3. ¿Sientes molestia?: ${verrugasForm.molestia}`;
+                                            let msg = `Hola, me gustaría una valoración para: ${valuationServices.map(s => s.nombre).join(', ')}.`;
+                                            if (isVerrugas) {
+                                                msg += `\n\nMis respuestas para verrugas:\n1. ¿Te duele la zona?: ${verrugasForm.duele}\n2. ¿Has ido al médico antes?: ${verrugasForm.medico}\n3. ¿Sientes molestia?: ${verrugasForm.molestia}`;
                                                 if (verrugasForm.nota.trim()) {
                                                     msg += `\nNota: ${verrugasForm.nota.trim()}`;
                                                 }
-                                                msg += `\n\n📸 Te envío la foto a continuación para que Mile revise mi caso.`;
-                                            } else {
-                                                msg = `Hola, me gustaría una valoración personalizada para el servicio de ${valuationService?.nombre || 'tratamiento especializado'}. Por favor indícame los pasos a seguir.`;
+                                            }
+                                            if (isVerrugas || isTatuaje) {
+                                                msg += `\n\n📸 Te envío la foto a continuación.`;
                                             }
 
                                             if (normalServices.length > 0) {
