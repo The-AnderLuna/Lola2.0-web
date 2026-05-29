@@ -1658,18 +1658,19 @@ export default function FlujoReserva() {
                                                                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-gold/5 to-transparent rounded-tr-full -ml-3 -mb-3 pointer-events-none"></div>
 
                                                                 {/* Condicional: Icono o Línea decorativa */}
-                                                                {(categoria.nombre.toLowerCase().includes('valoraci') || categoria.nombre.toLowerCase().includes('medicina') || categoria.nombre.toLowerCase().includes('ceja')) ? (
+                                                                {(categoria.nombre.toLowerCase().includes('valoraci') || categoria.nombre.toLowerCase().includes('medicina') || categoria.nombre.toLowerCase().includes('ceja') || categoria.nombre.toLowerCase().includes('pesta')) ? (
                                                                     <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center mb-2 md:mb-3 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)]">
                                                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                         <img 
                                                                             src={
                                                                                 categoria.nombre.toLowerCase().includes('valoraci') ? "/icons/categorias/valoraciones.png" : 
                                                                                 categoria.nombre.toLowerCase().includes('ceja') ? "/icons/categorias/cejas.png" : 
+                                                                                categoria.nombre.toLowerCase().includes('pesta') ? "/icons/categorias/pestanas.png" : 
                                                                                 "/icons/categorias/medicina-estetica.png"
                                                                             } 
                                                                             alt={categoria.nombre} 
                                                                             className={`w-full h-full object-contain ${
-                                                                                categoria.nombre.toLowerCase().includes('ceja') ? 'scale-[1.4]' : 
+                                                                                (categoria.nombre.toLowerCase().includes('ceja') || categoria.nombre.toLowerCase().includes('pesta')) ? 'scale-[1.4]' : 
                                                                                 categoria.nombre.toLowerCase().includes('medicina') ? 'scale-125' : 
                                                                                 ''
                                                                             }`} 
