@@ -9,6 +9,14 @@ export class RepositorioConfiguracion {
       .maybeSingle();
 
     if (error) throw new Error(`Error obteniendo configuración: ${error.message}`);
-    return data;
+
+    const { data: horariosData } = await supabase
+      .from('horarios')
+      .select('*');
+
+    return {
+      ...data,
+      horarios: horariosData || []
+    };
   }
 }

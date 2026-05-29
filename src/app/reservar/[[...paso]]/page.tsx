@@ -97,7 +97,7 @@ export default function FlujoReserva() {
     // Data States
     const [categorias, setCategorias] = useState<{ id: string, nombre: string, grupos: { nombreBase: string, servicios: Servicio[] }[] }[]>([]);
     const [cargandoServicios, setCargandoServicios] = useState(true);
-    const [configData, setConfigData] = useState<{ nequi_numero?: string, daviplata_numero?: string, titular_cuenta?: string, acepta_sistecredito?: boolean, acepta_tarjeta?: boolean, whatsapp_numero?: string } | null>(null);
+    const [configData, setConfigData] = useState<{ nequi_numero?: string, daviplata_numero?: string, titular_cuenta?: string, acepta_sistecredito?: boolean, acepta_tarjeta?: boolean, whatsapp_numero?: string, horarios?: any[] } | null>(null);
 
     // Selection States
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -1065,9 +1065,20 @@ export default function FlujoReserva() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const now = new Date();
         const currentHour = now.getHours();
+        
+        let cutoffHour = 19;
+        if (configData?.horarios && configData.horarios.length > 0) {
+            const todayDayOfWeek = now.getDay() || 7;
+            const horariosHoy = configData.horarios.filter(h => h.dia_semana === todayDayOfWeek);
+            if (horariosHoy.length > 0) {
+                const maxTime = horariosHoy.reduce((max, h) => h.hora_fin > max ? h.hora_fin : max, '00:00:00');
+                cutoffHour = parseInt(maxTime.split(':')[0], 10);
+            }
+        }
+
         const isToday = dateObj.getDate() === now.getDate() && dateObj.getMonth() === now.getMonth() && dateObj.getFullYear() === now.getFullYear();
-        // Bloquear días pasados o el día de hoy si ya pasaron las 7 PM (19:00)
-        const isPast = dateObj < new Date(now.setHours(0, 0, 0, 0)) || (isToday && currentHour >= 19);
+        // Bloquear días pasados o el día de hoy si ya pasaron la hora de cierre
+        const isPast = dateObj < new Date(now.setHours(0, 0, 0, 0)) || (isToday && currentHour >= cutoffHour);
         const isDisabled = isPast || !isDayEnabled(dayOfWeek, dateStr);
         const isSelected = selectedDate?.getDate() === day && selectedDate?.getMonth() === month;
 
@@ -2474,7 +2485,18 @@ export default function FlujoReserva() {
                                     <div className="mt-6 pt-4 border-t border-border-subtle/30 text-center">
                                         <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
                                             <Info className="w-3.5 h-3.5" />
-                                            Horario de atención: Lunes a Sábado, 9:00 AM - 7:00 PM
+                                            Horario de atención: {(() => {
+                                                if (!configData?.horarios || configData.horarios.length === 0) return 'Lunes a Sábado, 9:00 AM - 7:00 PM';
+                                                const minTime = configData.horarios.reduce((min, h) => h.hora_inicio < min ? h.hora_inicio : min, '23:59:59');
+                                                const maxTime = configData.horarios.reduce((max, h) => h.hora_fin > max ? h.hora_fin : max, '00:00:00');
+                                                const formatTime = (time: string) => {
+                                                    let [h, m] = time.split(':').map(Number);
+                                                    const ampm = h >= 12 ? 'PM' : 'AM';
+                                                    h = h % 12 || 12;
+                                                    return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+                                                };
+                                                return `Lunes a Sábado, ${formatTime(minTime)} - ${formatTime(maxTime)}`;
+                                            })()}
                                         </p>
                                     </div>
                                 </div>
