@@ -1053,7 +1053,7 @@ export default function FlujoReserva() {
     const fetchMonthAvailability = useCallback(async () => {
         // Cargar días bloqueados globales o por empleado
         try {
-            const { data, error } = await supabase.from('bloqueos_dias').select('*').order('fecha', { ascending: true });
+            const { data, error } = await supabase.from('dias_bloqueados').select('*').order('fecha', { ascending: true });
             if (error) throw error;
             setDiasBloqueadosCargados(data || []);
         } catch (e) {
@@ -1071,8 +1071,8 @@ export default function FlujoReserva() {
         // Realtime para días bloqueados
         const channel = supabase
             .channel('realtime_bloqueos')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'bloqueos_dias' }, async () => {
-                console.log("Cambio en bloqueos_dias detectado. Recargando...");
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'dias_bloqueados' }, async () => {
+                console.log("Cambio en dias_bloqueados detectado. Recargando...");
                 await new Promise(resolve => setTimeout(resolve, 500));
                 if (step === 2) fetchMonthAvailability();
             })
