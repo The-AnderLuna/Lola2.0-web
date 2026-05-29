@@ -1053,11 +1053,9 @@ export default function FlujoReserva() {
     const fetchMonthAvailability = useCallback(async () => {
         // Cargar días bloqueados globales o por empleado
         try {
-            const res = await fetch(`/api/dias-bloqueados?t=${Date.now()}`);
-            if (res.ok) {
-                const json = await res.json();
-                setDiasBloqueadosCargados(json.data || []);
-            }
+            const { data, error } = await supabase.from('bloqueos_dias').select('*').order('fecha', { ascending: true });
+            if (error) throw error;
+            setDiasBloqueadosCargados(data || []);
         } catch (e) {
             console.error("Error al cargar días bloqueados:", e);
         }
