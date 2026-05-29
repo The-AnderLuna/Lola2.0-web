@@ -92,6 +92,16 @@ const generateUID = (): string => {
     });
 };
 
+const getCategoryIconFilename = (nombre: string) => {
+    let base = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+    if (base === 'facial') return 'faciales';
+    if (base === 'ceja') return 'cejas';
+    if (base === 'pestana') return 'pestanas';
+    if (base === 'labio') return 'labios';
+    if (base === 'valoracion') return 'valoraciones';
+    return base;
+};
+
 export default function FlujoReserva() {
     const [step, setStep] = useState(0);
 
@@ -1661,7 +1671,7 @@ export default function FlujoReserva() {
                                                                 <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center mb-2 md:mb-3 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)]">
                                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                     <img 
-                                                                        src={`/icons/categorias/${categoria.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}.png`}
+                                                                        src={`/icons/categorias/${getCategoryIconFilename(categoria.nombre)}.png`}
                                                                         alt={categoria.nombre} 
                                                                         className={`w-full h-full object-contain ${
                                                                             (categoria.nombre.toLowerCase().includes('ceja') || categoria.nombre.toLowerCase().includes('pesta')) ? 'scale-[1.4]' : 
