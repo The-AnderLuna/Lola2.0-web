@@ -1006,9 +1006,20 @@ export default function FlujoReserva() {
         };
 
         const interval = setInterval(fetchQuietly, 15000);
+
+        // Realtime para actualizar cupos al instante si alguien más reserva
+        const channel = supabase
+            .channel('realtime_citas_slots')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'citas' }, () => {
+                console.log("Cambio detectado en citas, actualizando cupos en vivo...");
+                fetchQuietly();
+            })
+            .subscribe();
+
         return () => {
             isMounted = false;
             clearInterval(interval);
+            supabase.removeChannel(channel);
         };
     }, [step, selectedDate, selectedServices]);
     // Cargar días disponibles del mes al entrar al Step 2 o cambiar mes
