@@ -1069,7 +1069,19 @@ export default function FlujoReserva() {
         let cutoffHour = 19;
         if (configData?.horarios && configData.horarios.length > 0) {
             const todayDayOfWeek = now.getDay() || 7;
-            const horariosHoy = configData.horarios.filter(h => h.dia_semana === todayDayOfWeek);
+            let horariosHoy = configData.horarios.filter(h => h.dia_semana === todayDayOfWeek);
+            
+            if (selectedServices.length > 0) {
+                const mileId = 'c2c0f778-c2fe-4f65-ab37-3b589cb997c2';
+                const staffId = 'cc7bdd66-d98e-4c66-ae1d-b975e005bf56';
+                const requiredPIds = new Set<string>();
+                if (tieneMile) requiredPIds.add(mileId);
+                if (tieneStaff) requiredPIds.add(staffId);
+                if (requiredPIds.size > 0) {
+                    horariosHoy = horariosHoy.filter(h => requiredPIds.has(h.profesional_id));
+                }
+            }
+
             if (horariosHoy.length > 0) {
                 const maxTime = horariosHoy.reduce((max, h) => h.hora_fin > max ? h.hora_fin : max, '00:00:00');
                 cutoffHour = parseInt(maxTime.split(':')[0], 10);
