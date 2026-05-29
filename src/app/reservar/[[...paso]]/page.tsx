@@ -1668,7 +1668,11 @@ export default function FlujoReserva() {
                                                                                 "/icons/categorias/medicina-estetica.png"
                                                                             } 
                                                                             alt={categoria.nombre} 
-                                                                            className={`w-full h-full object-contain ${!categoria.nombre.toLowerCase().includes('valoraci') ? 'scale-125' : ''}`} 
+                                                                            className={`w-full h-full object-contain ${
+                                                                                categoria.nombre.toLowerCase().includes('ceja') ? 'scale-[1.4]' : 
+                                                                                categoria.nombre.toLowerCase().includes('medicina') ? 'scale-125' : 
+                                                                                ''
+                                                                            }`} 
                                                                         />
                                                                     </div>
                                                                 ) : (
