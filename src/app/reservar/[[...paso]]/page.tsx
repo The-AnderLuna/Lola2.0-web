@@ -1669,7 +1669,7 @@ export default function FlujoReserva() {
                                                                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-gold/5 to-transparent rounded-tr-full -ml-3 -mb-3 pointer-events-none"></div>
 
                                                                 {/* Contenedor Superior (Imagen) */}
-                                                                <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500 relative z-10">
+                                                                <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)]">
                                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                     <img 
                                                                         src={`/icons/categorias/${getCategoryIconFilename(categoria.nombre)}.png`}
