@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Phone, Lock, Calendar, MessageSquare, AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
+import { ArrowRight, User, Lock, Calendar, MessageSquare, AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
 
 import { Suspense } from "react";
 
@@ -13,8 +13,9 @@ function MisCitasContent() {
 
   // Navigation states: 'phone' (input number) or 'otp' (input verification code)
   const [step, setStep] = useState<"phone" | "otp">("phone");
-  
+
   // Input values
+  const [codigoPais, setCodigoPais] = useState("+57");
   const [phone, setPhone] = useState("");
   const [otpCode, setOtpCode] = useState<string[]>(Array(6).fill(""));
   const otpInputsRef = useRef<HTMLInputElement[]>([]);
@@ -52,18 +53,28 @@ function MisCitasContent() {
 
     // Basic cleaning and validation
     const cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length < 10) {
-      setError("El número de teléfono debe tener al menos 10 dígitos");
+    
+    // Robust country-based length validation (Colombia must be exactly 10; others >= 8)
+    const isValidLength = codigoPais === "+57" ? cleanPhone.length === 10 : cleanPhone.length >= 8;
+    if (!isValidLength) {
+      if (codigoPais === "+57") {
+        setError("El número de teléfono en Colombia debe tener exactamente 10 dígitos (ej. 3001234567)");
+      } else {
+        setError("El número de teléfono para este país debe tener al menos 8 dígitos");
+      }
       return;
     }
 
     setLoading(true);
 
     try {
+      const codeNum = codigoPais.replace(/\D/g, "");
+      const fullPhone = `${codeNum}${cleanPhone}`;
+
       const res = await fetch("/api/auth/otp/enviar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefono: cleanPhone }),
+        body: JSON.stringify({ telefono: fullPhone }),
       });
 
       const data = await res.json();
@@ -97,12 +108,16 @@ function MisCitasContent() {
     setLoading(true);
 
     try {
+      const cleanPhone = phone.replace(/\D/g, "");
+      const codeNum = codigoPais.replace(/\D/g, "");
+      const fullPhone = `${codeNum}${cleanPhone}`;
+
       const res = await fetch("/api/auth/otp/verificar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          telefono: phone.replace(/\D/g, ""), 
-          codigo: fullCode 
+        body: JSON.stringify({
+          telefono: fullPhone,
+          codigo: fullCode
         }),
       });
 
@@ -113,7 +128,7 @@ function MisCitasContent() {
       }
 
       setSuccessMsg("¡Ingreso exitoso! Redirigiendo a tu portal...");
-      
+
       // Short delay to let user see success message, then redirect
       setTimeout(() => {
         router.push(returnTo);
@@ -152,12 +167,16 @@ function MisCitasContent() {
         if (finalCode.join("").length === 6) {
           setError(null);
           // Trigger verify programmatically
+          const cleanPhone = phone.replace(/\D/g, "");
+          const codeNum = codigoPais.replace(/\D/g, "");
+          const fullPhone = `${codeNum}${cleanPhone}`;
+
           fetch("/api/auth/otp/verificar", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              telefono: phone.replace(/\D/g, ""), 
-              codigo: finalCode.join("") 
+            body: JSON.stringify({
+              telefono: fullPhone,
+              codigo: finalCode.join("")
             }),
           }).then(async (res) => {
             const data = await res.json();
@@ -206,37 +225,42 @@ function MisCitasContent() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-bg-base grain-overlay font-inter text-text-primary px-4">
-      {/* Estética Premium: Círculos de luz flotantes */}
-      <div className="absolute top-[-10%] left-[-20%] w-[60%] aspect-square rounded-full bg-gold opacity-[0.04] blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-20%] w-[60%] aspect-square rounded-full bg-red-urgency opacity-[0.03] blur-[120px] pointer-events-none" />
+    <div className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-black font-inter text-text-primary px-4">
+      {/* Fondo Mesh de Luz Orgánica (Sin círculos rígidos) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.06),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(230,57,70,0.04),transparent_50%)] pointer-events-none" />
 
       {/* Header Fino */}
       <header className="w-full max-w-5xl mx-auto py-8 flex justify-between items-center z-10">
         <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push("/")}>
-          <span className="font-display font-semibold tracking-[0.15em] text-sm uppercase text-text-primary group-hover:text-gold transition-colors duration-300">
-            Milé Almanza
+          <span className="font-display font-bold tracking-[0.15em] text-sm uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark transition-all duration-300">
+            Mile Almanza
           </span>
         </div>
-        <div className="text-xs text-text-secondary tracking-wider font-light uppercase hidden sm:block">
-          Estética &amp; Micropigmentación
-        </div>
+        <button
+          onClick={() => router.push("/reservar")}
+          className="text-xs font-bold tracking-wider uppercase text-gold hover:text-gold-light border border-gold/30 hover:border-gold/60 rounded-full px-4 py-2 bg-gold/5 transition-all duration-300 active:scale-95 cursor-pointer hover:shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+        >
+          Agendar Cita
+        </button>
       </header>
 
       {/* Main Container */}
       <main className="flex-1 w-full max-w-md mx-auto flex flex-col justify-center py-12 z-10">
         <div className="glass-strong rounded-2xl p-8 relative overflow-hidden shadow-2xl border border-gold/20 animate-fade-in-up">
-          
+
           {/* Decorative Gold Accent Bar */}
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
 
-          {/* Icono de Seguridad Superior */}
-          <div className="w-14 h-14 rounded-full border border-gold/20 bg-bg-base flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
-            {step === "phone" ? (
-              <Phone className="w-6 h-6 text-gold" />
-            ) : (
-              <Lock className="w-6 h-6 text-gold animate-pulse" />
-            )}
+          {/* Icono Superior: Rombo Diamante de Lujo */}
+          <div className="w-12 h-12 rounded-2xl border border-gold/30 bg-gradient-to-br from-bg-surface to-bg-card flex items-center justify-center mx-auto mb-6 shadow-[0_8px_20px_rgba(212,175,55,0.15)] relative overflow-hidden group rotate-45">
+            <div className="absolute inset-0 bg-gradient-to-tr from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="-rotate-45 relative z-10 flex items-center justify-center text-gold drop-shadow-[0_2px_6px_rgba(212,175,55,0.3)]">
+              {step === "phone" ? (
+                <User className="w-5 h-5" />
+              ) : (
+                <Lock className="w-5 h-5 animate-pulse" />
+              )}
+            </div>
           </div>
 
           {/* Encabezados Dinámicos */}
@@ -245,8 +269,8 @@ function MisCitasContent() {
               {step === "phone" ? "Mis Citas" : "Verificación"}
             </h1>
             <p className="text-sm text-text-secondary max-w-xs mx-auto leading-relaxed">
-              {step === "phone" 
-                ? "Ingresa tu número de WhatsApp registrado para consultar y gestionar tus agendamientos."
+              {step === "phone"
+                ? "Usa el número de WhatsApp con el que reservaste tu cita para ver tus agendamientos."
                 : `Ingresa el código de 6 dígitos que enviamos a tu WhatsApp con terminación ${phone.replace(/\D/g, "").slice(-4)}.`}
             </p>
           </div>
@@ -274,11 +298,35 @@ function MisCitasContent() {
                   Número de Teléfono
                 </label>
                 <div className="relative flex rounded-xl border border-white/10 bg-bg-base/70 focus-within:border-gold/50 shadow-inner transition-colors duration-300 overflow-hidden">
-                  
-                  {/* Prefijo / Bandera Colombia */}
-                  <div className="flex items-center gap-2 pl-4 pr-2 py-3 border-r border-white/5 bg-white/[0.01] text-sm text-text-secondary select-none">
-                    <span className="text-lg">🇨🇴</span>
-                    <span className="font-semibold tracking-wider text-xs">+57</span>
+
+                  {/* Selector de Código de País */}
+                  <div className="relative flex items-center border-r border-white/5 bg-white/[0.01]">
+                    <select
+                      value={codigoPais}
+                      onChange={(e) => setCodigoPais(e.target.value)}
+                      disabled={loading}
+                      className="bg-transparent pl-4 pr-6 py-3 text-sm text-text-primary focus:outline-none cursor-pointer appearance-none font-semibold tracking-wider"
+                      style={{
+                        WebkitAppearance: "none",
+                        MozAppearance: "none",
+                      }}
+                    >
+                      <option value="+57">🇨🇴 +57</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+52">🇲🇽 +52</option>
+                      <option value="+54">🇦🇷 +54</option>
+                      <option value="+55">🇧🇷 +55</option>
+                      <option value="+56">🇨🇱 +56</option>
+                      <option value="+51">🇵🇪 +51</option>
+                      <option value="+58">🇻🇪 +58</option>
+                      <option value="+593">🇪🇨 +593</option>
+                      <option value="+507">🇵🇦 +507</option>
+                      <option value="+34">🇪🇸 +34</option>
+                    </select>
+                    {/* Tiny custom arrow down indicator */}
+                    <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted">
+                      ▼
+                    </div>
                   </div>
 
                   <input
@@ -305,7 +353,7 @@ function MisCitasContent() {
                   </>
                 ) : (
                   <>
-                    Solicitar Código OTP
+                    Solicitar Código
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -320,7 +368,7 @@ function MisCitasContent() {
                 <label className="block text-center text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">
                   Código de Seguridad
                 </label>
-                
+
                 {/* 6 OTP Inputs */}
                 <div className="flex justify-between gap-2 max-w-xs mx-auto">
                   {otpCode.map((digit, idx) => (
@@ -358,7 +406,7 @@ function MisCitasContent() {
                     disabled={loading}
                     className="text-gold hover:text-gold-light hover:underline font-semibold flex items-center gap-1 transition-colors"
                   >
-                    <RefreshCw className="w-3.5 h-3.5" /> Reenviar código OTP por WhatsApp
+                    <RefreshCw className="w-3.5 h-3.5" /> Reenviar código por WhatsApp
                   </button>
                 )}
 
@@ -381,24 +429,22 @@ function MisCitasContent() {
         </div>
 
         {/* Informative Footer Box */}
-        <div className="mt-8 text-center text-xs text-text-secondary leading-relaxed max-w-xs mx-auto">
-          ¿No tienes una cuenta? Escríbenos a nuestro{" "}
-          <a
-            href="https://wa.me/573138865616?text=Hola,%20quisiera%20registrarme%20y%20agendar%20una%20cita%20con%20Milé%20Almanza"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gold hover:underline font-semibold inline-flex items-center gap-0.5"
+        <div className="mt-8 text-center text-xs text-text-secondary leading-relaxed max-w-sm mx-auto">
+          ¿Aún no tienes citas?{" "}
+          <button
+            type="button"
+            onClick={() => router.push("/reservar")}
+            className="text-gold hover:text-gold-light hover:underline font-semibold transition-colors"
           >
-            <MessageSquare className="w-3 h-3 text-gold/80" /> WhatsApp oficial
-          </a>{" "}
-          para realizar tu primer registro y reserva.
+            Agenda aquí
+          </button>
         </div>
       </main>
 
       {/* Footer Fino */}
       <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          © {new Date().getFullYear()} Milé Almanza Estética. Todos los derechos reservados.
+          © {new Date().getFullYear()} Mile Almanza Estética. Todos los derechos reservados.
         </div>
         <div className="flex gap-4">
           <span className="hover:text-text-secondary transition-colors cursor-pointer">Términos</span>
