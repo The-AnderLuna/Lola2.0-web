@@ -15,12 +15,12 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Milé Almanza — Estudio Premium de Estética & Micropigmentación",
+  title: "Mile Almanza — Estudio Premium de Estética & Micropigmentación",
   description:
     "Resalta tu belleza con tecnología y arte. Micropigmentación de cejas, labios, pestañas, tratamientos faciales y más en un entorno exclusivo.",
-  keywords: ["micropigmentación", "cejas", "pestañas", "labios", "tratamiento facial", "estética", "belleza", "Milé Almanza"],
+  keywords: ["micropigmentación", "cejas", "pestañas", "labios", "tratamiento facial", "estética", "belleza", "Mile Almanza"],
   openGraph: {
-    title: "Milé Almanza — Estudio Premium de Estética",
+    title: "Mile Almanza — Estudio Premium de Estética",
     description: "Resalta tu belleza con tecnología y arte.",
     type: "website",
   },

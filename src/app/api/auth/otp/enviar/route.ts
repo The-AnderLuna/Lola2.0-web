@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import https from 'https';
+
 import { RepositorioClientes } from '@/adaptadores/repositorios/RepositorioClientes';
 import { RepositorioOtps } from '@/adaptadores/repositorios/RepositorioOtps';
 
@@ -59,39 +59,18 @@ export async function POST(request: NextRequest) {
           codigo: codigo
         };
 
-        // Usar https module nativo para saltar errores de SSL cuando se usa Tailscale/IP
-        const url = new URL(n8nWebhookUrl);
-        const options = {
-          hostname: url.hostname,
-          port: url.port || (url.protocol === 'https:' ? 443 : 80),
-          path: url.pathname,
+        const res = await fetch(n8nWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(JSON.stringify(payload)),
-            'Host': 'bot-milena-n8n.wfebss.easypanel.host'
           },
-          // Solo apagamos la validación estricta de certificados en entorno de desarrollo local (para Tailscale).
-          // En producción (Vercel) exigirá que el certificado SSL sea válido y genuino.
-          rejectUnauthorized: process.env.NODE_ENV !== 'development'
-        };
-
-        const responseOk = await new Promise<boolean>((resolve) => {
-          const req = https.request(options, (res) => {
-            resolve(res.statusCode === 200);
-          });
-          req.on('error', (err) => {
-            console.error('Error enviando webhook HTTP:', err);
-            resolve(false);
-          });
-          req.write(JSON.stringify(payload));
-          req.end();
+          body: JSON.stringify(payload),
         });
 
-        if (responseOk) {
+        if (res.ok) {
           mensajeEnviado = true;
         } else {
-          console.error('Error al enviar el webhook a n8n: código HTTP no exitoso');
+          console.error(`Error al enviar el webhook a n8n: código HTTP ${res.status}`);
         }
       } catch (err) {
         console.error('Excepción al conectar con el webhook de n8n:', err);

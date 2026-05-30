@@ -99,7 +99,7 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-bg-base grain-overlay font-inter text-text-primary">
+    <div className="min-h-screen flex flex-col justify-between bg-black font-inter text-text-primary">
       {/* Estética Premium: Círculos de luz flotantes */}
       <div className="absolute top-[-10%] left-[-20%] w-[60%] aspect-square rounded-full bg-gold opacity-[0.03] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-20%] w-[60%] aspect-square rounded-full bg-red-urgency opacity-[0.02] blur-[120px] pointer-events-none" />
@@ -111,8 +111,8 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
             <div className="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center bg-bg-card shadow-[0_0_10px_rgba(212,175,55,0.08)]">
               <Sparkles className="w-3.5 h-3.5 text-gold" />
             </div>
-            <span className="font-display font-semibold tracking-[0.12em] text-xs uppercase text-text-primary">
-              Milé Almanza
+            <span className="font-display font-bold tracking-[0.12em] text-xs uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark transition-all duration-300">
+              Mile Almanza
             </span>
           </div>
 
@@ -326,7 +326,7 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
       {/* Footer Fino */}
       <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          © {new Date().getFullYear()} Milé Almanza Estética. Todos los derechos reservados.
+          © {new Date().getFullYear()} Mile Almanza Estética. Todos los derechos reservados.
         </div>
         <div className="flex gap-4">
           <span className="hover:text-text-secondary transition-colors cursor-pointer">Términos</span>

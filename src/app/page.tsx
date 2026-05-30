@@ -31,10 +31,10 @@ const SERVICES = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Carolina M.", text: "Milé es una artista. Mis cejas quedaron absolutamente perfectas, naturales y elegantes. ¡La mejor decisión!", rating: 5 },
+  { name: "Carolina M.", text: "Mile es una artista. Mis cejas quedaron absolutamente perfectas, naturales y elegantes. ¡La mejor decisión!", rating: 5 },
   { name: "Valentina R.", text: "El tratamiento facial me dejó la piel increíble. El ambiente del estudio es otro nivel de lujo.", rating: 5 },
   { name: "Daniela G.", text: "Las pestañas me quedaron espectaculares. Atención premium de principio a fin. 100% recomendada.", rating: 5 },
-  { name: "Marcela S.", text: "La micropigmentación de labios fue impecable. Se nota la experiencia y el profesionalismo de Milé.", rating: 5 },
+  { name: "Marcela S.", text: "La micropigmentación de labios fue impecable. Se nota la experiencia y el profesionalismo de Mile.", rating: 5 },
 ];
 
 export default function Home() {
@@ -70,7 +70,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <span className="font-display text-xl md:text-2xl tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark font-bold">
-              Milé Almanza
+              Mile Almanza
             </span>
           </Link>
           <div className="hidden lg:flex items-center gap-8">
@@ -97,7 +97,7 @@ export default function Home() {
         {/* Background media with video and image fallback */}
         <div className="absolute inset-0 z-0 bg-[#060607]">
 
-          <Image src="/images/hero.png" alt="Milé Almanza Studio" fill className="object-cover opacity-35 mix-blend-overlay z-0" priority />
+          <Image src="/images/hero.png" alt="Mile Almanza Studio" fill className="object-cover opacity-35 mix-blend-overlay z-0" priority />
           <div className="absolute inset-0 bg-gradient-to-b from-bg-base/85 via-bg-base/40 to-bg-base" />
           <div className="absolute inset-0 bg-gradient-to-r from-bg-base/70 via-transparent to-bg-base/70" />
         </div>
@@ -217,7 +217,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative">
               <div className="relative rounded-3xl overflow-hidden aspect-[3/4] max-w-md mx-auto lg:mx-0">
-                <Image src="/images/about.png" alt="Milé Almanza" fill className="object-cover" />
+                <Image src="/images/about.png" alt="Mile Almanza" fill className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-base/60 to-transparent" />
               </div>
               <div className="absolute -bottom-6 -right-6 w-32 h-32 border-2 border-gold/20 rounded-3xl" />
@@ -226,7 +226,7 @@ export default function Home() {
             <div>
               <span className="inline-block text-xs font-semibold text-gold tracking-[0.3em] uppercase mb-4">Conoce a</span>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-tight">
-                Milé <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold italic">Almanza</span>
+                Mile <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold italic">Almanza</span>
               </h2>
               <p className="text-text-secondary leading-relaxed mb-4">
                 Especialista en micropigmentación y estética avanzada con más de 5 años de experiencia transformando la confianza de miles de mujeres.
@@ -254,7 +254,7 @@ export default function Home() {
       <section id="cursos" className="relative py-24 md:py-32 border-t border-border-subtle bg-bg-card/10">
         <div ref={coursesRef} className="reveal max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block text-xs font-semibold text-gold tracking-[0.3em] uppercase mb-4">Aprende con Milé</span>
+            <span className="inline-block text-xs font-semibold text-gold tracking-[0.3em] uppercase mb-4">Aprende con Mile</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-text-primary mb-4">
               Cursos & <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold italic">Masterclasses</span>
             </h2>
@@ -272,7 +272,7 @@ export default function Home() {
               <p className="text-xs text-text-muted mb-4">Aprende diseño, colorimetría, visajismo y micropigmentación de cejas desde cero.</p>
               <div className="space-y-3 mb-8 text-xs text-text-secondary">
                 <div className="flex items-center gap-2">✓ Material teórico-práctico premium</div>
-                <div className="flex items-center gap-2">✓ Práctica real supervisada por Milé</div>
+                <div className="flex items-center gap-2">✓ Práctica real supervisada por Mile</div>
                 <div className="flex items-center gap-2">✓ Kit inicial completo incluido</div>
                 <div className="flex items-center gap-2">✓ Certificación internacional</div>
               </div>
@@ -445,7 +445,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="font-display text-lg tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold font-bold">Milé Almanza</span>
+                <span className="font-display text-lg tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold font-bold">Mile Almanza</span>
               </div>
               <p className="text-sm text-text-muted leading-relaxed">Estudio premium de estética y micropigmentación. Tu belleza, nuestra pasión.</p>
             </div>
@@ -473,7 +473,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-border-subtle pt-6 text-center">
-            <p className="text-xs text-text-muted">© {new Date().getFullYear()} Milé Almanza — Estudio Premium de Estética. Todos los derechos reservados.</p>
+            <p className="text-xs text-text-muted">© {new Date().getFullYear()} Mile Almanza — Estudio Premium de Estética. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

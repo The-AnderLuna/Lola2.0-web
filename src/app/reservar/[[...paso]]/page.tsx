@@ -3600,7 +3600,7 @@ export default function FlujoReserva() {
                                                             <div className="flex flex-col relative z-10">
                                                                 <span className="font-semibold text-text-secondary text-sm">
                                                                     {metodoPago === 'nequi' ? 'Nequi' : 'Daviplata'}
-                                                                    <span className="text-xs font-normal text-text-muted ml-1 hidden sm:inline">({configData?.titular_cuenta || 'Milé Almanza'})</span>
+                                                                    <span className="text-xs font-normal text-text-muted ml-1 hidden sm:inline">({configData?.titular_cuenta || 'Mile Almanza'})</span>
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-center gap-3 relative z-10">

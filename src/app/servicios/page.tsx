@@ -57,7 +57,7 @@ const CATEGORY_DETAILS: Record<string, { desc: string }> = {
     desc: "Asesorías visuales completamente personalizadas, diagnóstico de piel del rostro y diseño preliminar para tratamientos futuros."
   },
   default: {
-    desc: "Tratamientos de alta costura diseñados y supervisados por la especialista Milé Almanza para exaltar tu belleza natural."
+    desc: "Tratamientos de alta costura diseñados y supervisados por la especialista Mile Almanza para exaltar tu belleza natural."
   }
 };
 
@@ -233,7 +233,7 @@ export default function ServiciosPage() {
           <Link href="/" className="flex items-center gap-2 group">
             <ChevronLeft className="w-5 h-5 text-gold group-hover:-translate-x-1 transition-transform" />
             <span className="font-display text-xl tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark font-bold">
-              Milé Almanza
+              Mile Almanza
             </span>
           </Link>
           <Link href="/reservar" className="px-5 py-2.5 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs rounded-full hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-all hover:scale-105 tracking-wider uppercase">
@@ -436,7 +436,7 @@ export default function ServiciosPage() {
                       {grupo.servicios.length > 1 ? (
                         <div className="absolute top-4 right-4 px-3.5 py-1.5 bg-black text-white rounded-full flex items-center gap-1.5 border border-white/20 shadow-lg">
                           <Users className="w-3.5 h-3.5 text-gold" />
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-white">Milé & Staff</span>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-white">Mile & Staff</span>
                         </div>
                       ) : null}
                     </div>

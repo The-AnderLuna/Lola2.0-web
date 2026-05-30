@@ -101,7 +101,7 @@ export default function AdminShell({ children, botActivo: initialBotActivo = tru
               <Crown className="w-5 h-5 text-gold" />
             </div>
             <div>
-              <p className="font-display text-sm font-semibold text-text-primary">Milé Almanza</p>
+              <p className="font-display text-sm font-semibold text-text-primary">Mile Almanza</p>
               <p className="text-[10px] text-text-muted">Panel de Control</p>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default function AdminShell({ children, botActivo: initialBotActivo = tru
         >
           <div className="flex items-center gap-2">
             <Crown className="w-5 h-5 text-gold" />
-            <span className="font-display text-sm font-semibold text-text-primary">Milé Almanza</span>
+            <span className="font-display text-sm font-semibold text-text-primary">Mile Almanza</span>
           </div>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -225,7 +225,7 @@ export default function AdminShell({ children, botActivo: initialBotActivo = tru
               <div className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="flex items-center gap-3">
                   <Crown className="w-5 h-5 text-gold" />
-                  <span className="font-display text-sm font-semibold text-text-primary">Milé Almanza</span>
+                  <span className="font-display text-sm font-semibold text-text-primary">Mile Almanza</span>
                 </div>
                 <button onClick={() => setSidebarOpen(false)} className="text-text-muted hover:text-text-primary">
                   <X className="w-5 h-5" />

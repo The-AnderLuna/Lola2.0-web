@@ -4,8 +4,8 @@ import AdminShell from '@/components/admin/AdminShell';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const metadata = {
-  title: 'Panel de Control — Milé Almanza',
-  description: 'Dashboard administrativo de Milé Almanza Estudio de Estética',
+  title: 'Panel de Control — Mile Almanza',
+  description: 'Dashboard administrativo de Mile Almanza Estudio de Estética',
 };
 
 export default async function AdminLayout({

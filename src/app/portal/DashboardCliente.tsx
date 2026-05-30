@@ -255,14 +255,14 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
     const formattedDate = formatFriendlyDate(cita.fechaHoraInicio);
     const formattedTime = formatFriendlyTime(cita.fechaHoraInicio);
     const text = actionType === "cambio"
-      ? `Hola Milé Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. ¿Qué disponibilidad tienen?`
-      : `Hola Milé Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar la cancelación de mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. Muchas gracias.`;
+      ? `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. ¿Qué disponibilidad tienen?`
+      : `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar la cancelación de mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. Muchas gracias.`;
     
     return `https://wa.me/573138865616?text=${encodeURIComponent(text)}`;
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-bg-base grain-overlay font-inter text-text-primary">
+    <div className="min-h-screen flex flex-col justify-between bg-black font-inter text-text-primary">
       {/* Estética Premium: Círculos de luz flotantes */}
       <div className="absolute top-[-10%] left-[-20%] w-[60%] aspect-square rounded-full bg-gold opacity-[0.03] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-20%] w-[60%] aspect-square rounded-full bg-red-urgency opacity-[0.02] blur-[120px] pointer-events-none" />
@@ -271,8 +271,8 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       <header className="w-full border-b border-white/5 bg-bg-card/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push("/")}>
-            <span className="font-display font-semibold tracking-[0.12em] text-xs uppercase text-text-primary group-hover:text-gold transition-colors duration-300">
-              Milé Almanza
+            <span className="font-display font-bold tracking-[0.12em] text-xs uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark transition-all duration-300">
+              Mile Almanza
             </span>
           </div>
 
@@ -635,7 +635,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       {/* Footer Fino */}
       <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          © {new Date().getFullYear()} Milé Almanza Estética. Todos los derechos reservados.
+          © {new Date().getFullYear()} Mile Almanza Estética. Todos los derechos reservados.
         </div>
         <div className="flex gap-4">
           <span className="hover:text-text-secondary transition-colors cursor-pointer">Términos</span>

@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
             Panel de Control
           </h1>
           <p className="text-text-secondary text-sm">
-            Milé Almanza — Estudio Premium de Estética
+            Mile Almanza — Estudio Premium de Estética
           </p>
         </div>
 
