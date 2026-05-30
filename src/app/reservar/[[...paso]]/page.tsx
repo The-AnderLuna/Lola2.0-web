@@ -1547,7 +1547,7 @@ export default function FlujoReserva() {
                                                                     width={64}
                                                                     height={64}
                                                                     className={`w-[70%] h-[70%] object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.3)] transition-transform duration-300 ${
-                                                                        categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('despigmentaci') ? 'scale-[1.9] md:scale-[2.0] group-hover:scale-[2.1]' :
+                                                                        categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('despigmentaci') ? 'scale-[2.3] md:scale-[2.4] group-hover:scale-[2.5]' :
                                                                         (categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('medicina') || categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('depilaci')) ? 'scale-[1.65] md:scale-[1.75] group-hover:scale-[1.8]' :
                                                                         (categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('pesta') || categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('facial')) ? 'scale-[1.5] md:scale-[1.6] group-hover:scale-[1.65]' :
                                                                         categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('ceja') ? 'scale-[1.25] md:scale-[1.3] group-hover:scale-[1.35]' :
