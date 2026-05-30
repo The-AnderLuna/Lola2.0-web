@@ -2299,7 +2299,7 @@ export default function FlujoReserva() {
                                                             onClick={() => removeServiceFromCartByUid(grp.uids[grp.uids.length - 1])}
                                                             className="w-6 h-6 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-red-urgency hover:border-red-urgency/50 transition-colors"
                                                         ><Minus className="w-3 h-3" /></button>
-                                                        <span className="text-sm font-bold text-text-primary min-w-[16px] text-center">{grp.count}</span>
+                                                        <span className="text-sm font-bold text-text-primary min-w-[16px] text-center">{grp.count} <span className="text-[9px] font-semibold text-text-muted uppercase tracking-wider">cupo{grp.count !== 1 ? 's' : ''}</span></span>
                                                         <button
                                                             onClick={() => addServiceToCart(grp)}
                                                             className="w-6 h-6 flex items-center justify-center rounded-full bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 hover:border-gold/50 transition-colors"
