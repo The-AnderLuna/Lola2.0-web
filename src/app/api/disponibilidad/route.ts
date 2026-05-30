@@ -4,10 +4,7 @@ import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
 
 // --- CONFIGURACIÓN ---
 const ZONA_HORARIA = 'America/Bogota';
