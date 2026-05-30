@@ -1668,30 +1668,22 @@ export default function FlujoReserva() {
                                                                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/8 to-transparent rounded-bl-full -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-150 pointer-events-none"></div>
                                                                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-gold/5 to-transparent rounded-tr-full -ml-3 -mb-3 pointer-events-none"></div>
 
-                                                                {/* Icono de la categoría generado dinámicamente */}
-                                                                <div className={`w-20 h-20 md:w-24 md:h-24 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)] ${
-                                                                    categoria.nombre.toLowerCase().includes('facial') ? 'mb-6 md:mb-8' : 'mb-2 md:mb-3'
-                                                                }`}>
+                                                                {/* Contenedor Superior (Imagen) */}
+                                                                <div className="flex-1 w-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)] mb-3 mt-1 min-h-[50%]">
                                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                     <img 
                                                                         src={`/icons/categorias/${getCategoryIconFilename(categoria.nombre)}.png`}
                                                                         alt={categoria.nombre} 
-                                                                        className={`w-full h-full object-contain ${
-                                                                            (categoria.nombre.toLowerCase().includes('ceja') || categoria.nombre.toLowerCase().includes('pesta') || categoria.nombre.toLowerCase().includes('depilaci') || categoria.nombre.toLowerCase().includes('cauterizaci')) ? 'scale-[1.4]' : 
-                                                                            categoria.nombre.toLowerCase().includes('medicina') ? 'scale-125' : 
-                                                                            'scale-125' // Default scale for all to make them look good
-                                                                        }`} 
+                                                                        className="max-w-[120%] max-h-[120%] md:max-w-[130%] md:max-h-[130%] object-contain"
                                                                     />
                                                                 </div>
 
-                                                                {/* Nombre de la categoría */}
-                                                                <h3 className="text-sm md:text-base font-bold text-text-primary uppercase tracking-[0.2em] relative z-10 leading-tight group-hover:text-gold transition-colors duration-300">{categoria.nombre}</h3>
-
-                                                                {/* Línea decorativa inferior */}
-                                                                <div className="w-6 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent mt-3 mb-2 group-hover:w-10 transition-all duration-500"></div>
-
-                                                                {/* Cantidad de opciones */}
-                                                                <p className="text-[10px] md:text-[11px] text-text-muted font-medium tracking-widest uppercase relative z-10">{categoria.grupos.length} opciones</p>
+                                                                {/* Contenedor Inferior (Textos) */}
+                                                                <div className="flex flex-col items-center justify-end relative z-10 w-full mt-auto">
+                                                                    <h3 className="text-[11px] md:text-[13px] font-bold text-text-primary uppercase tracking-[0.15em] leading-tight group-hover:text-gold transition-colors duration-300 px-1">{categoria.nombre}</h3>
+                                                                    <div className="w-6 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent mt-2 mb-1.5 group-hover:w-10 transition-all duration-500"></div>
+                                                                    <p className="text-[9px] md:text-[10px] text-text-muted font-medium tracking-widest uppercase">{categoria.grupos.length} opciones</p>
+                                                                </div>
                                                             </button>
                                                         ))}
                                                     </div>
