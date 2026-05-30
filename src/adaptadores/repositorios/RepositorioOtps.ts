@@ -53,4 +53,14 @@ export class RepositorioOtps {
 
     if (error) throw new Error(`Error marcando OTP como usado: ${error.message}`);
   }
+
+  async invalidarAnteriores(telefono: string): Promise<void> {
+    const { error } = await supabase
+      .from('codigos_otp')
+      .update({ usado: true }) // Marcar como usado para invalidarlo
+      .eq('telefono', telefono)
+      .eq('usado', false);
+
+    if (error) throw new Error(`Error invalidando OTPs anteriores: ${error.message}`);
+  }
 }

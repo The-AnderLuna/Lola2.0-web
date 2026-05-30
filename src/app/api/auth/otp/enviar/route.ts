@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expira en 10 minutos
 
     // 3. Persistir en base de datos
+    await repositorioOtps.invalidarAnteriores(telefonoFormateado);
     await repositorioOtps.crear(telefonoFormateado, codigo, expiresAt);
 
     // 4. Enviar vía Webhook a n8n
