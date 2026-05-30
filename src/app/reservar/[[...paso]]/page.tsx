@@ -149,12 +149,12 @@ export default function FlujoReserva() {
     const [verrugasForm, setVerrugasForm] = useState({ duele: '', medico: '', molestia: '', nota: '' });
     const [validandoCupon, setValidandoCupon] = useState(false);
 
-    // Scroll to top on step change
+    // Scroll to top on step/category change instantly
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'auto' });
         }
-    }, [step]);
+    }, [step, activeCategory]);
 
     useEffect(() => {
         // ── HIDRATACIÓN DESDE SESSION STORAGE ────────────────────────────────
