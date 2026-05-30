@@ -2290,6 +2290,11 @@ export default function FlujoReserva() {
                                                         </div>
                                                     )}
                                                     <div className="flex items-center gap-2 ml-auto">
+                                                        {/* Papelera: elimina todo el grupo de un toque */}
+                                                        <button
+                                                            onClick={() => setSelectedServices(prev => prev.filter(s => s.id !== grp.id))}
+                                                            className="w-6 h-6 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-red-400 hover:border-red-400/50 transition-colors"
+                                                        ><Trash2 className="w-3 h-3" /></button>
                                                         <button
                                                             onClick={() => removeServiceFromCartByUid(grp.uids[grp.uids.length - 1])}
                                                             className="w-6 h-6 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-red-urgency hover:border-red-urgency/50 transition-colors"
