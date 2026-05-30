@@ -1680,6 +1680,7 @@ export default function FlujoReserva() {
                                                                         className={`max-w-[120%] max-h-[120%] md:max-w-[130%] md:max-h-[130%] object-contain transition-transform duration-300 ${
                                                                             (categoria.nombre.toLowerCase().includes('medicina') || categoria.nombre.toLowerCase().includes('depilaci') || categoria.nombre.toLowerCase().includes('despigmentaci')) ? 'scale-[1.45] md:scale-[1.5]' :
                                                                             (categoria.nombre.toLowerCase().includes('pesta') || categoria.nombre.toLowerCase().includes('facial') || categoria.nombre.toLowerCase().includes('ceja')) ? 'scale-[1.25] md:scale-[1.3]' :
+                                                                            categoria.nombre.toLowerCase().includes('labio') ? 'scale-90 md:scale-95' :
                                                                             'scale-100'
                                                                         } ${categoria.nombre.toLowerCase().includes('despigmentaci') ? '-translate-y-2 md:-translate-y-3' : ''}`}
                                                                     />
