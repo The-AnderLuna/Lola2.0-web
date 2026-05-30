@@ -466,6 +466,15 @@ export default function FlujoReserva() {
         try { sessionStorage.setItem('lola_booking_step', String(step)); } catch (e) { }
     }, [step]);
 
+    // Resetear reserva compartida si los servicios caen a menos de 2
+    useEffect(() => {
+        if (selectedServices.length < 2 && esReservaCompartida) {
+            setEsReservaCompartida(false);
+            setServiciosAmiga([]);
+            setDatosAmiga({ nombre: "", telefono: "" });
+        }
+    }, [selectedServices.length, esReservaCompartida]);
+
     // ── GUARDS DE PASO ──────────────────────────────────────────────────────
     // Validamos que no se pueda estar en un paso avanzado si faltan datos obligatorios.
     // Usamos isHydrated para asegurar que leemos los estados ya restaurados.
