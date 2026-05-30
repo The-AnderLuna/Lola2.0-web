@@ -1669,12 +1669,16 @@ export default function FlujoReserva() {
                                                                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-gold/5 to-transparent rounded-tr-full -ml-3 -mb-3 pointer-events-none"></div>
 
                                                                 {/* Contenedor Superior (Imagen) */}
-                                                                <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+                                                                <div className="flex-1 w-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.15)] mb-3 mt-1 min-h-[50%]">
                                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                     <img 
                                                                         src={`/icons/categorias/${getCategoryIconFilename(categoria.nombre)}.png`}
                                                                         alt={categoria.nombre} 
-                                                                        className="w-full h-full object-contain"
+                                                                        className={`max-w-[120%] max-h-[120%] md:max-w-[130%] md:max-h-[130%] object-contain transition-transform duration-300 ${
+                                                                            (categoria.nombre.toLowerCase().includes('medicina') || categoria.nombre.toLowerCase().includes('depilaci') || categoria.nombre.toLowerCase().includes('despigmentaci')) ? 'scale-[1.45] md:scale-[1.5]' :
+                                                                            (categoria.nombre.toLowerCase().includes('pesta') || categoria.nombre.toLowerCase().includes('facial') || categoria.nombre.toLowerCase().includes('ceja')) ? 'scale-[1.25] md:scale-[1.3]' :
+                                                                            'scale-100'
+                                                                        }`}
                                                                     />
                                                                 </div>
 
