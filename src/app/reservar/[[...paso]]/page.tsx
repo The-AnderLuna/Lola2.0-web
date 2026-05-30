@@ -1852,7 +1852,7 @@ export default function FlujoReserva() {
                                         {selectedServices.length > 0 && (
                                             <div className="lg:hidden fixed bottom-4 left-4 right-4 bg-bg-card/95 backdrop-blur-md border border-gold/30 p-3 flex items-center justify-between z-40 shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 rounded-2xl">
                                                 <div className="flex flex-col ml-2">
-                                                    <span className="text-[10px] text-text-muted font-semibold leading-tight">{selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}</span>
+                                                    <span className="text-[10px] text-text-muted font-semibold leading-tight">{selectedServices.length} {selectedServices.length === 1 ? 'cupo' : 'cupos'}</span>
                                                     <span className="text-base font-bold text-gold leading-tight">{formatCurrency(selectedServices.reduce((acc, curr) => acc + curr.precio, 0))}</span>
                                                 </div>
                                                 <button onClick={() => openCart()} className="bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.3)] text-sm">
@@ -1885,7 +1885,7 @@ export default function FlujoReserva() {
                                                 </h3>
                                                 <div className="flex items-center gap-2 relative z-10">
                                                     <span className="bg-gold/10 border border-gold/20 text-gold px-3 py-1 rounded-md text-xs font-bold shadow-sm">
-                                                        {selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}
+                                                        {selectedServices.length} {selectedServices.length === 1 ? 'cupo' : 'cupos'}
                                                     </span>
                                                     <button onClick={() => closeCart()} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-white transition-colors">
                                                         <X className="w-4 h-4" />
@@ -2098,11 +2098,11 @@ export default function FlujoReserva() {
                                                                         }}
                                                                         className="w-full text-left px-3 py-2.5 text-xs font-semibold flex items-center justify-between gap-2"
                                                                     >
-                                                                        <span className={`flex items-center gap-2 ${isAmiga ? 'text-gold' : 'text-text-secondary'}`}>
+                                                                        <span className={`flex items-center gap-2 min-w-0 ${isAmiga ? 'text-gold' : 'text-text-secondary'}`}>
                                                                             <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0 ${isAmiga ? 'bg-gold border-gold' : 'border-text-muted/40'}`}>
                                                                                 {isAmiga && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
                                                                             </span>
-                                                                            <span>{srvHasAlt ? srvBaseName : srv.nombre}</span>
+                                                                            <span className="truncate leading-tight">{srvHasAlt ? srvBaseName : srv.nombre}</span>
                                                                         </span>
                                                                         <span className={`font-bold flex-shrink-0 ${isAmiga ? 'text-gold' : 'text-text-muted'} ${srv.requiereHumano || srv.precio === 0 ? 'text-[10px]' : ''}`}>{srv.requiereHumano || srv.precio === 0 ? "Valoración" : formatCurrency(srv.precio)}</span>
                                                                     </button>
