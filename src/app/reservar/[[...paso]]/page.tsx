@@ -2217,7 +2217,7 @@ export default function FlujoReserva() {
                                 </div>
                             </div>
 
-                            {/* Lista servicios móvil */}
+                            {/* Lista servicios móvil - AGRUPADA con controles de cantidad */}
                             <div className="p-4 flex-1 overflow-y-auto space-y-2 hide-scrollbar">
                                 {selectedServices.length === 0 ? (
                                     <div className="text-center py-8 flex flex-col items-center opacity-50">
@@ -2225,25 +2225,94 @@ export default function FlujoReserva() {
                                         <p className="text-text-muted text-sm">Aún no has seleccionado ningún servicio.</p>
                                     </div>
                                 ) : (
-                                    selectedServices.map(srv => (
-                                        <div key={srv.uid} className="bg-bg-surface border border-white/[0.06] rounded-xl px-3 py-2.5 flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-text-primary truncate pr-2">{srv.nombre}</span>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                <span className="text-sm font-bold text-gold">{formatCurrency(srv.precio)}</span>
-                                                <button
-                                                    onClick={() => removeServiceFromCartByUid(srv.uid)}
-                                                    className="w-6 h-6 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-red-urgency hover:border-red-urgency/50 transition-colors"
-                                                >
-                                                    <Minus className="w-3 h-3" />
-                                                </button>
+                                    Object.values(
+                                        selectedServices.reduce((acc, srv) => {
+                                            if (!acc[srv.id]) acc[srv.id] = { ...srv, count: 0, uids: [] };
+                                            acc[srv.id].count++;
+                                            acc[srv.id].uids.push(srv.uid);
+                                            return acc;
+                                        }, {} as Record<string, CartService & { count: number; uids: string[] }>)
+                                    ).map(grp => {
+                                        const baseName = grp.nombre.replace(/ - (Mile|Staff)$/i, '').trim();
+                                        let staffVer: any = null;
+                                        let mileVer: any = null;
+                                        for (const cat of categorias) {
+                                            const group = cat.grupos.find(g => g.nombreBase === baseName);
+                                            if (group) {
+                                                staffVer = group.servicios.find(v => v.responsable === 'Staff' || v.nombre.toLowerCase().includes('- staff'));
+                                                mileVer = group.servicios.find(v => v.responsable === 'Mile' || v.nombre.toLowerCase().includes('- mile'));
+                                                break;
+                                            }
+                                        }
+                                        const hasAlt = staffVer && mileVer;
+                                        const isMile = grp.responsable === 'Mile' || grp.nombre.toLowerCase().includes('- mile');
+                                        return (
+                                            <div key={grp.id} className="bg-bg-surface border border-white/[0.06] rounded-xl p-3 hover:border-gold/20 transition-all">
+                                                <div className="flex justify-between items-start gap-2 mb-1">
+                                                    <div className="flex-1 min-w-0">
+                                                        <span className="text-sm font-semibold text-text-primary leading-tight block truncate">{baseName}</span>
+                                                        {grp.duracionMin > 0 && (
+                                                            <span className="text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
+                                                                <Clock className="w-2.5 h-2.5" /> {formatearDuracion(grp.duracionMin * grp.count)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-sm font-bold text-gold flex-shrink-0">{formatCurrency(grp.precio * grp.count)}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between mt-2">
+                                                    {hasAlt && (
+                                                        <div className="relative flex bg-bg-base border border-white/[0.08] rounded-full p-0.5 shadow-inner overflow-hidden">
+                                                            <div
+                                                                className="absolute top-0.5 bottom-0.5 rounded-full transition-all duration-300"
+                                                                style={{
+                                                                    left: isMile ? '2px' : '50%',
+                                                                    right: isMile ? '50%' : '2px',
+                                                                    background: 'linear-gradient(135deg,#D4AF37,#F5D770)',
+                                                                    boxShadow: '0 0 10px rgba(212,175,55,0.6)'
+                                                                }}
+                                                            />
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (!isMile && mileVer) {
+                                                                        setSelectedServices(prev => prev.map(s => s.id === grp.id ? { ...mileVer, uid: s.uid } : s));
+                                                                    }
+                                                                }}
+                                                                className={`relative z-10 px-2 py-0.5 text-[8px] font-black tracking-widest rounded-full transition-all duration-300 ${isMile ? 'text-black' : 'text-text-muted/50'}`}
+                                                            >MILE</button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (isMile && staffVer) {
+                                                                        setSelectedServices(prev => prev.map(s => s.id === grp.id ? { ...staffVer, uid: s.uid } : s));
+                                                                    }
+                                                                }}
+                                                                className={`relative z-10 px-2 py-0.5 text-[8px] font-black tracking-widest rounded-full transition-all duration-300 ${!isMile ? 'text-black' : 'text-text-muted/50'}`}
+                                                            >STAFF</button>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-2 ml-auto">
+                                                        <button
+                                                            onClick={() => removeServiceFromCartByUid(grp.uids[grp.uids.length - 1])}
+                                                            className="w-6 h-6 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-red-urgency hover:border-red-urgency/50 transition-colors"
+                                                        ><Minus className="w-3 h-3" /></button>
+                                                        <span className="text-sm font-bold text-text-primary min-w-[16px] text-center">{grp.count}</span>
+                                                        <button
+                                                            onClick={() => addServiceToCart(grp)}
+                                                            className="w-6 h-6 flex items-center justify-center rounded-full bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 hover:border-gold/50 transition-colors"
+                                                        ><Plus className="w-3 h-3" /></button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
 
                             {/* Footer móvil */}
-                            <div className="p-4 bg-bg-card border-t border-border-subtle flex flex-col gap-3">
+                            <div className="p-4 bg-bg-card border-t border-border-subtle flex flex-col gap-2.5">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-text-secondary font-semibold">Costo Total</span>
+                                    <span className="font-bold text-text-primary">{formatCurrency(totalPrecio)}</span>
+                                </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-text-secondary font-semibold">Tiempo Total</span>
                                     <span className="font-bold text-text-primary flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gold" /> {formatearDuracion(totalDuracion)}</span>
@@ -2251,7 +2320,7 @@ export default function FlujoReserva() {
                                 <div className="flex justify-between items-center bg-gold/[0.06] border border-gold/20 rounded-xl px-3 py-2.5">
                                     <div>
                                         <span className="text-[9px] font-black text-gold/60 uppercase tracking-[2.5px] block">Abono Requerido</span>
-                                        <span className="text-[8px] text-gold/40 uppercase tracking-widest">{formatCurrency(totalPrecio)} total</span>
+                                        <span className="text-[8px] text-gold/40 uppercase tracking-widest">Para confirmar cita</span>
                                     </div>
                                     <span className="font-extrabold text-gold text-xl">{formatCurrency(totalAbono)}</span>
                                 </div>
