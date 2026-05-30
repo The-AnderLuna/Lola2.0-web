@@ -113,6 +113,28 @@ export default function FlujoReserva() {
 
     // Selection States
     const [isCartOpen, setIsCartOpen] = useState(false);
+
+    const openCart = useCallback(() => {
+        setIsCartOpen(true);
+        window.location.hash = 'cart';
+    }, []);
+
+    const closeCart = useCallback(() => {
+        setIsCartOpen(false);
+        if (window.location.hash === '#cart') {
+            window.history.back();
+        }
+    }, []);
+
+    useEffect(() => {
+        const handleHashChange = () => {
+            if (window.location.hash !== '#cart' && isCartOpen) {
+                setIsCartOpen(false);
+            }
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, [isCartOpen]);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedServices, setSelectedServices] = useState<CartService[]>([]);
@@ -1271,19 +1293,8 @@ export default function FlujoReserva() {
                     <span className="font-bold text-xl tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark">MILE ALMANZA</span>
                 </Link>
                 <div className="flex items-center gap-3">
-                    {isHydrated && step === 1 && selectedServices.length > 0 && (
-                        <button 
-                            onClick={() => setIsCartOpen(true)} 
-                            className="lg:hidden relative text-gold border border-gold/30 rounded-full p-2 hover:bg-gold/10 transition-colors"
-                        >
-                            <ShoppingCart className="w-4 h-4" />
-                            <span className="absolute -top-1 -right-1 bg-gold text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                                {selectedServices.length}
-                            </span>
-                        </button>
-                    )}
                     {isHydrated && step > 0 && (
-                        <Link href="/mis-citas" className="text-[10px] md:text-xs font-bold text-gold border border-gold/30 rounded-full px-2 py-1 md:px-3 hover:bg-gold/10 transition-colors uppercase tracking-wider hidden sm:block">
+                        <Link href="/mis-citas" className="text-[10px] md:text-xs font-bold text-gold border border-gold/30 rounded-full px-2 py-1 md:px-3 hover:bg-gold/10 transition-colors uppercase tracking-wider">
                             Mis Citas
                         </Link>
                     )}
@@ -1829,13 +1840,13 @@ export default function FlujoReserva() {
 
                                         {/* BARRA FLOTANTE MÓVIL (CART SUMMARY) */}
                                         {selectedServices.length > 0 && (
-                                            <div className="lg:hidden fixed bottom-0 left-0 w-full bg-bg-card/95 backdrop-blur-md border-t border-gold/30 p-4 pb-6 flex items-center justify-between z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs text-text-muted font-semibold">{selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}</span>
-                                                    <span className="text-lg font-bold text-gold">{formatCurrency(selectedServices.reduce((acc, curr) => acc + curr.precio, 0))}</span>
+                                            <div className="lg:hidden fixed bottom-4 left-4 right-4 bg-bg-card/95 backdrop-blur-md border border-gold/30 p-3 flex items-center justify-between z-40 shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 rounded-2xl">
+                                                <div className="flex flex-col ml-2">
+                                                    <span className="text-[10px] text-text-muted font-semibold leading-tight">{selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}</span>
+                                                    <span className="text-base font-bold text-gold leading-tight">{formatCurrency(selectedServices.reduce((acc, curr) => acc + curr.precio, 0))}</span>
                                                 </div>
-                                                <button onClick={() => setIsCartOpen(true)} className="bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold py-3 px-6 rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
-                                                    Ver Reserva <ShoppingCart className="w-4 h-4" />
+                                                <button onClick={() => openCart()} className="bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.3)] text-sm">
+                                                    Ver Reserva <ShoppingCart className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         )}
@@ -1858,7 +1869,7 @@ export default function FlujoReserva() {
                                                     <span className="bg-gold/10 border border-gold/20 text-gold px-3 py-1 rounded-md text-xs font-bold shadow-sm">
                                                         {selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}
                                                     </span>
-                                                    <button onClick={() => setIsCartOpen(false)} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-white transition-colors">
+                                                    <button onClick={() => closeCart()} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-white transition-colors">
                                                         <X className="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -2129,7 +2140,7 @@ export default function FlujoReserva() {
 
                                                 <button
                                                     disabled={selectedServices.length === 0 || (esReservaCompartida && (serviciosAmiga.length === 0 || serviciosTitular.length === 0))}
-                                                    onClick={() => { setIsCartOpen(false); nextStep(); }}
+                                                    onClick={() => { closeCart(); nextStep(); }}
                                                     className="w-full py-4 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black rounded-xl font-bold uppercase tracking-wider text-sm disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition-all flex items-center justify-center gap-2"
                                                 >
                                                     Agendar Fecha <ArrowRight className="w-4 h-4" />
