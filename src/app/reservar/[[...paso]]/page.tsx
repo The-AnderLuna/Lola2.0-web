@@ -1546,7 +1546,12 @@ export default function FlujoReserva() {
                                                                     alt={categorias.find(c => c.id === activeCategory)!.nombre}
                                                                     width={64}
                                                                     height={64}
-                                                                    className="w-[70%] h-[70%] object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-300"
+                                                                    className={`w-[70%] h-[70%] object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.3)] transition-transform duration-300 ${
+                                                                        (categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('medicina') || categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('depilaci') || categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('despigmentaci')) ? 'scale-[1.45] md:scale-[1.5] group-hover:scale-[1.55]' :
+                                                                        (categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('pesta') || categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('facial') || categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('ceja')) ? 'scale-[1.25] md:scale-[1.3] group-hover:scale-[1.35]' :
+                                                                        categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('labio') ? 'scale-90 md:scale-95 group-hover:scale-100' :
+                                                                        'scale-100 group-hover:scale-110'
+                                                                    } ${categorias.find(c => c.id === activeCategory)!.nombre.toLowerCase().includes('despigmentaci') ? '-translate-y-1' : ''}`}
                                                                 />
                                                             </div>
                                                         )}
