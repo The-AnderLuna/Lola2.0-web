@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
 import { Cliente } from '@/nucleo/entidades/Cliente';
 
 export class RepositorioClientes {

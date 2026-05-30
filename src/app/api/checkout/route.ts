@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
 
 async function findOrCreateCliente(datos: any): Promise<string> {
   let query = supabase.from('clientes').select('id');

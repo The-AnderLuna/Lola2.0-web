@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
 import { Cita } from '@/nucleo/entidades/Cita';
 import { EstadoCita } from '@/nucleo/entidades/Tipos';
 
