@@ -1997,7 +1997,12 @@ export default function FlujoReserva() {
                                                                                 >
                                                                                     <Minus className="w-3 h-3" />
                                                                                 </button>
-                                                                                <span className="text-sm font-bold text-text-primary min-w-[20px] text-center">{grp.count}</span>
+                                                                                <span className="text-sm font-bold text-text-primary min-w-[20px] text-center">
+                                                                                    {grp.count}{' '}
+                                                                                    <span className="text-[9px] font-semibold text-text-muted uppercase tracking-wider">
+                                                                                        cupo{grp.count !== 1 ? 's' : ''}
+                                                                                    </span>
+                                                                                </span>
                                                                                 <button
                                                                                     onClick={() => addServiceToCart(grp)}
                                                                                     className="w-7 h-7 flex items-center justify-center rounded-full bg-gold/10 border border-gold/30 text-gold hover:bg-gold/20 hover:border-gold/50 transition-colors"
