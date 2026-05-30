@@ -1536,12 +1536,25 @@ export default function FlujoReserva() {
                                                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Volver a categorías
                                                     </button>
 
-                                                    <div className="flex items-center gap-4">
+                                                    <div className="flex items-center gap-4 md:gap-6">
+                                                        {categorias.find(c => c.id === activeCategory) && (
+                                                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-bg-card border border-border-subtle flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.1)] flex-shrink-0 relative overflow-hidden group">
+                                                                {/* Resplandor sutil en el fondo del círculo */}
+                                                                <div className="absolute inset-0 bg-gold/5 group-hover:bg-gold/10 transition-colors"></div>
+                                                                <Image 
+                                                                    src={`/icons/categorias/${getCategoryIconFilename(categorias.find(c => c.id === activeCategory)!.nombre)}.png`}
+                                                                    alt={categorias.find(c => c.id === activeCategory)!.nombre}
+                                                                    width={64}
+                                                                    height={64}
+                                                                    className="w-[70%] h-[70%] object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.3)] group-hover:scale-110 transition-transform duration-300"
+                                                                />
+                                                            </div>
+                                                        )}
                                                         <div>
-                                                            <h2 className="text-2xl font-bold text-text-primary uppercase tracking-widest">
+                                                            <h2 className="text-2xl md:text-3xl font-bold text-text-primary uppercase tracking-widest leading-none">
                                                                 {categorias.find(c => c.id === activeCategory)?.nombre}
                                                             </h2>
-                                                            <p className="text-sm text-text-secondary mt-1">Selecciona uno o más servicios</p>
+                                                            <p className="text-sm md:text-base text-text-secondary mt-1.5">Selecciona uno o más servicios</p>
                                                         </div>
                                                     </div>
                                                 </div>
