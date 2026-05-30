@@ -133,7 +133,17 @@ export default function FlujoReserva() {
             }
         };
         window.addEventListener('hashchange', handleHashChange);
-        return () => window.removeEventListener('hashchange', handleHashChange);
+        
+        if (isCartOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+            document.body.style.overflow = 'unset';
+        };
     }, [isCartOpen]);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -1851,10 +1861,18 @@ export default function FlujoReserva() {
                                             </div>
                                         )}
 
+                                        {/* BACKDROP MÓVIL */}
+                                        {isCartOpen && (
+                                            <div 
+                                                className="lg:hidden fixed inset-0 z-[50] bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+                                                onClick={() => closeCart()}
+                                            />
+                                        )}
+
                                         {/* COLUMNA DERECHA: CARRITO ESTILO APUESTAS (FIJO O MODAL) */}
                                         <div className={`
-                                            lg:w-[380px] lg:sticky lg:top-32 lg:bg-bg-card lg:border lg:border-gold/30 lg:rounded-3xl lg:shadow-[0_0_40px_rgba(212,175,55,0.1)] lg:overflow-hidden lg:flex lg:flex-col lg:flex-shrink-0 lg:animate-in lg:fade-in lg:duration-500
-                                            ${isCartOpen ? 'fixed inset-0 z-[60] bg-bg-base flex flex-col w-full h-[100dvh] overflow-hidden animate-in slide-in-from-bottom-full duration-300' : 'hidden lg:flex'}
+                                            lg:w-[380px] lg:sticky lg:top-32 lg:bg-bg-card lg:border lg:border-gold/30 lg:rounded-3xl lg:shadow-[0_0_40px_rgba(212,175,55,0.1)] lg:flex lg:flex-col lg:flex-shrink-0 lg:animate-in lg:fade-in lg:duration-500
+                                            ${isCartOpen ? 'fixed bottom-0 left-0 right-0 z-[60] bg-bg-base border-t border-gold/30 rounded-t-[2rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom-full duration-300' : 'hidden lg:flex lg:overflow-hidden'}
                                         `}>
                                             {/* Header Carrito */}
                                             <div className="p-5 border-b border-border-subtle bg-bg-surface flex justify-between items-center relative overflow-hidden">
