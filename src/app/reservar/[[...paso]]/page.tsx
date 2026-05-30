@@ -2267,7 +2267,7 @@ export default function FlujoReserva() {
                                                         <span className="text-sm font-semibold text-text-primary leading-tight block truncate">{baseName}</span>
                                                         {grp.duracionMin > 0 && (
                                                             <span className="text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
-                                                                <Clock className="w-2.5 h-2.5" /> {formatearDuracion(grp.duracionMin * grp.count)}
+                                                                <Clock className="w-2.5 h-2.5" /> {formatearDuracion((grp.duracionMin + grp.bufferMin) * grp.count)}
                                                             </span>
                                                         )}
                                                     </div>
