@@ -1270,12 +1270,17 @@ export default function FlujoReserva() {
                 <Link href="/" className="flex items-center gap-2">
                     <span className="font-bold text-xl tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark">MILE ALMANZA</span>
                 </Link>
-                <div className="text-sm font-semibold text-text-muted flex items-center gap-2">
-                    {step === 0 ? (
-                        <span className="text-gold uppercase tracking-wider text-xs font-bold">Condiciones de Reserva</span>
-                    ) : (
-                        <>Paso <span className="text-gold">{step}</span> de 4</>
-                    )}
+                <div className="flex items-center gap-3">
+                    <Link href="/mis-citas" className="text-[10px] md:text-xs font-bold text-gold border border-gold/30 rounded-full px-2 py-1 md:px-3 hover:bg-gold/10 transition-colors uppercase tracking-wider">
+                        Mis Citas
+                    </Link>
+                    <div className="text-xs md:text-sm font-semibold text-text-muted flex items-center gap-1 md:gap-2">
+                        {step === 0 ? (
+                            <span className="text-gold uppercase tracking-wider font-bold">Condiciones</span>
+                        ) : (
+                            <>Paso <span className="text-gold">{step}</span> de 4</>
+                        )}
+                    </div>
                 </div>
             </header>
 
