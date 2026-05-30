@@ -2348,28 +2348,89 @@ export default function FlujoReserva() {
                                     </button>
                                 )}
 
-                                {/* Asignar a amiga móvil */}
+                                {/* Asignar a amiga móvil - versión completa con toggle Mile/Staff */}
                                 {esReservaCompartida && selectedServices.length >= 2 && (
-                                    <div className="bg-bg-surface border border-gold/20 rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto hide-scrollbar">
+                                    <div className="bg-bg-surface border border-gold/20 rounded-xl p-3 space-y-2 max-h-52 overflow-y-auto hide-scrollbar">
                                         <p className="text-[10px] text-text-muted uppercase tracking-wider font-bold flex items-center gap-1 mb-1">
                                             <UserPlus className="w-3 h-3 text-gold" /> Asigna a tu amiga
                                         </p>
+                                        <p className="text-[9px] text-text-muted leading-tight mb-2">Toca un servicio para asignarlo a tu amiga. Elige también el profesional de cada una:</p>
                                         {selectedServices.map(srv => {
                                             const isAmiga = serviciosAmiga.some(a => a.uid === srv.uid);
+                                            const srvBaseName = srv.nombre.replace(/ - (Mile|Staff)$/i, '').trim();
+                                            let srvStaffVersion: any = null;
+                                            let srvMileVersion: any = null;
+                                            for (const cat of categorias) {
+                                                const group = cat.grupos.find(g => g.nombreBase === srvBaseName);
+                                                if (group) {
+                                                    srvStaffVersion = group.servicios.find(v => v.responsable === 'Staff' || v.nombre.toLowerCase().includes('- staff'));
+                                                    srvMileVersion = group.servicios.find(v => v.responsable === 'Mile' || v.nombre.toLowerCase().includes('- mile'));
+                                                    break;
+                                                }
+                                            }
+                                            const srvHasAlt = srvStaffVersion && srvMileVersion;
+                                            const srvIsMile = srv.responsable === 'Mile' || srv.nombre.toLowerCase().includes('- mile');
                                             return (
-                                                <button
+                                                <div
                                                     key={`mamiga-${srv.uid}`}
-                                                    onClick={() => {
-                                                        if (isAmiga) setServiciosAmiga(prev => prev.filter(a => a.uid !== srv.uid));
-                                                        else setServiciosAmiga(prev => [...prev, srv]);
-                                                    }}
-                                                    className={`w-full text-left px-2.5 py-2 rounded-lg border text-xs font-semibold flex items-center justify-between gap-2 transition-all ${
-                                                        isAmiga ? 'border-gold/40 bg-gold/5 text-gold' : 'border-border-subtle bg-bg-base text-text-secondary'
-                                                    }`}
+                                                    className={`rounded-xl border transition-all duration-200 overflow-hidden ${isAmiga ? 'border-gold/40 bg-gold/5' : 'border-border-subtle bg-bg-base'}`}
                                                 >
-                                                    <span className="truncate">{srv.nombre}</span>
-                                                    <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${isAmiga ? 'bg-gold border-gold' : 'border-border-subtle'}`} />
-                                                </button>
+                                                    {/* Fila principal: asignar / quitar */}
+                                                    <button
+                                                        onClick={() => {
+                                                            if (isAmiga) setServiciosAmiga(prev => prev.filter(a => a.uid !== srv.uid));
+                                                            else setServiciosAmiga(prev => [...prev, srv]);
+                                                        }}
+                                                        className="w-full text-left px-3 py-2 text-xs font-semibold flex items-center justify-between gap-2"
+                                                    >
+                                                        <span className={`flex items-center gap-2 ${isAmiga ? 'text-gold' : 'text-text-secondary'}`}>
+                                                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${isAmiga ? 'bg-gold border-gold' : 'border-text-muted/40'}`}>
+                                                                {isAmiga && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                                            </span>
+                                                            <span className="truncate">{srvHasAlt ? srvBaseName : srv.nombre}</span>
+                                                        </span>
+                                                        <span className={`font-bold flex-shrink-0 text-[10px] ${isAmiga ? 'text-gold' : 'text-text-muted'}`}>
+                                                            {srv.requiereHumano || srv.precio === 0 ? 'Valoración' : formatCurrency(srv.precio)}
+                                                        </span>
+                                                    </button>
+                                                    {/* Toggle Mile/Staff por servicio */}
+                                                    {srvHasAlt && (
+                                                        <div className="px-3 pb-2 flex items-center gap-2">
+                                                            <span className="text-[9px] text-text-muted uppercase tracking-wider font-bold">Con:</span>
+                                                            <div className="relative flex bg-black/20 border border-white/[0.06] rounded-full p-0.5 overflow-hidden">
+                                                                <div
+                                                                    className="absolute top-0.5 bottom-0.5 rounded-full transition-all duration-300"
+                                                                    style={{
+                                                                        left: srvIsMile ? '2px' : '50%',
+                                                                        right: srvIsMile ? '50%' : '2px',
+                                                                        background: 'linear-gradient(135deg,#D4AF37,#F5D770)',
+                                                                        boxShadow: '0 0 10px rgba(212,175,55,0.6)'
+                                                                    }}
+                                                                />
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (!srvIsMile && srvMileVersion) {
+                                                                            const updated = { ...srvMileVersion, uid: srv.uid } as CartService;
+                                                                            setSelectedServices(prev => prev.map(s => s.uid === srv.uid ? updated : s));
+                                                                            if (isAmiga) setServiciosAmiga(prev => prev.map(a => a.uid === srv.uid ? updated : a));
+                                                                        }
+                                                                    }}
+                                                                    className={`relative z-10 px-2.5 py-0.5 text-[8px] font-black tracking-widest rounded-full transition-all duration-300 ${srvIsMile ? 'text-black' : 'text-text-muted/50'}`}
+                                                                >MILE</button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (srvIsMile && srvStaffVersion) {
+                                                                            const updated = { ...srvStaffVersion, uid: srv.uid } as CartService;
+                                                                            setSelectedServices(prev => prev.map(s => s.uid === srv.uid ? updated : s));
+                                                                            if (isAmiga) setServiciosAmiga(prev => prev.map(a => a.uid === srv.uid ? updated : a));
+                                                                        }
+                                                                    }}
+                                                                    className={`relative z-10 px-2.5 py-0.5 text-[8px] font-black tracking-widest rounded-full transition-all duration-300 ${!srvIsMile ? 'text-black' : 'text-text-muted/50'}`}
+                                                                >STAFF</button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             );
                                         })}
                                         {serviciosAmiga.length > 0 && serviciosTitular.length === 0 && (
