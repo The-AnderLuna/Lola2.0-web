@@ -1678,7 +1678,7 @@ export default function FlujoReserva() {
                                                                             (categoria.nombre.toLowerCase().includes('medicina') || categoria.nombre.toLowerCase().includes('depilaci') || categoria.nombre.toLowerCase().includes('despigmentaci')) ? 'scale-[1.45] md:scale-[1.5]' :
                                                                             (categoria.nombre.toLowerCase().includes('pesta') || categoria.nombre.toLowerCase().includes('facial') || categoria.nombre.toLowerCase().includes('ceja')) ? 'scale-[1.25] md:scale-[1.3]' :
                                                                             'scale-100'
-                                                                        }`}
+                                                                        } ${categoria.nombre.toLowerCase().includes('despigmentaci') ? '-translate-y-2 md:-translate-y-3' : ''}`}
                                                                     />
                                                                 </div>
 
