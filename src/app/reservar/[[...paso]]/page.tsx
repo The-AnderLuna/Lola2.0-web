@@ -2158,7 +2158,13 @@ export default function FlujoReserva() {
 
                                                 <button
                                                     disabled={selectedServices.length === 0 || (esReservaCompartida && (serviciosAmiga.length === 0 || serviciosTitular.length === 0))}
-                                                    onClick={() => { closeCart(); nextStep(); }}
+                                                    onClick={() => { 
+                                                        setIsCartOpen(false);
+                                                        if (window.location.hash === '#cart') {
+                                                            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                                                        }
+                                                        nextStep(); 
+                                                    }}
                                                     className="w-full py-4 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black rounded-xl font-bold uppercase tracking-wider text-sm disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition-all flex items-center justify-center gap-2"
                                                 >
                                                     Agendar Fecha <ArrowRight className="w-4 h-4" />
