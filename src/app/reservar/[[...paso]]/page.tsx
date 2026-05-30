@@ -2743,7 +2743,7 @@ export default function FlujoReserva() {
                                         const isMile = srv.nombre.toLowerCase().includes('- mile');
                                         const isStaff = srv.nombre.toLowerCase().includes('- staff');
                                         const profName = isMile ? 'Mile (Master)' : (isStaff ? 'Staff VIP' : srv.responsable || 'Profesional');
-                                        const days = isMile ? 'Lunes, Miércoles, Viernes' : (isStaff ? 'Martes, Jueves, Sábado' : 'Sujeto a disponibilidad');
+                                        const days = isMile ? 'Lunes, Miércoles, Viernes (+ VIP: Mar, Jue, Sáb)' : (isStaff ? 'Martes, Jueves, Sábado' : 'Sujeto a disponibilidad');
 
                                         return (
                                             <button key={srv.id} onClick={() => { toggleService(srv); setConfiguringGroup(null); }} className="flex flex-col text-left p-5 rounded-2xl border border-border-subtle hover:border-gold/50 hover:bg-gold/5 transition-all group">
