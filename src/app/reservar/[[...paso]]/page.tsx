@@ -114,34 +114,46 @@ export default function FlujoReserva() {
     // Selection States
     const [isCartOpen, setIsCartOpen] = useState(false);
 
+    // Helper: silently clear the #cart hash without navigating back
+    const clearCartHash = useCallback(() => {
+        if (typeof window !== 'undefined' && window.location.hash === '#cart') {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+    }, []);
+
     const openCart = useCallback(() => {
         setIsCartOpen(true);
-        window.location.hash = 'cart';
+        if (typeof window !== 'undefined') {
+            window.history.pushState(null, '', window.location.pathname + window.location.search + '#cart');
+        }
     }, []);
 
     const closeCart = useCallback(() => {
         setIsCartOpen(false);
-        if (window.location.hash === '#cart') {
-            window.history.back();
-        }
-    }, []);
+        clearCartHash();
+    }, [clearCartHash]);
 
     useEffect(() => {
         const handleHashChange = () => {
-            if (window.location.hash !== '#cart' && isCartOpen) {
+            // If user pressed browser back and hash is gone, close cart
+            if (window.location.hash !== '#cart') {
                 setIsCartOpen(false);
             }
         };
         const handleResize = () => {
-            if (window.innerWidth >= 1024 && isCartOpen) {
-                closeCart();
+            // On desktop: silently close modal without touching history
+            if (window.innerWidth >= 1024) {
+                setIsCartOpen(false);
+                clearCartHash();
+                document.body.style.overflow = 'unset';
             }
         };
 
         window.addEventListener('hashchange', handleHashChange);
         window.addEventListener('resize', handleResize);
-        
-        if (isCartOpen) {
+
+        // Only lock scroll on mobile when cart is open
+        if (isCartOpen && window.innerWidth < 1024) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -152,7 +164,7 @@ export default function FlujoReserva() {
             window.removeEventListener('resize', handleResize);
             document.body.style.overflow = 'unset';
         };
-    }, [isCartOpen, closeCart]);
+    }, [isCartOpen, clearCartHash]);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedServices, setSelectedServices] = useState<CartService[]>([]);
@@ -1869,19 +1881,9 @@ export default function FlujoReserva() {
                                             </div>
                                         )}
 
-                                        {/* BACKDROP MÓVIL */}
-                                        {isCartOpen && (
-                                            <div 
-                                                className="lg:hidden fixed inset-0 z-[50] bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
-                                                onClick={() => closeCart()}
-                                            />
-                                        )}
+                                        {/* COLUMNA DERECHA: CARRITO DESKTOP (siempre visible en lg+) */}
+                                        <div className="hidden lg:flex lg:flex-col lg:w-[380px] lg:flex-shrink-0 lg:sticky lg:top-32 lg:self-start lg:bg-bg-card lg:border lg:border-gold/30 lg:rounded-3xl lg:shadow-[0_0_40px_rgba(212,175,55,0.1)] lg:animate-in lg:fade-in lg:duration-500 lg:overflow-hidden">
 
-                                        {/* COLUMNA DERECHA: CARRITO ESTILO APUESTAS (FIJO O MODAL) */}
-                                        <div className={`
-                                            lg:w-[380px] lg:sticky lg:top-32 lg:bg-bg-card lg:border lg:border-gold/30 lg:rounded-3xl lg:shadow-[0_0_40px_rgba(212,175,55,0.1)] lg:flex lg:flex-col lg:flex-shrink-0 lg:animate-in lg:fade-in lg:duration-500
-                                            ${isCartOpen ? 'fixed bottom-0 left-0 right-0 z-[60] bg-bg-base border-t border-gold/30 rounded-t-[2rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom-full duration-300' : 'hidden lg:flex lg:overflow-hidden'}
-                                        `}>
                                             {/* Header Carrito */}
                                             <div className="p-5 border-b border-border-subtle bg-bg-surface flex justify-between items-center relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -1895,9 +1897,7 @@ export default function FlujoReserva() {
                                                     <span className="bg-gold/10 border border-gold/20 text-gold px-3 py-1 rounded-md text-xs font-bold shadow-sm">
                                                         {selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}
                                                     </span>
-                                                    <button onClick={() => closeCart()} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-white transition-colors">
-                                                        <X className="w-4 h-4" />
-                                                    </button>
+                                                    {/* El botón X solo aparece en el modal móvil separado */}
                                                 </div>
                                             </div>
 
@@ -2184,6 +2184,138 @@ export default function FlujoReserva() {
                                     </div>
                                 </>
                             )}
+                        </div>
+                    )}
+
+                    {/* ===== CARRITO MÓVIL: PORTAL FIJO INDEPENDIENTE DEL LAYOUT ===== */}
+                    {/* Backdrop */}
+                    {isCartOpen && (
+                        <div
+                            className="lg:hidden fixed inset-0 z-[50] bg-black/70 backdrop-blur-sm"
+                            onClick={() => closeCart()}
+                        />
+                    )}
+                    {/* Bottom Sheet */}
+                    {isCartOpen && (
+                        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] bg-bg-base border-t border-gold/30 rounded-t-[2rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-4 duration-300">
+                            {/* Header móvil */}
+                            <div className="p-4 border-b border-border-subtle bg-bg-surface flex justify-between items-center rounded-t-[2rem] relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full pointer-events-none" />
+                                <h3 className="font-bold text-gold uppercase tracking-widest text-sm flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-full bg-gold/10 border border-gold/25 flex items-center justify-center">
+                                        <ShoppingCart className="w-3.5 h-3.5 text-gold" />
+                                    </div>
+                                    Tu Reserva
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-gold/10 border border-gold/20 text-gold px-3 py-1 rounded-md text-xs font-bold">
+                                        {selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}
+                                    </span>
+                                    <button onClick={() => closeCart()} className="w-8 h-8 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-white transition-colors">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Lista servicios móvil */}
+                            <div className="p-4 flex-1 overflow-y-auto space-y-2 hide-scrollbar">
+                                {selectedServices.length === 0 ? (
+                                    <div className="text-center py-8 flex flex-col items-center opacity-50">
+                                        <ShoppingCart className="w-10 h-10 text-text-muted mb-3" />
+                                        <p className="text-text-muted text-sm">Aún no has seleccionado ningún servicio.</p>
+                                    </div>
+                                ) : (
+                                    selectedServices.map(srv => (
+                                        <div key={srv.uid} className="bg-bg-surface border border-white/[0.06] rounded-xl px-3 py-2.5 flex justify-between items-center">
+                                            <span className="text-sm font-semibold text-text-primary truncate pr-2">{srv.nombre}</span>
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                <span className="text-sm font-bold text-gold">{formatCurrency(srv.precio)}</span>
+                                                <button
+                                                    onClick={() => removeServiceFromCartByUid(srv.uid)}
+                                                    className="w-6 h-6 flex items-center justify-center rounded-full bg-bg-base border border-border-subtle text-text-muted hover:text-red-urgency hover:border-red-urgency/50 transition-colors"
+                                                >
+                                                    <Minus className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Footer móvil */}
+                            <div className="p-4 bg-bg-card border-t border-border-subtle flex flex-col gap-3">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-text-secondary font-semibold">Tiempo Total</span>
+                                    <span className="font-bold text-text-primary flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gold" /> {formatearDuracion(totalDuracion)}</span>
+                                </div>
+                                <div className="flex justify-between items-center bg-gold/[0.06] border border-gold/20 rounded-xl px-3 py-2.5">
+                                    <div>
+                                        <span className="text-[9px] font-black text-gold/60 uppercase tracking-[2.5px] block">Abono Requerido</span>
+                                        <span className="text-[8px] text-gold/40 uppercase tracking-widest">{formatCurrency(totalPrecio)} total</span>
+                                    </div>
+                                    <span className="font-extrabold text-gold text-xl">{formatCurrency(totalAbono)}</span>
+                                </div>
+
+                                {/* Toggle amiga */}
+                                {selectedServices.length >= 2 && (
+                                    <button
+                                        onClick={() => {
+                                            setEsReservaCompartida(!esReservaCompartida);
+                                            if (esReservaCompartida) { setServiciosAmiga([]); setDatosAmiga({ nombre: '', telefono: '' }); }
+                                        }}
+                                        className={`w-full py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                                            esReservaCompartida
+                                                ? 'bg-gold/10 border-gold text-gold'
+                                                : 'bg-bg-surface border-border-subtle text-text-secondary hover:border-gold/30 hover:text-gold'
+                                        }`}
+                                    >
+                                        <Users className="w-4 h-4" />
+                                        {esReservaCompartida ? '✓ Reserva para 2 personas' : '¿Vas con una amiga?'}
+                                    </button>
+                                )}
+
+                                {/* Asignar a amiga móvil */}
+                                {esReservaCompartida && selectedServices.length >= 2 && (
+                                    <div className="bg-bg-surface border border-gold/20 rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto hide-scrollbar">
+                                        <p className="text-[10px] text-text-muted uppercase tracking-wider font-bold flex items-center gap-1 mb-1">
+                                            <UserPlus className="w-3 h-3 text-gold" /> Asigna a tu amiga
+                                        </p>
+                                        {selectedServices.map(srv => {
+                                            const isAmiga = serviciosAmiga.some(a => a.uid === srv.uid);
+                                            return (
+                                                <button
+                                                    key={`mamiga-${srv.uid}`}
+                                                    onClick={() => {
+                                                        if (isAmiga) setServiciosAmiga(prev => prev.filter(a => a.uid !== srv.uid));
+                                                        else setServiciosAmiga(prev => [...prev, srv]);
+                                                    }}
+                                                    className={`w-full text-left px-2.5 py-2 rounded-lg border text-xs font-semibold flex items-center justify-between gap-2 transition-all ${
+                                                        isAmiga ? 'border-gold/40 bg-gold/5 text-gold' : 'border-border-subtle bg-bg-base text-text-secondary'
+                                                    }`}
+                                                >
+                                                    <span className="truncate">{srv.nombre}</span>
+                                                    <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${isAmiga ? 'bg-gold border-gold' : 'border-border-subtle'}`} />
+                                                </button>
+                                            );
+                                        })}
+                                        {serviciosAmiga.length > 0 && serviciosTitular.length === 0 && (
+                                            <p className="text-[10px] text-rose-400 font-semibold">⚠ Debes dejarte al menos 1 servicio.</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                <button
+                                    disabled={selectedServices.length === 0 || (esReservaCompartida && (serviciosAmiga.length === 0 || serviciosTitular.length === 0))}
+                                    onClick={() => {
+                                        setIsCartOpen(false);
+                                        clearCartHash();
+                                        nextStep();
+                                    }}
+                                    className="w-full py-3.5 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black rounded-xl font-bold uppercase tracking-wider text-sm disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center gap-2"
+                                >
+                                    Agendar Fecha <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     )}
 
