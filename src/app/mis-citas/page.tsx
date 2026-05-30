@@ -215,6 +215,57 @@ function MisCitasContent() {
     }
   };
 
+  // Handle OTP paste
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text/plain");
+    const cleanPasted = pastedData.replace(/\D/g, "").slice(0, 6);
+    
+    if (cleanPasted) {
+      const newOtp = [...otpCode];
+      for (let i = 0; i < 6; i++) {
+        newOtp[i] = cleanPasted[i] || "";
+      }
+      setOtpCode(newOtp);
+      
+      const focusIndex = Math.min(cleanPasted.length, 5);
+      otpInputsRef.current[focusIndex]?.focus();
+
+      if (cleanPasted.length === 6) {
+        setTimeout(() => {
+          setError(null);
+          const cleanPhone = phone.replace(/\D/g, "");
+          const codeNum = codigoPais.replace(/\D/g, "");
+          const fullPhone = `${codeNum}${cleanPhone}`;
+
+          fetch("/api/auth/otp/verificar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              telefono: fullPhone,
+              codigo: cleanPasted
+            }),
+          }).then(async (res) => {
+            const data = await res.json();
+            if (res.ok) {
+              setSuccessMsg("¡Ingreso exitoso! Redirigiendo a tu portal...");
+              setTimeout(() => {
+                router.push(returnTo);
+                router.refresh();
+              }, 1000);
+            } else {
+              setError(data.error || "Código incorrecto o vencido");
+              setOtpCode(Array(6).fill(""));
+              otpInputsRef.current[0]?.focus();
+            }
+          }).catch(() => {
+            setError("Error al verificar el código");
+          });
+        }, 50);
+      }
+    }
+  };
+
   // Format phone number for UI display (57XXXXXXXXXX or 10 digits nicely separated)
   const formatPhoneInput = (val: string) => {
     const clean = val.replace(/\D/g, "");
@@ -385,6 +436,7 @@ function MisCitasContent() {
                       value={digit}
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                      onPaste={handleOtpPaste}
                       className="w-11 h-12 text-center text-xl font-bold bg-bg-base/70 border border-white/10 rounded-xl focus:border-gold focus:ring-1 focus:ring-gold/30 focus:outline-none transition-all text-gold shadow-inner"
                     />
                   ))}
