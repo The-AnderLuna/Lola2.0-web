@@ -132,7 +132,14 @@ export default function FlujoReserva() {
                 setIsCartOpen(false);
             }
         };
+        const handleResize = () => {
+            if (window.innerWidth >= 1024 && isCartOpen) {
+                closeCart();
+            }
+        };
+
         window.addEventListener('hashchange', handleHashChange);
+        window.addEventListener('resize', handleResize);
         
         if (isCartOpen) {
             document.body.style.overflow = 'hidden';
@@ -142,9 +149,10 @@ export default function FlujoReserva() {
 
         return () => {
             window.removeEventListener('hashchange', handleHashChange);
+            window.removeEventListener('resize', handleResize);
             document.body.style.overflow = 'unset';
         };
-    }, [isCartOpen]);
+    }, [isCartOpen, closeCart]);
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedServices, setSelectedServices] = useState<CartService[]>([]);
