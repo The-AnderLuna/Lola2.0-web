@@ -4,12 +4,11 @@ import { createClient } from '@supabase/supabase-js';
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
 
 async function findOrCreateCliente(datos: any): Promise<string> {
-  let query = supabase.from('clientes').select('id');
-  if (datos.cedula) query = query.eq('cedula', datos.cedula);
-  else if (datos.email) query = query.eq('correo', datos.email);
-  else query = query.eq('telefono', datos.telefono);
-
-  const { data: clienteExistente } = await query.limit(1).single();
+  const { data: clienteExistente } = await supabase.from('clientes')
+    .select('id')
+    .eq('telefono', datos.telefono)
+    .limit(1)
+    .single();
 
   if (clienteExistente) {
     const updateData: any = {};
@@ -19,7 +18,9 @@ async function findOrCreateCliente(datos: any): Promise<string> {
     if (datos.cedula) updateData.cedula = datos.cedula;
     if (datos.cumpleanos) updateData.fecha_cumpleanos = datos.cumpleanos;
 
-    await supabase.from('clientes').update(updateData).eq('id', clienteExistente.id);
+    if (Object.keys(updateData).length > 0) {
+      await supabase.from('clientes').update(updateData).eq('id', clienteExistente.id);
+    }
     return clienteExistente.id;
   } else {
     const nuevoId = crypto.randomUUID();

@@ -27,7 +27,7 @@ interface ClienteData {
   telefono: string;
 }
 
-interface CitaData {
+export interface CitaData {
   id: string;
   clienteId: string;
   servicioId: string;
@@ -42,6 +42,7 @@ interface CitaData {
   expiresAt: string | null;
   grupoId?: string | null;
   reservaTitularId?: string | null;
+  clienteNombre?: string;
   subServicios?: string[]; // Para agrupaciones
 }
 
@@ -178,13 +179,14 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       
       const endTimeMax = new Date(Math.max(...serviciosAgrupados.map(c => new Date(c.fechaHoraFin).getTime())));
       
+      const citaBase = { ...serviciosAgrupados[0] };
       citaActivaPrincipal = {
-        ...citaActivaRaw,
-        servicioNombre: serviciosAgrupados.length > 1 ? "Paquete de Servicios" : citaActivaRaw.servicioNombre,
+        ...citaBase,
+        servicioNombre: serviciosAgrupados.length > 1 ? "Reserva Compartida" : citaBase.servicioNombre,
         fechaHoraFin: endTimeMax.toISOString(),
         duracionMin: serviciosAgrupados.reduce((acc, c) => acc + c.duracionMin, 0),
         precioTotal: serviciosAgrupados.reduce((acc, c) => acc + c.precioTotal, 0),
-        subServicios: serviciosAgrupados.length > 1 ? serviciosAgrupados.map(s => s.servicioNombre) : undefined
+        subServicios: serviciosAgrupados.length > 1 ? serviciosAgrupados.map(s => `${s.servicioNombre} - ${s.clienteNombre}`) : undefined
       };
     } else {
       serviciosAgrupados = [citaActivaRaw];
@@ -212,11 +214,11 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         
         otrasCitasAgrupadas.push({
           ...citaBase,
-          servicioNombre: grupo.length > 1 ? "Paquete de Servicios" : citaBase.servicioNombre,
+          servicioNombre: grupo.length > 1 ? "Reserva Compartida" : citaBase.servicioNombre,
           fechaHoraFin: endTimeMax.toISOString(),
           duracionMin: grupo.reduce((acc, c) => acc + c.duracionMin, 0),
           precioTotal: grupo.reduce((acc, c) => acc + c.precioTotal, 0),
-          subServicios: grupo.length > 1 ? grupo.map(s => s.servicioNombre) : undefined
+          subServicios: grupo.length > 1 ? grupo.map(s => `${s.servicioNombre} - ${s.clienteNombre}`) : undefined
         });
       }
     } else {
@@ -311,6 +313,16 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       : "bg-white/5 border border-white/5 hover:border-gold/30 hover:bg-gold/5 text-gold font-semibold text-[10px] px-3.5 py-1.5 rounded-lg transition-all text-center flex items-center gap-1.5";
 
     if (cita.estado === "PRE_AGENDADA") {
+      const isAmiga = cita.reservaTitularId && cita.reservaTitularId !== cliente.id;
+      
+      if (isAmiga) {
+        return (
+          <div className="flex-1 bg-white/5 border border-white/5 px-4 py-3 rounded-xl text-center">
+            <span className="text-text-muted text-xs block text-balance">El pago y gestión de este cupo temporal está a cargo del titular de la reserva.</span>
+          </div>
+        );
+      }
+
       return (
         <>
           <a

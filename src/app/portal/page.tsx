@@ -40,6 +40,18 @@ export default async function PortalPage() {
   const mapaServicios = new Map(servicios.map(s => [s.id, s.nombre]));
   const mapaProfesionales = new Map(profesionales.map(p => [p.id, p.nombre]));
 
+  // Obtener nombres de clientes para mostrar en reservas compartidas
+  const clientesIdsSet = new Set<string>();
+  citasRaw.forEach(c => {
+    if (c.clienteId) clientesIdsSet.add(c.clienteId);
+    if (c.reservaTitularId) clientesIdsSet.add(c.reservaTitularId);
+  });
+  
+  const clientesExtra = await Promise.all(
+    Array.from(clientesIdsSet).map(id => repositorioClientes.obtenerPorId(id))
+  );
+  const mapaClientes = new Map(clientesExtra.filter(c => c !== null).map(c => [c!.id, c!.nombre || "Cliente"]));
+
   // 4. Mapear citas a objetos planos serializables para pasarlos al Client Component
   const citasMapeadas = citasRaw.map(cita => ({
     id: cita.id,
@@ -55,6 +67,8 @@ export default async function PortalPage() {
     estado: cita.estado,
     expiresAt: cita.expiresAt ? cita.expiresAt.toISOString() : null,
     grupoId: cita.grupoId || null,
+    reservaTitularId: cita.reservaTitularId || null,
+    clienteNombre: mapaClientes.get(cita.clienteId) || "Cliente",
   }));
 
   // Renderizar el Dashboard premium pasándole los datos
