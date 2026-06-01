@@ -17,7 +17,8 @@ import {
   HelpCircle,
   XCircle,
   Activity,
-  DollarSign
+  DollarSign,
+  ShieldAlert
 } from "lucide-react";
 
 interface ClienteData {
@@ -40,6 +41,8 @@ interface CitaData {
   estado: string;
   expiresAt: string | null;
   grupoId?: string | null;
+  reservaTitularId?: string | null;
+  subServicios?: string[]; // Para agrupaciones
 }
 
 interface DashboardProps {
@@ -92,10 +95,16 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       }
 
       // Optimistically update the UI: change state to CANCELADA
+      // Note: Now we also need to update other appointments in the same group if applicable
+      const canceledCita = citas.find(c => c.id === citaId);
+      
       setCitas(prevCitas => 
-        prevCitas.map(cita => 
-          cita.id === citaId ? { ...cita, estado: "CANCELADA", expiresAt: null } : cita
-        )
+        prevCitas.map(cita => {
+          if (cita.id === citaId || (canceledCita?.grupoId && cita.grupoId === canceledCita.grupoId)) {
+            return { ...cita, estado: "CANCELADA", expiresAt: null };
+          }
+          return cita;
+        })
       );
 
       setActionSuccess("Tu reserva ha sido cancelada con éxito y el cupo ha sido liberado.");
@@ -162,9 +171,9 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   let citaActivaPrincipal: CitaData | null = null;
 
   if (citaActivaRaw) {
-    if (citaActivaRaw.estado === "PRE_AGENDADA" && citaActivaRaw.grupoId) {
+    if (citaActivaRaw.grupoId) {
       serviciosAgrupados = citasActivas
-        .filter(c => c.grupoId === citaActivaRaw.grupoId && c.estado === "PRE_AGENDADA")
+        .filter(c => c.grupoId === citaActivaRaw.grupoId)
         .sort((a, b) => new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime());
       
       const endTimeMax = new Date(Math.max(...serviciosAgrupados.map(c => new Date(c.fechaHoraFin).getTime())));
@@ -175,6 +184,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         fechaHoraFin: endTimeMax.toISOString(),
         duracionMin: serviciosAgrupados.reduce((acc, c) => acc + c.duracionMin, 0),
         precioTotal: serviciosAgrupados.reduce((acc, c) => acc + c.precioTotal, 0),
+        subServicios: serviciosAgrupados.length > 1 ? serviciosAgrupados.map(s => s.servicioNombre) : undefined
       };
     } else {
       serviciosAgrupados = [citaActivaRaw];
@@ -184,7 +194,35 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
 
   // Otras citas futuras (excluyendo todas las que están en el grupo de la activa principal)
   const idsAgrupados = serviciosAgrupados.map(s => s.id);
-  const otrasCitasActivas = citasActivas.filter(c => !idsAgrupados.includes(c.id));
+  const otrasCitasActivasRaw = citasActivas.filter(c => !idsAgrupados.includes(c.id));
+
+  // Group otrasCitasActivasRaw by grupoId
+  const otrasCitasAgrupadas: CitaData[] = [];
+  const gruposProcesados = new Set<string>();
+
+  otrasCitasActivasRaw.forEach(cita => {
+    if (cita.grupoId) {
+      if (!gruposProcesados.has(cita.grupoId)) {
+        gruposProcesados.add(cita.grupoId);
+        const grupo = otrasCitasActivasRaw.filter(c => c.grupoId === cita.grupoId);
+        const endTimeMax = new Date(Math.max(...grupo.map(c => new Date(c.fechaHoraFin).getTime())));
+        
+        // Clonamos la primera cita del grupo para usarla como base
+        const citaBase = { ...cita };
+        
+        otrasCitasAgrupadas.push({
+          ...citaBase,
+          servicioNombre: grupo.length > 1 ? "Paquete de Servicios" : citaBase.servicioNombre,
+          fechaHoraFin: endTimeMax.toISOString(),
+          duracionMin: grupo.reduce((acc, c) => acc + c.duracionMin, 0),
+          precioTotal: grupo.reduce((acc, c) => acc + c.precioTotal, 0),
+          subServicios: grupo.length > 1 ? grupo.map(s => s.servicioNombre) : undefined
+        });
+      }
+    } else {
+      otrasCitasAgrupadas.push(cita);
+    }
+  });
 
   // Helper: Format currency
   const formatCurrency = (val: number) => {
@@ -259,6 +297,82 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       : `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar la cancelación de mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. Muchas gracias.`;
     
     return `https://wa.me/573138865616?text=${encodeURIComponent(text)}`;
+  };
+
+  // Helper: Renderize Actions based on business rules
+  const renderActions = (cita: CitaData, isPrimary: boolean) => {
+    const btnClass = isPrimary 
+      ? "flex-1 bg-white/5 border border-white/10 text-xs py-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 font-bold uppercase tracking-wider"
+      : "bg-white/5 border border-white/5 hover:border-gold/30 hover:bg-gold/5 text-gold font-semibold text-[10px] px-3.5 py-1.5 rounded-lg transition-all text-center flex items-center gap-1.5";
+
+    if (cita.estado === "PRE_AGENDADA") {
+      return (
+        <>
+          <button
+            onClick={() => router.push(`/reservar/confirmar?id=${cita.id}`)}
+            className={isPrimary 
+              ? "flex-1 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-xs py-3 rounded-xl cursor-pointer hover:brightness-110 text-center transition-all duration-300"
+              : "bg-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg transition-all shadow-[0_2px_10px_rgba(212,175,55,0.2)]"
+            }
+          >
+            Confirmar Pago
+          </button>
+          <button
+            onClick={() => handleCancelAppointment(cita.id)}
+            disabled={loadingAction === cita.id}
+            className={isPrimary
+              ? "flex-1 bg-white/5 border border-white/10 hover:bg-red-urgency/10 hover:border-red-urgency/30 text-text-secondary hover:text-red-urgency font-bold uppercase tracking-wider text-xs py-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              : "p-1.5 hover:bg-red-urgency/10 text-text-muted hover:text-red-urgency rounded-lg border border-transparent transition-all"
+            }
+          >
+            {loadingAction === cita.id ? (
+              <span className={isPrimary ? "" : "px-2 text-[10px] uppercase"}>Liberando...</span>
+            ) : (
+              <>
+                <Trash2 className={isPrimary ? "w-3.5 h-3.5" : "w-4 h-4"} />
+                {isPrimary && "Liberar cupo"}
+              </>
+            )}
+          </button>
+        </>
+      );
+    }
+
+    if (cita.estado === "EN_REVISION") {
+      return (
+        <div className={`w-full flex items-center justify-center gap-2 text-amber-400/80 bg-amber-500/5 rounded-xl border border-amber-500/10 ${isPrimary ? 'p-3 text-xs' : 'p-2 text-[10px]'}`}>
+          <ShieldAlert className={isPrimary ? "w-4 h-4" : "w-3 h-3"} />
+          <span>Pago en revisión. Modificaciones bloqueadas temporalmente.</span>
+        </div>
+      );
+    }
+
+    if (cita.estado === "CONFIRMADA" || cita.estado === "REAGENDADA") {
+      const horasRestantes = (new Date(cita.fechaHoraInicio).getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (horasRestantes > 12) {
+        return (
+          <a
+            href={getWhatsAppLink(cita, "cambio")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${btnClass} hover:border-gold/30 text-gold hover:bg-gold/5`}
+          >
+            <MessageSquare className={isPrimary ? "w-4 h-4" : "w-3.5 h-3.5"} />
+            Reprogramar Cita
+          </a>
+        );
+      } else {
+        return (
+          <div className={`w-full flex items-center justify-center gap-2 text-text-muted bg-white/5 rounded-xl border border-white/5 ${isPrimary ? 'p-3 text-xs' : 'p-2 text-[10px]'}`}>
+            <AlertCircle className={isPrimary ? "w-4 h-4" : "w-3 h-3"} />
+            <span>Faltan menos de 12h. No se permiten reprogramaciones.</span>
+          </div>
+        );
+      }
+    }
+
+    return null;
   };
 
   return (
@@ -340,11 +454,11 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         {/* SECTION A: CITA ACTIVA DESTACADA */}
         <div className="space-y-4 animate-fade-in-up [animation-delay:100ms]">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            Cita Activa
+            Cita Principal
           </h3>
 
           {citaActivaPrincipal ? (
-            <div className="glass-strong rounded-2xl p-6 relative overflow-hidden border border-gold/25 shadow-2xl">
+            <div className="glass-strong rounded-2xl p-6 relative overflow-hidden border border-gold/25 shadow-2xl transition-all duration-300 hover:border-gold/40">
               
               {/* Gold light sheen behind status */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
@@ -352,16 +466,16 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
               {/* Status Header */}
               <div className="flex justify-between items-start gap-4 mb-5 pb-4 border-b border-white/5">
                 <div className="space-y-1">
-                  <div className="text-xs text-text-secondary font-medium">
-                    {serviciosAgrupados.length > 1 ? "Servicios Seleccionados" : "Servicio"}
+                  <div className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+                    {citaActivaPrincipal.subServicios ? "Paquete de Servicios" : "Servicio"}
                   </div>
-                  <h4 className="text-lg font-bold tracking-wide font-display text-text-primary">
+                  <h4 className="text-xl font-bold tracking-wide font-display text-text-primary">
                     {citaActivaPrincipal.servicioNombre}
                   </h4>
-                  {serviciosAgrupados.length > 1 && (
-                    <div className="text-xs text-text-secondary mt-1 flex flex-col gap-0.5">
-                      {serviciosAgrupados.map((s, idx) => (
-                        <span key={s.id}>• {s.servicioNombre}</span>
+                  {citaActivaPrincipal.subServicios && (
+                    <div className="text-xs text-text-secondary mt-1 flex flex-col gap-0.5 border-l-2 border-gold/30 pl-2">
+                      {citaActivaPrincipal.subServicios.map((nombre, idx) => (
+                        <span key={idx}>{nombre}</span>
                       ))}
                     </div>
                   )}
@@ -369,7 +483,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                 {(() => {
                   const config = getBadgeConfig(citaActivaPrincipal.estado);
                   return (
-                    <span className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border ${config.styles}`}>
+                    <span className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-full border ${config.styles}`}>
                       {config.icon}
                       {config.text}
                     </span>
@@ -385,7 +499,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                     // Update state to CANCELADA_SISTEMA if countdown finishes
                     setCitas(prevCitas => 
                       prevCitas.map(cita => 
-                        cita.id === citaActivaPrincipal.id ? { ...cita, estado: "CANCELADA_SISTEMA", expiresAt: null } : cita
+                        cita.id === citaActivaPrincipal!.id ? { ...cita, estado: "CANCELADA_SISTEMA", expiresAt: null } : cita
                       )
                     );
                   }}
@@ -393,10 +507,12 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
               )}
 
               {/* Detail list grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4.5 mb-6 text-sm text-text-secondary">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                 
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                  <Calendar className="w-5 h-5 text-gold shrink-0" />
+                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4 text-gold" />
+                  </div>
                   <div>
                     <div className="text-[10px] uppercase font-semibold text-text-muted">Fecha</div>
                     <div className="font-semibold text-text-primary text-xs capitalize">
@@ -405,8 +521,10 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                  <Clock className="w-5 h-5 text-gold shrink-0" />
+                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4 text-gold" />
+                  </div>
                   <div>
                     <div className="text-[10px] uppercase font-semibold text-text-muted">Horario</div>
                     <div className="font-semibold text-text-primary text-xs">
@@ -416,8 +534,10 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                  <User className="w-5 h-5 text-gold shrink-0" />
+                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4 text-gold" />
+                  </div>
                   <div>
                     <div className="text-[10px] uppercase font-semibold text-text-muted">Especialista</div>
                     <div className="font-semibold text-text-primary text-xs">
@@ -426,8 +546,10 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                  <DollarSign className="w-5 h-5 text-gold shrink-0" />
+                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <DollarSign className="w-4 h-4 text-gold" />
+                  </div>
                   <div>
                     <div className="text-[10px] uppercase font-semibold text-text-muted">Inversión</div>
                     <div className="font-semibold text-text-primary text-xs">
@@ -440,51 +562,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
 
               {/* Actions Box */}
               <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
-                {citaActivaPrincipal.estado === "PRE_AGENDADA" ? (
-                  <>
-                    <button
-                      onClick={() => router.push(`/reservar/confirmar?id=${citaActivaPrincipal.id}`)}
-                      className="flex-1 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-xs py-3 rounded-xl cursor-pointer hover:brightness-110 text-center font-semibold transition-all duration-300"
-                    >
-                      Pagar abono y confirmar
-                    </button>
-                    <button
-                      onClick={() => handleCancelAppointment(citaActivaPrincipal.id)}
-                      disabled={loadingAction === citaActivaPrincipal.id}
-                      className="flex-1 bg-white/5 border border-white/10 hover:bg-red-urgency/10 hover:border-red-urgency/30 text-text-secondary hover:text-red-urgency font-bold uppercase tracking-wider text-xs py-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      {loadingAction === citaActivaPrincipal.id ? (
-                        <>Liberando...</>
-                      ) : (
-                        <>
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Liberar cupo
-                        </>
-                      )}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      href={getWhatsAppLink(citaActivaPrincipal, "cambio")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 bg-white/5 border border-white/10 hover:border-gold/30 text-gold font-bold uppercase tracking-wider text-xs py-3 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      Reprogramar Cita
-                    </a>
-                    <a
-                      href={getWhatsAppLink(citaActivaPrincipal, "cancelacion")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 bg-white/5 border border-white/10 hover:border-red-urgency/30 text-text-secondary hover:text-red-urgency font-bold uppercase tracking-wider text-xs py-3 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Solicitar Cancelación
-                    </a>
-                  </>
-                )}
+                {renderActions(citaActivaPrincipal, true)}
               </div>
 
             </div>
@@ -510,63 +588,42 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         </div>
 
         {/* OTRAS CITAS FUTURAS SI LAS HUBIERA */}
-        {otrasCitasActivas.length > 0 && (
+        {otrasCitasAgrupadas.length > 0 && (
           <div className="space-y-4 animate-fade-in-up [animation-delay:200ms]">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-              Otras Reservas Programadas
+              Otras Reservas
             </h3>
             <div className="space-y-3">
-              {otrasCitasActivas.map(cita => (
-                <div key={cita.id} className="glass rounded-xl p-4.5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {otrasCitasAgrupadas.map(cita => (
+                <div key={cita.id} className="glass rounded-xl p-4.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gold/20 transition-all">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm tracking-wide text-text-primary">{cita.servicioNombre}</span>
                       {(() => {
                         const config = getBadgeConfig(cita.estado);
                         return (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${config.styles}`}>
+                          <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${config.styles}`}>
                             {config.text}
                           </span>
                         );
                       })()}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-text-secondary">
+                    {cita.subServicios && (
+                      <div className="text-[10px] text-text-secondary flex gap-2">
+                        {cita.subServicios.join(" • ")}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-secondary mt-1">
                       <span className="capitalize">{formatFriendlyDate(cita.fechaHoraInicio).split(",")[1]}</span>
                       <span>•</span>
                       <span>{formatFriendlyTime(cita.fechaHoraInicio)}</span>
                       <span>•</span>
-                      <span>{cita.profesionalNombre}</span>
+                      <span className="font-medium text-text-muted">{cita.profesionalNombre}</span>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    {cita.estado === "PRE_AGENDADA" ? (
-                      <>
-                        <button
-                          onClick={() => router.push(`/reservar/confirmar?id=${cita.id}`)}
-                          className="bg-gold hover:brightness-110 text-black font-semibold text-xs px-3 py-1.5 rounded-lg transition-all"
-                        >
-                          Confirmar
-                        </button>
-                        <button
-                          onClick={() => handleCancelAppointment(cita.id)}
-                          disabled={loadingAction === cita.id}
-                          className="p-1.5 hover:bg-red-urgency/10 text-text-muted hover:text-red-urgency rounded-lg border border-transparent transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </>
-                    ) : (
-                      <a
-                        href={getWhatsAppLink(cita, "cambio")}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-white/5 border border-white/5 hover:border-gold/30 hover:bg-gold/5 text-gold font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-all text-center flex items-center gap-1.5"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        Gestionar
-                      </a>
-                    )}
+                  <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 md:pl-4 md:border-l border-white/5">
+                    {renderActions(cita, false)}
                   </div>
                 </div>
               ))}
@@ -633,7 +690,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       </main>
 
       {/* Footer Fino */}
-      <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4">
         <div>
           © {new Date().getFullYear()} Mile Almanza Estética. Todos los derechos reservados.
         </div>

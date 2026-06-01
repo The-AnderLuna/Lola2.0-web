@@ -52,7 +52,7 @@ export class RepositorioCitas {
     const { data, error } = await supabase
       .from('citas')
       .select('*')
-      .eq('cliente_id', clienteId)
+      .or(`cliente_id.eq.${clienteId},reserva_titular_id.eq.${clienteId}`)
       .order('fecha_hora_inicio', { ascending: false });
 
     if (error) throw new Error(`Error obteniendo citas por cliente: ${error.message}`);

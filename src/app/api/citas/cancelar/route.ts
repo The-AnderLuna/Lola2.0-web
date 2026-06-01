@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Cita no encontrada.' }, { status: 404 });
     }
 
-    // 4. Validar que la cita pertenezca al cliente logueado
-    if (cita.clienteId !== clienteIdSession) {
+    // 4. Validar que la cita pertenezca al cliente logueado (como titular o directa)
+    if (cita.clienteId !== clienteIdSession && cita.reservaTitularId !== clienteIdSession) {
       return NextResponse.json({ error: 'No tienes permisos para cancelar esta cita.' }, { status: 403 });
     }
 
@@ -41,8 +41,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // 6. Cancelar la cita
-    await repositorioCitas.actualizarEstado(citaId, EstadoCita.CANCELADA);
+    // 6. Cancelar la cita (y todo su grupo si lo tiene)
+    if (cita.grupoId) {
+      // Usamos el cliente de supabase base para esta operacion especial
+      const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+      const { error: cancelError } = await supabaseAdmin
+        .from('citas')
+        .update({ estado: EstadoCita.CANCELADA })
+        .eq('grupo_id', cita.grupoId)
+        .eq('estado', EstadoCita.PRE_AGENDADA);
+        
+      if (cancelError) {
+        throw new Error(`Error cancelando el grupo de citas: ${cancelError.message}`);
+      }
+    } else {
+      await repositorioCitas.actualizarEstado(citaId, EstadoCita.CANCELADA);
+    }
 
     return NextResponse.json({ success: true, message: 'La reserva ha sido cancelada con éxito y el cupo ha sido liberado.' });
 
