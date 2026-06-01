@@ -99,7 +99,7 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-black font-inter text-text-primary">
+    <div className="min-h-screen flex flex-col bg-black font-inter text-text-primary flex-1">
       {/* Estética Premium: Círculos de luz flotantes */}
       <div className="absolute top-[-10%] left-[-20%] w-[60%] aspect-square rounded-full bg-gold opacity-[0.03] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-20%] w-[60%] aspect-square rounded-full bg-red-urgency opacity-[0.02] blur-[120px] pointer-events-none" />
@@ -142,7 +142,7 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8 z-10 space-y-6">
+      <main className="flex-grow w-full max-w-2xl mx-auto px-4 py-8 z-10 space-y-6">
         
         {/* Navigation / Welcome bar */}
         <div className="flex items-center justify-between mb-4 animate-fade-in-up">
