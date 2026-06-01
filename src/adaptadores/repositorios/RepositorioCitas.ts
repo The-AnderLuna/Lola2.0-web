@@ -44,6 +44,7 @@ export class RepositorioCitas {
       row.expires_at ? new Date(row.expires_at) : null,
       row.grupo_id,
       row.reserva_titular_id || null,
+      row.notas || null,
       row.created_at ? new Date(row.created_at) : new Date()
     ));
   }
@@ -70,6 +71,7 @@ export class RepositorioCitas {
       row.expires_at ? new Date(row.expires_at) : null,
       row.grupo_id,
       row.reserva_titular_id || null,
+      row.notas || null,
       row.created_at ? new Date(row.created_at) : new Date()
     ));
   }
@@ -106,6 +108,7 @@ export class RepositorioCitas {
       data.expires_at ? new Date(data.expires_at) : null,
       data.grupo_id,
       data.reserva_titular_id || null,
+      data.notas || null,
       data.created_at ? new Date(data.created_at) : new Date()
     );
   }

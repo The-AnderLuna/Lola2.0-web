@@ -14,6 +14,7 @@ export class Cita {
     public expiresAt?: Date | null,
     public grupoId?: string | null,
     public reservaTitularId?: string | null,
+    public notas?: string | null,
     public createdAt: Date = new Date(),
   ) {}
 

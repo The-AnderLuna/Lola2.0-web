@@ -43,6 +43,8 @@ export interface CitaData {
   grupoId?: string | null;
   reservaTitularId?: string | null;
   clienteNombre?: string;
+  titularNombre?: string | null;
+  notas?: string | null;
   subServicios?: string[]; // Para agrupaciones
 }
 
@@ -235,6 +237,18 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
     }).format(val);
   };
 
+  // Helper: Extraer abono
+  const getAbonoRequerido = (cita: CitaData) => {
+    if (cita.estado !== "PRE_AGENDADA" || !cita.notas) return null;
+    const match = cita.notas.match(/\$([\d,.]+)/);
+    if (match) {
+      const numStr = match[1].replace(/[.,]/g, '');
+      const num = parseInt(numStr, 10);
+      if (!isNaN(num)) return num;
+    }
+    return null;
+  };
+
   // Helper: Get Badge colors based on booking state
   const getBadgeConfig = (estado: string) => {
     switch (estado) {
@@ -318,7 +332,9 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       if (isAmiga) {
         return (
           <div className="flex-1 bg-white/5 border border-white/5 px-4 py-3 rounded-xl text-center">
-            <span className="text-text-muted text-xs block text-balance">El pago y gestión de este cupo temporal está a cargo del titular de la reserva.</span>
+            <span className="text-text-muted text-xs block text-balance">
+              El pago y gestión de este cupo temporal está a cargo de <strong className="text-white">{cita.titularNombre || 'Titular'}</strong>. Comunícate con él/ella para el abono respectivo.
+            </span>
           </div>
         );
       }
@@ -570,10 +586,27 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                     <DollarSign className="w-4 h-4 text-gold" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase font-semibold text-text-muted">Inversión</div>
-                    <div className="font-semibold text-text-primary text-xs">
-                      {formatCurrency(citaActivaPrincipal.precioTotal)}
-                    </div>
+                    {(() => {
+                      const abonoReq = getAbonoRequerido(citaActivaPrincipal);
+                      return abonoReq ? (
+                        <>
+                          <div className="text-[10px] uppercase font-semibold text-text-muted">Abono Requerido</div>
+                          <div className="font-semibold text-gold text-xs leading-tight">
+                            {formatCurrency(abonoReq)}
+                          </div>
+                          <div className="text-[9px] text-text-muted">
+                            Total: {formatCurrency(citaActivaPrincipal.precioTotal)}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-[10px] uppercase font-semibold text-text-muted">Inversión</div>
+                          <div className="font-semibold text-text-primary text-xs">
+                            {formatCurrency(citaActivaPrincipal.precioTotal)}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 

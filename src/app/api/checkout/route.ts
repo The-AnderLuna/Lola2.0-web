@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       .select('fecha_hora_inicio, servicios(nombre)')
       .eq('cliente_id', clienteId)
       .eq('estado', 'PRE_AGENDADA')
+      .or(`reserva_titular_id.is.null,reserva_titular_id.eq.${clienteId}`)
       .limit(1);
 
     if (errPendientes) throw errPendientes;
