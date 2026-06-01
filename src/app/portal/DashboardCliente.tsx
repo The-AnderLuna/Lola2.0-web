@@ -376,7 +376,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-black font-inter text-text-primary flex-1">
+    <div className="min-h-screen flex flex-col font-inter text-text-primary flex-1">
       {/* Estética Premium: Círculos de luz flotantes */}
       <div className="absolute top-[-10%] left-[-20%] w-[60%] aspect-square rounded-full bg-gold opacity-[0.03] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-20%] w-[60%] aspect-square rounded-full bg-red-urgency opacity-[0.02] blur-[120px] pointer-events-none" />
@@ -690,7 +690,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       </main>
 
       {/* Footer Fino */}
-      <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4">
+      <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 mt-auto">
         <div>
           © {new Date().getFullYear()} Mile Almanza Estética. Todos los derechos reservados.
         </div>
