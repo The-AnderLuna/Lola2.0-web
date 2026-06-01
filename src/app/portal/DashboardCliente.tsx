@@ -289,12 +289,17 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   };
 
   // Helper: Get dynamic WhatsApp contact link
-  const getWhatsAppLink = (cita: CitaData, actionType: "cambio" | "cancelacion") => {
+  const getWhatsAppLink = (cita: CitaData, actionType: "cambio" | "cancelacion" | "confirmacion") => {
     const formattedDate = formatFriendlyDate(cita.fechaHoraInicio);
     const formattedTime = formatFriendlyTime(cita.fechaHoraInicio);
-    const text = actionType === "cambio"
-      ? `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. ¿Qué disponibilidad tienen?`
-      : `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar la cancelación de mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. Muchas gracias.`;
+    let text = '';
+    if (actionType === "cambio") {
+      text = `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. ¿Qué disponibilidad tienen?`;
+    } else if (actionType === "cancelacion") {
+      text = `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar la cancelación de mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. Muchas gracias.`;
+    } else {
+      text = `Hola Mile Almanza Estética, soy ${cliente.nombre}. Adjunto el comprobante de pago para mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. (ID: ${cita.id})`;
+    }
     
     return `https://wa.me/573138865616?text=${encodeURIComponent(text)}`;
   };
@@ -308,15 +313,17 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
     if (cita.estado === "PRE_AGENDADA") {
       return (
         <>
-          <button
-            onClick={() => router.push(`/reservar/confirmar?id=${cita.id}`)}
+          <a
+            href={getWhatsAppLink(cita, "confirmacion")}
+            target="_blank"
+            rel="noopener noreferrer"
             className={isPrimary 
-              ? "flex-1 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-xs py-3 rounded-xl cursor-pointer hover:brightness-110 text-center transition-all duration-300"
-              : "bg-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg transition-all shadow-[0_2px_10px_rgba(212,175,55,0.2)]"
+              ? "flex-1 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-xs py-3 rounded-xl cursor-pointer hover:brightness-110 text-center transition-all duration-300 block"
+              : "bg-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg transition-all shadow-[0_2px_10px_rgba(212,175,55,0.2)] inline-block"
             }
           >
             Confirmar Pago
-          </button>
+          </a>
           <button
             onClick={() => handleCancelAppointment(cita.id)}
             disabled={loadingAction === cita.id}
