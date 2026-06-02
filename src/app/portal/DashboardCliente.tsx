@@ -59,7 +59,8 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"activas" | "historial">("activas");
+  const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
 
   // Logout action
   const handleLogout = async () => {
