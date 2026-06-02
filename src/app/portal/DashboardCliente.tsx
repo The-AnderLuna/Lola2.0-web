@@ -660,11 +660,13 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                         );
                       })()}
                     </div>
-                    {cita.subServicios && (
-                      <div className="text-[10px] text-text-secondary flex gap-2">
-                        {cita.subServicios.join(" • ")}
-                      </div>
-                    )}
+                      {cita.subServicios && (
+                        <div className="text-[11px] text-text-secondary mt-2 mb-1 flex flex-col gap-0.5 border-l-2 border-gold/30 pl-2">
+                          {cita.subServicios.map((nombre, idx) => (
+                            <span key={idx}>{nombre}</span>
+                          ))}
+                        </div>
+                      )}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-secondary mt-1">
                       <span className="capitalize">{formatFriendlyDate(cita.fechaHoraInicio).split(",")[1]}</span>
                       <span>•</span>
