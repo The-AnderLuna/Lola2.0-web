@@ -263,7 +263,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         return {
           text: "En Revisión",
           styles: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-          icon: <Activity className="w-3.5 h-3.5 animate-pulse" />
+          icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
         };
       case "PRE_AGENDADA":
         return {
