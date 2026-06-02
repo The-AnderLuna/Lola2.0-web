@@ -487,171 +487,173 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         )}
 
         {/* SECTION A: CITA ACTIVA DESTACADA */}
-        <div className="space-y-4 animate-fade-in-up [animation-delay:100ms]">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            Cita Principal
-          </h3>
+        {activeTab === "activas" && (
+          <div className="space-y-8">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
+              Cita Principal
+            </h3>
 
-          {citaActivaPrincipal ? (
-            <div className="glass-strong rounded-2xl p-6 relative overflow-hidden border border-gold/25 shadow-2xl transition-all duration-300 hover:border-gold/40">
-              
-              {/* Gold light sheen behind status */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
-
-              {/* Status Header */}
-              <div className="flex justify-between items-start gap-4 mb-5 pb-4 border-b border-white/5">
-                <div className="space-y-1">
-                  <div className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
-                    {citaActivaPrincipal.subServicios ? "Paquete de Servicios" : "Servicio"}
-                  </div>
-                  <h4 className="text-xl font-bold tracking-wide font-display text-text-primary">
-                    {citaActivaPrincipal.servicioNombre}
-                  </h4>
-                  {citaActivaPrincipal.subServicios && (
-                    <div className="text-xs text-text-secondary mt-2 flex flex-col gap-2">
-                      {Object.entries(
-                        citaActivaPrincipal.subServicios.reduce((acc, sub) => {
-                          if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
-                          acc[sub.clienteNombre].push(sub.servicioNombre);
-                          return acc;
-                        }, {} as Record<string, string[]>)
-                      ).map(([nombre, servicios]) => (
-                        <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                          <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
-                          {servicios.map((s, idx) => (
-                            <span key={idx} className="pl-2 relative before:content-['•'] before:absolute before:left-0 before:text-text-muted">{s}</span>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {(() => {
-                  const config = getBadgeConfig(citaActivaPrincipal.estado);
-                  return (
-                    <span className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-full border ${config.styles}`}>
-                      {config.icon}
-                      {config.text}
-                    </span>
-                  );
-                })()}
-              </div>
-
-              {/* Countdown Component (Only for PRE_AGENDADA) */}
-              {citaActivaPrincipal.estado === "PRE_AGENDADA" && citaActivaPrincipal.expiresAt && (
-                <CountdownBanner 
-                  expiresAtStr={citaActivaPrincipal.expiresAt} 
-                  onExpire={() => {
-                    // Update state to CANCELADA_SISTEMA if countdown finishes
-                    setCitas(prevCitas => 
-                      prevCitas.map(cita => 
-                        cita.id === citaActivaPrincipal!.id ? { ...cita, estado: "CANCELADA_SISTEMA", expiresAt: null } : cita
-                      )
-                    );
-                  }}
-                />
-              )}
-
-              {/* Detail list grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+            {citaActivaPrincipal ? (
+              <div className="glass-strong rounded-2xl p-6 relative overflow-hidden border border-gold/25 shadow-2xl transition-all duration-300 hover:border-gold/40">
                 
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
-                    <Calendar className="w-4 h-4 text-gold" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase font-semibold text-text-muted">Fecha</div>
-                    <div className="font-semibold text-text-primary text-xs capitalize">
-                      {formatFriendlyDate(citaActivaPrincipal.fechaHoraInicio)}
+                {/* Gold light sheen behind status */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
+
+                {/* Status Header */}
+                <div className="flex justify-between items-start gap-4 mb-5 pb-4 border-b border-white/5">
+                  <div className="space-y-1">
+                    <div className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+                      {citaActivaPrincipal.subServicios ? "Paquete de Servicios" : "Servicio"}
                     </div>
+                    <h4 className="text-xl font-bold tracking-wide font-display text-text-primary">
+                      {citaActivaPrincipal.servicioNombre}
+                    </h4>
+                    {citaActivaPrincipal.subServicios && (
+                      <div className="text-xs text-text-secondary mt-2 flex flex-col gap-2">
+                        {Object.entries(
+                          citaActivaPrincipal.subServicios.reduce((acc, sub) => {
+                            if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                            acc[sub.clienteNombre].push(sub.servicioNombre);
+                            return acc;
+                          }, {} as Record<string, string[]>)
+                        ).map(([nombre, servicios]) => (
+                          <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                            <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                            {servicios.map((s, idx) => (
+                              <span key={idx} className="pl-2 relative before:content-['•'] before:absolute before:left-0 before:text-text-muted">{s}</span>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  {(() => {
+                    const config = getBadgeConfig(citaActivaPrincipal.estado);
+                    return (
+                      <span className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-full border ${config.styles}`}>
+                        {config.icon}
+                        {config.text}
+                      </span>
+                    );
+                  })()}
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
-                    <Clock className="w-4 h-4 text-gold" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase font-semibold text-text-muted">Horario</div>
-                    <div className="font-semibold text-text-primary text-xs">
-                      {formatFriendlyTime(citaActivaPrincipal.fechaHoraInicio)} - {formatFriendlyTime(citaActivaPrincipal.fechaHoraFin)}
-                      <span className="text-[10px] text-text-secondary font-medium ml-1">({citaActivaPrincipal.duracionMin} min)</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4 text-gold" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase font-semibold text-text-muted">Especialista</div>
-                    <div className="font-semibold text-text-primary text-xs">
-                      {citaActivaPrincipal.profesionalNombre}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
-                    <DollarSign className="w-4 h-4 text-gold" />
-                  </div>
-                  <div>
-                    {(() => {
-                      const abonoReq = getAbonoRequerido(citaActivaPrincipal);
-                      return abonoReq ? (
-                        <>
-                          <div className="text-[10px] uppercase font-semibold text-text-muted">Abono Requerido</div>
-                          <div className="font-semibold text-gold text-xs leading-tight">
-                            {formatCurrency(abonoReq)}
-                          </div>
-                          <div className="text-[9px] text-text-muted">
-                            Total: {formatCurrency(citaActivaPrincipal.precioTotal)}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-[10px] uppercase font-semibold text-text-muted">Inversión</div>
-                          <div className="font-semibold text-text-primary text-xs">
-                            {formatCurrency(citaActivaPrincipal.precioTotal)}
-                          </div>
-                        </>
+                {/* Countdown Component (Only for PRE_AGENDADA) */}
+                {citaActivaPrincipal.estado === "PRE_AGENDADA" && citaActivaPrincipal.expiresAt && (
+                  <CountdownBanner 
+                    expiresAtStr={citaActivaPrincipal.expiresAt} 
+                    onExpire={() => {
+                      // Update state to CANCELADA_SISTEMA if countdown finishes
+                      setCitas(prevCitas => 
+                        prevCitas.map(cita => 
+                          cita.id === citaActivaPrincipal!.id ? { ...cita, estado: "CANCELADA_SISTEMA", expiresAt: null } : cita
+                        )
                       );
-                    })()}
+                    }}
+                  />
+                )}
+
+                {/* Detail list grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                  
+                  <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4 text-gold" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-semibold text-text-muted">Fecha</div>
+                      <div className="font-semibold text-text-primary text-xs capitalize">
+                        {formatFriendlyDate(citaActivaPrincipal.fechaHoraInicio)}
+                      </div>
+                    </div>
                   </div>
+
+                  <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                      <Clock className="w-4 h-4 text-gold" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-semibold text-text-muted">Horario</div>
+                      <div className="font-semibold text-text-primary text-xs">
+                        {formatFriendlyTime(citaActivaPrincipal.fechaHoraInicio)} - {formatFriendlyTime(citaActivaPrincipal.fechaHoraFin)}
+                        <span className="text-[10px] text-text-secondary font-medium ml-1">({citaActivaPrincipal.duracionMin} min)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-gold" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-semibold text-text-muted">Especialista</div>
+                      <div className="font-semibold text-text-primary text-xs">
+                        {citaActivaPrincipal.profesionalNombre}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
+                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                      <DollarSign className="w-4 h-4 text-gold" />
+                    </div>
+                    <div>
+                      {(() => {
+                        const abonoReq = getAbonoRequerido(citaActivaPrincipal);
+                        return abonoReq ? (
+                          <>
+                            <div className="text-[10px] uppercase font-semibold text-text-muted">Abono Requerido</div>
+                            <div className="font-semibold text-gold text-xs leading-tight">
+                              {formatCurrency(abonoReq)}
+                            </div>
+                            <div className="text-[9px] text-text-muted">
+                              Total: {formatCurrency(citaActivaPrincipal.precioTotal)}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-[10px] uppercase font-semibold text-text-muted">Inversión</div>
+                            <div className="font-semibold text-text-primary text-xs">
+                              {formatCurrency(citaActivaPrincipal.precioTotal)}
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Actions Box */}
+                <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
+                  {renderActions(citaActivaPrincipal, true)}
                 </div>
 
               </div>
-
-              {/* Actions Box */}
-              <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
-                {renderActions(citaActivaPrincipal, true)}
+            ) : (
+              <div className="glass rounded-2xl p-8 text-center border border-white/5 shadow-xl relative overflow-hidden">
+                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5">
+                  <Calendar className="w-5 h-5 text-text-secondary" />
+                </div>
+                <h4 className="font-display font-bold text-base text-text-primary mb-1">
+                  No tienes citas programadas
+                </h4>
+                <p className="text-xs text-text-secondary max-w-xs mx-auto leading-relaxed mb-5">
+                  Resalta tu belleza agendando una experiencia de micropigmentación o estética facial premium.
+                </p>
+                <button
+                  onClick={() => router.push("/reservar")}
+                  className="bg-white/5 hover:bg-gold/10 hover:text-gold border border-white/10 hover:border-gold/30 text-text-primary text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all duration-300 cursor-pointer"
+                >
+                  Agendar Experiencia
+                </button>
               </div>
-
-            </div>
-          ) : (
-            <div className="glass rounded-2xl p-8 text-center border border-white/5 shadow-xl relative overflow-hidden">
-              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5">
-                <Calendar className="w-5 h-5 text-text-secondary" />
-              </div>
-              <h4 className="font-display font-bold text-base text-text-primary mb-1">
-                No tienes citas programadas
-              </h4>
-              <p className="text-xs text-text-secondary max-w-xs mx-auto leading-relaxed mb-5">
-                Resalta tu belleza agendando una experiencia de micropigmentación o estética facial premium.
-              </p>
-              <button
-                onClick={() => router.push("/reservar")}
-                className="bg-white/5 hover:bg-gold/10 hover:text-gold border border-white/10 hover:border-gold/30 text-text-primary text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all duration-300 cursor-pointer"
-              >
-                Agendar Experiencia
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* OTRAS CITAS FUTURAS SI LAS HUBIERA */}
-        {otrasCitasAgrupadas.length > 0 && (
+        {activeTab === "activas" && otrasCitasAgrupadas.length > 0 && (
           <div className="space-y-4 animate-fade-in-up [animation-delay:200ms]">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Otras Reservas
@@ -707,25 +709,33 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
           </div>
         )}
 
-        {/* SECTION B: ACORDEÓN DE HISTORIAL DE CITAS */}
-        <div className="space-y-3 animate-fade-in-up [animation-delay:300ms]">
-          <button
-            onClick={() => setHistoryOpen(!historyOpen)}
-            className="w-full flex items-center justify-between py-3 border-b border-white/5 text-text-secondary hover:text-text-primary transition-colors text-left"
-          >
-            <h3 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-2">
-              Historial de Visitas
-              <span className="text-[10px] bg-white/5 border border-white/5 text-text-muted px-2 py-0.5 rounded-full font-bold">
-                {citasHistorial.length}
-              </span>
-            </h3>
-            {historyOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          {historyOpen && (
-            <div className="space-y-3 animate-scale-in pt-2">
-              {citasHistorial.length > 0 ? (
+        {/* SECTION B: HISTORIAL DE CITAS */}
+        {activeTab === "historial" && (
+          <div className="space-y-4 animate-fade-in-up">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-white/5 pb-4">
+              <h2 className="text-xs uppercase tracking-widest text-text-muted font-bold flex items-center gap-2">
+                Historial de Visitas
+                <span className="bg-white/5 border border-white/5 text-text-muted px-2 py-0.5 rounded-full font-bold">
+                  {citasHistorial.length}
+                </span>
+              </h2>
+              <select
+                value={filtroEstado}
+                onChange={(e) => setFiltroEstado(e.target.value)}
+                className="bg-bg-card border border-white/10 rounded-lg text-xs px-3 py-2 text-text-primary outline-none focus:border-gold/50 cursor-pointer"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="COMPLETADA">Completada</option>
+                <option value="CANCELADA_CLIENTE">Cancelada por Cliente</option>
+                <option value="CANCELADA_SISTEMA">Cancelada por Sistema</option>
+                <option value="NO_ASISTIO">No Asistió</option>
+              </select>
+            </div>
+            
+            <div className="space-y-3">
+              {citasHistorial.filter(c => filtroEstado === "TODOS" || c.estado === filtroEstado).length > 0 ? (
                 [...citasHistorial]
+                  .filter(c => filtroEstado === "TODOS" || c.estado === filtroEstado)
                   .sort((a, b) => new Date(b.fechaHoraInicio).getTime() - new Date(a.fechaHoraInicio).getTime())
                   .map(cita => {
                     const badge = getBadgeConfig(cita.estado);
@@ -755,14 +765,15 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                     );
                   })
               ) : (
-                <div className="text-center py-6 text-xs text-text-muted">
-                  No posees registros históricos cargados.
+                <div className="text-center py-10 bg-white/[0.02] rounded-xl border border-white/5">
+                  <p className="text-xs text-text-muted">
+                    No hay citas que coincidan con este filtro.
+                  </p>
                 </div>
               )}
             </div>
-          )}
-        </div>
-
+          </div>
+        )}
       </main>
 
       {/* Footer Fino */}
