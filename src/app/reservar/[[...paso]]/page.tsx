@@ -949,10 +949,19 @@ export default function FlujoReserva() {
     const totalAbono = cuponActivo ? cuponActivo.nuevoAbono : totalAbonoSinDescuento;
 
     const totalDuracion = selectedServices.reduce((sum, s) => sum + s.duracionMin + s.bufferMin, 0);
-    // Servicios de la titular (excluye los de la amiga)
-    const serviciosTitular = esReservaCompartida
+    const sortByProfessional = (a: CartService, b: CartService) => {
+        const aIsMile = a.nombre.toLowerCase().includes('mile') || a.responsable?.toLowerCase() === 'mile';
+        const bIsMile = b.nombre.toLowerCase().includes('mile') || b.responsable?.toLowerCase() === 'mile';
+        if (aIsMile === bIsMile) return 0;
+        return aIsMile ? 1 : -1; // Staff first, then Mile
+    };
+
+    // Servicios de la titular ordenados por profesional para evitar saltos
+    const serviciosTitular = (esReservaCompartida
         ? selectedServices.filter(s => !serviciosAmiga.some(a => a.uid === s.uid))
-        : selectedServices;
+        : [...selectedServices]).sort(sortByProfessional);
+        
+    const serviciosAmigaSorted = [...serviciosAmiga].sort(sortByProfessional);
     const totalPrecioAmiga = serviciosAmiga.reduce((sum, s) => sum + s.precio, 0);
     const totalAbonoAmiga = serviciosAmiga.reduce((sum, s) => sum + (s.precio * 0.5), 0);
     const totalPrecioTitular = esReservaCompartida ? totalPrecio - totalPrecioAmiga : totalPrecio;
@@ -969,7 +978,7 @@ export default function FlujoReserva() {
         };
         return [
             serviciosTitular.map(mapSrv),
-            serviciosAmiga.map(mapSrv)
+            serviciosAmigaSorted.map(mapSrv)
         ];
     };
 
@@ -3386,7 +3395,7 @@ export default function FlujoReserva() {
                                                             <p className="text-xs text-text-muted font-semibold bg-bg-base px-2 py-1 rounded-md flex items-center gap-1"><Clock className="w-3 h-3 text-gold" /> {amigaHora}</p>
                                                         </div>
                                                         <div className="space-y-3">
-                                                            {serviciosAmiga.map(srv => {
+                                                            {serviciosAmigaSorted.map(srv => {
                                                                 const horaSrv = obtenerHoraServicio(srv);
                                                                 return (
                                                                     <div key={`amiga-${srv.uid}`} className="flex justify-between items-start">
@@ -3662,7 +3671,7 @@ export default function FlujoReserva() {
                                                             ...(esReservaCompartida && datosAmiga.nombre ? {
                                                                 amiga: { nombre: datosAmiga.nombre, telefono: `${codigoPaisAmiga}${datosAmiga.telefono.replace(/\s/g, '')}` },
                                                                 serviciosTitularIds: serviciosTitular.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id),
-                                                                serviciosAmigaIds: serviciosAmiga.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id)
+                                                                serviciosAmigaIds: serviciosAmigaSorted.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id)
                                                             } : {
                                                                 serviciosTitularIds: serviciosTitular.map(s => lockedCitas.find(lc => lc.uid === s.uid)?.id || s.id)
                                                             }),
@@ -3715,7 +3724,7 @@ export default function FlujoReserva() {
                                                                 const horaSrv = obtenerHoraServicio(s);
                                                                 return `%0A  - ${s.nombre}${horaSrv ? ` (${horaSrv})` : ''}`;
                                                             }).join('');
-                                                            const srvAmigaTexto = serviciosAmiga.map(s => {
+                                                            const srvAmigaTexto = serviciosAmigaSorted.map(s => {
                                                                 const horaSrv = obtenerHoraServicio(s);
                                                                 return `%0A  - ${s.nombre}${horaSrv ? ` (${horaSrv})` : ''}`;
                                                             }).join('');
