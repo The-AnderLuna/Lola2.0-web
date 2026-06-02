@@ -45,7 +45,7 @@ export interface CitaData {
   clienteNombre?: string;
   titularNombre?: string | null;
   notas?: string | null;
-  subServicios?: string[]; // Para agrupaciones
+  subServicios?: { clienteNombre: string; servicioNombre: string; }[]; // Para agrupaciones
 }
 
 interface DashboardProps {
@@ -188,7 +188,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         fechaHoraFin: endTimeMax.toISOString(),
         duracionMin: serviciosAgrupados.reduce((acc, c) => acc + c.duracionMin, 0),
         precioTotal: serviciosAgrupados.reduce((acc, c) => acc + c.precioTotal, 0),
-        subServicios: serviciosAgrupados.length > 1 ? serviciosAgrupados.map(s => `${s.servicioNombre} - ${s.clienteNombre}`) : undefined
+        subServicios: serviciosAgrupados.length > 1 ? serviciosAgrupados.map(s => ({ clienteNombre: s.clienteNombre || "Cliente", servicioNombre: s.servicioNombre })) : undefined
       };
     } else {
       serviciosAgrupados = [citaActivaRaw];
@@ -220,7 +220,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
           fechaHoraFin: endTimeMax.toISOString(),
           duracionMin: grupo.reduce((acc, c) => acc + c.duracionMin, 0),
           precioTotal: grupo.reduce((acc, c) => acc + c.precioTotal, 0),
-          subServicios: grupo.length > 1 ? grupo.map(s => `${s.servicioNombre} - ${s.clienteNombre}`) : undefined
+          subServicios: grupo.length > 1 ? grupo.map(s => ({ clienteNombre: s.clienteNombre || "Cliente", servicioNombre: s.servicioNombre })) : undefined
         });
       }
     } else {
@@ -508,9 +508,20 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                     {citaActivaPrincipal.servicioNombre}
                   </h4>
                   {citaActivaPrincipal.subServicios && (
-                    <div className="text-xs text-text-secondary mt-1 flex flex-col gap-0.5 border-l-2 border-gold/30 pl-2">
-                      {citaActivaPrincipal.subServicios.map((nombre, idx) => (
-                        <span key={idx}>{nombre}</span>
+                    <div className="text-xs text-text-secondary mt-2 flex flex-col gap-2">
+                      {Object.entries(
+                        citaActivaPrincipal.subServicios.reduce((acc, sub) => {
+                          if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                          acc[sub.clienteNombre].push(sub.servicioNombre);
+                          return acc;
+                        }, {} as Record<string, string[]>)
+                      ).map(([nombre, servicios]) => (
+                        <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                          <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                          {servicios.map((s, idx) => (
+                            <span key={idx} className="pl-2 relative before:content-['•'] before:absolute before:left-0 before:text-text-muted">{s}</span>
+                          ))}
+                        </div>
                       ))}
                     </div>
                   )}
@@ -661,9 +672,20 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                       })()}
                     </div>
                       {cita.subServicios && (
-                        <div className="text-[11px] text-text-secondary mt-2 mb-1 flex flex-col gap-0.5 border-l-2 border-gold/30 pl-2">
-                          {cita.subServicios.map((nombre, idx) => (
-                            <span key={idx}>{nombre}</span>
+                        <div className="text-[11px] text-text-secondary mt-2 mb-1 flex flex-col gap-2">
+                          {Object.entries(
+                            cita.subServicios.reduce((acc, sub) => {
+                              if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                              acc[sub.clienteNombre].push(sub.servicioNombre);
+                              return acc;
+                            }, {} as Record<string, string[]>)
+                          ).map(([nombre, servicios]) => (
+                            <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                              <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                              {servicios.map((s, idx) => (
+                                <span key={idx} className="pl-2 relative before:content-['•'] before:absolute before:left-0 before:text-text-muted">{s}</span>
+                              ))}
+                            </div>
                           ))}
                         </div>
                       )}
