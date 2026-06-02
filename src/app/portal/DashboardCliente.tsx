@@ -428,10 +428,16 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
 
           <nav className="flex items-center gap-6">
             <button 
-              onClick={() => router.push("/portal")} 
-              className="text-xs tracking-wider uppercase font-semibold text-gold border-b-2 border-gold/80 pb-1 pt-1"
+              onClick={() => setActiveTab("activas")} 
+              className={`text-xs tracking-wider uppercase font-semibold pb-1 pt-1 transition-colors ${activeTab === "activas" ? "text-gold border-b-2 border-gold/80" : "text-text-secondary hover:text-text-primary"}`}
             >
               Mis Citas
+            </button>
+            <button 
+              onClick={() => setActiveTab("historial")} 
+              className={`text-xs tracking-wider uppercase font-semibold pb-1 pt-1 transition-colors ${activeTab === "historial" ? "text-gold border-b-2 border-gold/80" : "text-text-secondary hover:text-text-primary"}`}
+            >
+              Historial de Citas
             </button>
             <button 
               onClick={() => router.push("/portal/perfil")} 
