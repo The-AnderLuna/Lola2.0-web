@@ -729,70 +729,74 @@ export default function DashboardCliente({
                   />
                 )}
 
-                {/* Detail list grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                   
                   <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
                       <Calendar className="w-4 h-4 text-gold" />
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase font-semibold text-text-muted">Fecha</div>
-                      <div className="font-semibold text-text-primary text-xs capitalize">
+                      <div className="text-xs uppercase font-semibold text-text-muted">Fecha</div>
+                      <div className="font-semibold text-text-primary text-sm capitalize">
                         {formatFriendlyDate(citaActivaPrincipal.fechaHoraInicio)}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
                       <Clock className="w-4 h-4 text-gold" />
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase font-semibold text-text-muted">Horario</div>
-                      <div className="font-semibold text-text-primary text-xs">
+                      <div className="text-xs uppercase font-semibold text-text-muted">Horario</div>
+                      <div className="font-semibold text-text-primary text-sm">
                         {formatFriendlyTime(citaActivaPrincipal.fechaHoraInicio)} - {formatFriendlyTime(citaActivaPrincipal.fechaHoraFin)}
-                        <span className="text-[10px] text-text-secondary font-medium ml-1">({formatDuration(citaActivaPrincipal.duracionMin)})</span>
+                        <span className="text-xs text-text-secondary font-medium ml-1.5">({formatDuration(citaActivaPrincipal.duracionMin)})</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
                       <User className="w-4 h-4 text-gold" />
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase font-semibold text-text-muted">Especialista</div>
-                      <div className="font-semibold text-text-primary text-xs">
+                      <div className="text-xs uppercase font-semibold text-text-muted">Especialista</div>
+                      <div className="font-semibold text-text-primary text-sm">
                         {citaActivaPrincipal.profesionalNombre}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-xl border border-white/5 transition-colors hover:bg-white/[0.04]">
-                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
                       <DollarSign className="w-4 h-4 text-gold" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       {(() => {
                         const abonoReq = getAbonoRequerido(citaActivaPrincipal);
                         return abonoReq ? (
-                          <>
-                            <div className="text-[10px] uppercase font-semibold text-text-muted">Abono Requerido</div>
-                            <div className="font-semibold text-gold text-xs leading-tight">
-                              {formatCurrency(abonoReq)}
+                          <div className="flex flex-col gap-1 w-full pr-2">
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-[11px] uppercase font-bold text-gold">Abono:</span>
+                              <span className="font-bold text-gold text-sm bg-gold/10 px-2 py-0.5 rounded-md border border-gold/20 shadow-[0_0_10px_rgba(212,175,55,0.1)]">
+                                {formatCurrency(abonoReq)}
+                              </span>
                             </div>
-                            <div className="text-[9px] text-text-muted">
-                              Total: {formatCurrency(citaActivaPrincipal.precioTotal)}
+                            <div className="flex items-center justify-between w-full border-t border-white/5 pt-1.5 mt-0.5">
+                              <span className="text-[10px] uppercase font-semibold text-text-muted">Total Cita:</span>
+                              <span className="text-xs font-semibold text-text-secondary">
+                                {formatCurrency(citaActivaPrincipal.precioTotal)}
+                              </span>
                             </div>
-                          </>
+                          </div>
                         ) : (
-                          <>
-                            <div className="text-[10px] uppercase font-semibold text-text-muted">Inversión</div>
-                            <div className="font-semibold text-text-primary text-xs">
+                          <div className="flex flex-col gap-1">
+                            <div className="text-xs uppercase font-semibold text-text-muted">Inversión Total</div>
+                            <div className="font-bold text-text-primary text-sm bg-white/5 px-2.5 py-1 rounded-md border border-white/10 self-start shadow-inner">
                               {formatCurrency(citaActivaPrincipal.precioTotal)}
                             </div>
-                          </>
+                          </div>
                         );
                       })()}
                     </div>
@@ -815,7 +819,7 @@ export default function DashboardCliente({
                   No tienes citas programadas
                 </h4>
                 <p className="text-xs text-text-secondary max-w-xs mx-auto leading-relaxed mb-5">
-                  Resalta tu belleza agendando una experiencia de micropigmentación o estética facial premium.
+                  Resalta tu belleza agendando cualquiera de nuestros servicios y experiencias premium.
                 </p>
                 <button
                   onClick={() => router.push("/reservar")}
