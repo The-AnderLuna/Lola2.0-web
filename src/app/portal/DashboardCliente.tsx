@@ -154,6 +154,14 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
     }).replace(/\u202f|\u00a0/g, ' ');
   };
 
+  // Helper: Format Duration (e.g. 90 -> 1h 30min)
+  const formatDuration = (mins: number) => {
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  };
+
   const capitalizeFirst = (str: string) => {
     if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -537,7 +545,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                           <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                             <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
                             {servicios.map((s, idx) => (
-                              <span key={idx} className="pl-2 relative before:content-['•'] before:absolute before:left-0 before:text-text-muted">{s}</span>
+                              <span key={idx} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)]">{s}</span>
                             ))}
                           </div>
                         ))}
@@ -593,7 +601,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                       <div className="text-[10px] uppercase font-semibold text-text-muted">Horario</div>
                       <div className="font-semibold text-text-primary text-xs">
                         {formatFriendlyTime(citaActivaPrincipal.fechaHoraInicio)} - {formatFriendlyTime(citaActivaPrincipal.fechaHoraFin)}
-                        <span className="text-[10px] text-text-secondary font-medium ml-1">({citaActivaPrincipal.duracionMin} min)</span>
+                        <span className="text-[10px] text-text-secondary font-medium ml-1">({formatDuration(citaActivaPrincipal.duracionMin)})</span>
                       </div>
                     </div>
                   </div>
@@ -702,7 +710,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                             <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                               <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
                               {servicios.map((s, idx) => (
-                                <span key={idx} className="pl-2 relative before:content-['•'] before:absolute before:left-0 before:text-text-muted">{s}</span>
+                                <span key={idx} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)]">{s}</span>
                               ))}
                             </div>
                           ))}
