@@ -979,16 +979,18 @@ export default function DashboardCliente({
                                   {servicios.map(srv => {
                                     let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
                                     return (
-                                      <div key={srv.id} className="flex justify-between items-start text-[11px] py-1 gap-2">
-                                        <div className="flex flex-1 min-w-0 items-start gap-2">
-                                          <span className="pl-3 text-text-muted relative before:content-['•'] before:absolute before:left-0 before:top-[1px] before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] leading-tight">
+                                      <div key={srv.id} className="flex justify-between items-start text-[11px] py-1.5 gap-3">
+                                        <div className="flex-1 min-w-0">
+                                          <span className="pl-3 text-text-muted relative before:content-['•'] before:absolute before:left-0 before:top-[5px] before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] leading-snug break-words inline-block w-full">
                                             {nombreLimpio}
+                                            {srv.profesionalNombre.toLowerCase().includes('staff') && (
+                                              <span className="inline-block ml-2 text-[8px] bg-white/10 text-white/70 px-1.5 py-[2px] rounded-sm whitespace-nowrap align-middle relative -top-[1px]">
+                                                STAFF
+                                              </span>
+                                            )}
                                           </span>
-                                          {srv.profesionalNombre.toLowerCase().includes('staff') && (
-                                            <span className="text-[8px] bg-white/10 text-white/70 px-1.5 py-[1px] rounded-sm shrink-0 whitespace-nowrap mt-[1px]">STAFF</span>
-                                          )}
                                         </div>
-                                        <div className="flex items-center gap-3 shrink-0 whitespace-nowrap pt-[1px]">
+                                        <div className="flex items-center gap-2.5 shrink-0 whitespace-nowrap pt-[2px]">
                                           <span className="text-[10px] text-text-muted">{formatDuration(srv.duracionMin)}</span>
                                           <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
                                         </div>
