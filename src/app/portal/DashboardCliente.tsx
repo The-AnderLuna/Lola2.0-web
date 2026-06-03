@@ -274,20 +274,36 @@ export default function DashboardCliente({
   // Activa = No cancelada ni completada ni no asistio, y en el futuro
   const now = new Date();
   
+  // Helper: Asignar peso de urgencia a los estados
+  const getEstadoPeso = (estado: string) => {
+    switch (estado) {
+      case "PRE_AGENDADA": return 1; // Mayor urgencia (requiere pago o acción)
+      case "EN_REVISION": return 2;  // Media urgencia (esperando validación de pago)
+      case "CONFIRMADA": 
+      case "REAGENDADA": return 3;   // Menor urgencia (todo listo, solo asistir)
+      default: return 4;
+    }
+  };
+
   const citasActivas = citas.filter(cita => {
     const inPast = new Date(cita.fechaHoraInicio) < now;
     const isInactiveState = ["CANCELADA", "CANCELADA_SISTEMA", "COMPLETADA", "NO_ASISTIO"].includes(cita.estado);
     return !isInactiveState && !inPast;
+  }).sort((a, b) => {
+    const pesoA = getEstadoPeso(a.estado);
+    const pesoB = getEstadoPeso(b.estado);
+    if (pesoA !== pesoB) {
+      return pesoA - pesoB; // Menor peso = mayor prioridad
+    }
+    // Si tienen la misma urgencia, priorizamos cronológicamente (la más próxima)
+    return new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime();
   });
 
   // El historial muestra TODAS las reservas relacionadas con el cliente
   const citasHistorial = citas;
 
-
-  // Elegir la cita activa principal (la más próxima en fecha)
-  const citaActivaRaw = citasActivas.length > 0 
-    ? [...citasActivas].sort((a, b) => new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime())[0] 
-    : null;
+  // Elegir la cita activa principal (la de mayor urgencia, luego la más próxima)
+  const citaActivaRaw = citasActivas.length > 0 ? citasActivas[0] : null;
 
   // Agrupar si es PRE_AGENDADA y tiene grupo
   let serviciosAgrupados: CitaData[] = [];
