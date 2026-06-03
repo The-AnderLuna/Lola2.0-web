@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, ArrowRight, Star, MapPin, Phone, AtSign, ChevronDown } from "lucide-react";
+import { Calendar, ArrowRight, Star, MapPin, Phone, AtSign, ChevronDown, CreditCard } from "lucide-react";
 import { RepositorioConfiguracion } from "@/adaptadores/repositorios/RepositorioConfiguracion";
 
 /* ── Scroll-reveal hook ── */
@@ -322,11 +322,22 @@ export default function Home() {
                 </div>
 
                 {/* Payment info */}
-                <div className="p-4 rounded-2xl bg-bg-elevated border border-border-subtle">
-                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Plan de Pago</p>
-                  <p className="text-xs text-text-secondary leading-relaxed">
-                    Separa tu espacio con <strong className="text-text-primary">$100.000</strong> y abona semanalmente. Cuenta de ahorros Bancolombia · <strong className="text-text-primary">788 07180362</strong> · Milena Almanza.
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-bg-elevated to-bg-card border border-gold/10 relative overflow-hidden group-hover:border-gold/30 transition-colors">
+                  <div className="absolute top-0 right-0 p-4 opacity-5">
+                    <CreditCard className="w-12 h-12" />
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <CreditCard className="w-4 h-4 text-gold" />
+                    <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em]">Plan de Pago</p>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed mb-3">
+                    Separa tu cupo con <strong className="text-white bg-gold/10 px-1.5 py-0.5 rounded">$100.000</strong> (sin devolución) y abona el excedente posteriormente.
                   </p>
+                  <div className="bg-black/40 rounded-xl p-3 border border-white/5">
+                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1">Cuenta de Ahorros Bancolombia</p>
+                    <p className="font-mono text-sm text-gold tracking-widest font-semibold mb-0.5">788 07180362</p>
+                    <p className="text-[10px] text-text-secondary uppercase tracking-widest">Titular: Milena Almanza</p>
+                  </div>
                 </div>
               </div>
 
@@ -339,7 +350,7 @@ export default function Home() {
                       <span className="text-2xl font-bold text-gold">$700.000</span>
                       <span className="text-[10px] text-text-muted uppercase">COP</span>
                     </div>
-                    <span className="text-xs text-text-secondary mt-0.5 block">Paga hoy: <strong className="text-gold">$500.000</strong></span>
+                    <span className="text-xs text-text-secondary mt-0.5 block">Separa con: <strong className="text-gold">$100.000</strong> · Sin devolución</span>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Modalidad</span>
@@ -416,6 +427,25 @@ export default function Home() {
                     <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Certificado de participación</li>
                     <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Soporte post-curso de 1 mes para resolver dudas</li>
                   </ul>
+                </div>
+
+                {/* Payment info */}
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-bg-elevated to-bg-card border border-gold/10 relative overflow-hidden group-hover:border-gold/30 transition-colors">
+                  <div className="absolute top-0 right-0 p-4 opacity-5">
+                    <CreditCard className="w-12 h-12" />
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <CreditCard className="w-4 h-4 text-gold" />
+                    <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em]">Plan de Pago</p>
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed mb-3">
+                    Separa tu cupo con <strong className="text-white bg-gold/10 px-1.5 py-0.5 rounded">$250.000</strong> (sin devolución) y abona el excedente posteriormente.
+                  </p>
+                  <div className="bg-black/40 rounded-xl p-3 border border-white/5">
+                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1">Cuenta de Ahorros Bancolombia</p>
+                    <p className="font-mono text-sm text-gold tracking-widest font-semibold mb-0.5">788 07180362</p>
+                    <p className="text-[10px] text-text-secondary uppercase tracking-widest">Titular: Milena Almanza</p>
+                  </div>
                 </div>
               </div>
 
