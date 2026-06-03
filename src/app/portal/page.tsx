@@ -72,8 +72,9 @@ export default async function PortalPage() {
     grupoId: cita.grupoId || null,
     reservaTitularId: cita.reservaTitularId || null,
     clienteNombre: mapaClientes.get(cita.clienteId) || "Cliente",
-    titularNombre: cita.reservaTitularId ? mapaClientes.get(cita.reservaTitularId) || "Titular" : null,
+    titularNombre: cita.reservaTitularId ? (mapaClientes.get(cita.reservaTitularId) || null) : null,
     notas: cita.notas || null,
+    metodoPago: cita.metodoPago || null,
   }));
 
   // Renderizar el Dashboard premium pasándole los datos

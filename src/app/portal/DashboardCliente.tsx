@@ -45,6 +45,7 @@ export interface CitaData {
   clienteNombre?: string;
   titularNombre?: string | null;
   notas?: string | null;
+  metodoPago?: string | null;
   subServicios?: { clienteNombre: string; servicioNombre: string; }[]; // Para agrupaciones
 }
 
@@ -202,18 +203,15 @@ export default function DashboardCliente({
   };
 
   const handleEnviarComprobante = () => {
-    if (!showConfirmarPagoModal || !selectedPaymentMethod) return;
+    if (!showConfirmarPagoModal) return;
 
     const formattedDate = formatFriendlyDate(showConfirmarPagoModal.fechaHoraInicio);
     const formattedTime = formatFriendlyTime(showConfirmarPagoModal.fechaHoraInicio);
     
-    let text = `Hola Mile Almanza, soy ${cliente.nombre}. Adjunto las imágenes del comprobante de pago para mi cita de *${showConfirmarPagoModal.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. (ID: ${showConfirmarPagoModal.id})`;
-    
-    let methodName = "";
-    if (selectedPaymentMethod === "nequi") methodName = "Nequi";
-    else if (selectedPaymentMethod === "daviplata") methodName = "Daviplata";
-    
-    text += `\n\n💰 *Método de pago utilizado:* ${methodName}`;
+    const metodo = showConfirmarPagoModal.metodoPago || 'el método seleccionado';
+    const metodoPretty = metodo.charAt(0).toUpperCase() + metodo.slice(1).toLowerCase();
+
+    const text = `Hola Mile Almanza, soy ${cliente.nombre}. Te envío las imágenes del comprobante de pago para mi cita de *${showConfirmarPagoModal.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. (ID: ${showConfirmarPagoModal.id})\n\n💰 *Método de pago:* ${metodoPretty}`;
 
     const cleanNumber = whatsappNumero.replace(/\+/g, '');
     const link = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`;
@@ -451,7 +449,7 @@ export default function DashboardCliente({
         return (
           <div className="flex-1 bg-white/5 border border-white/5 px-4 py-3 rounded-xl text-center">
             <span className="text-text-muted text-xs block text-balance">
-              El pago y gestión de este cupo temporal está a cargo de <strong className="text-white">{cita.titularNombre || 'Titular'}</strong>. Comunícate con él/ella para el abono respectivo.
+              El pago y gestión de este cupo temporal está a cargo de <strong className="text-white">{cita.titularNombre || 'quien realizó la reserva'}</strong>. Comunícate con él/ella para el abono respectivo.
             </span>
           </div>
         );
@@ -1006,85 +1004,68 @@ export default function DashboardCliente({
       )}
 
       {/* Modal Confirmar Pago */}
-      {showConfirmarPagoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirmarPagoModal(null)}></div>
-          <div className="relative glass-strong border border-gold/20 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
-            <h3 className="text-lg font-bold text-gold font-display mb-2 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-gold" />
-              Confirmar Pago
-            </h3>
-            
-            <p className="text-sm text-text-secondary mb-6 leading-relaxed">
-              Para confirmar tu reserva temporal, escoge un método de pago y envía las imágenes del comprobante a nuestro WhatsApp.
-            </p>
+      {showConfirmarPagoModal && (() => {
+        const metodo = showConfirmarPagoModal.metodoPago || '';
+        const metodoPretty = metodo ? metodo.charAt(0).toUpperCase() + metodo.slice(1).toLowerCase() : '';
+        const numero = metodo === 'nequi' ? nequiNumero : metodo === 'daviplata' ? daviplataNumero : '';
 
-            <div className="space-y-3 mb-6">
-              {nequiNumero && (
-                <label className={`block cursor-pointer p-4 rounded-xl border transition-all ${selectedPaymentMethod === 'nequi' ? 'bg-gold/10 border-gold' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="radio" 
-                      name="paymentMethod" 
-                      value="nequi"
-                      checked={selectedPaymentMethod === 'nequi'}
-                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                      className="text-gold focus:ring-gold" 
-                    />
-                    <div>
-                      <span className="block font-bold text-white mb-0.5">Nequi</span>
-                      <span className="block text-xs text-text-muted">N° {nequiNumero}</span>
-                    </div>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirmarPagoModal(null)}></div>
+            <div className="relative glass-strong border border-gold/20 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
+              <h3 className="text-lg font-bold text-gold font-display mb-2 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-gold" />
+                Confirmar Pago
+              </h3>
+
+              <p className="text-sm text-text-secondary mb-5 leading-relaxed">
+                Realiza el pago al número indicado y luego envíanos las imágenes del comprobante por WhatsApp.
+              </p>
+
+              {metodoPretty && numero ? (
+                <div className="bg-white/5 border border-gold/20 rounded-xl p-4 mb-5">
+                  <p className="text-xs text-text-muted uppercase tracking-wider mb-1">Método elegido al reservar</p>
+                  <p className="text-base font-bold text-white mb-3">{metodoPretty}</p>
+                  <div className="flex items-center justify-between bg-bg-base/60 border border-white/10 rounded-lg px-4 py-2.5">
+                    <span className="font-mono text-gold font-bold tracking-wider text-sm">{numero}</span>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(numero)}
+                      className="text-xs text-text-muted hover:text-gold transition-colors ml-3 flex items-center gap-1"
+                      title="Copiar número"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Copiar
+                    </button>
                   </div>
-                </label>
-              )}
-
-              {daviplataNumero && (
-                <label className={`block cursor-pointer p-4 rounded-xl border transition-all ${selectedPaymentMethod === 'daviplata' ? 'bg-gold/10 border-gold' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="radio" 
-                      name="paymentMethod" 
-                      value="daviplata"
-                      checked={selectedPaymentMethod === 'daviplata'}
-                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                      className="text-gold focus:ring-gold" 
-                    />
-                    <div>
-                      <span className="block font-bold text-white mb-0.5">Daviplata</span>
-                      <span className="block text-xs text-text-muted">N° {daviplataNumero}</span>
-                    </div>
-                  </div>
-                </label>
-              )}
-
-              {titularCuenta && selectedPaymentMethod && (
-                <div className="mt-3 text-center bg-white/5 p-3 rounded-lg border border-white/10 animate-fade-in-up">
-                  <p className="text-xs text-text-muted">Titular de la cuenta:</p>
-                  <p className="text-sm font-bold text-white">{titularCuenta}</p>
+                  {titularCuenta && (
+                    <p className="text-xs text-text-muted mt-2 text-center">Titular: <span className="text-white font-semibold">{titularCuenta}</span></p>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5 text-center">
+                  <p className="text-xs text-text-muted">Contacta a Mile Almanza para confirmar el método de pago.</p>
                 </div>
               )}
-            </div>
 
-            <div className="flex gap-3 justify-end relative z-10 pt-4 border-t border-white/5">
-              <button 
-                onClick={() => setShowConfirmarPagoModal(null)}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-gold transition-colors"
-              >
-                CANCELAR
-              </button>
-              <button 
-                onClick={handleEnviarComprobante}
-                disabled={!selectedPaymentMethod}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-gold-dark to-gold text-black hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ENVIAR IMÁGENES
-              </button>
+              <div className="flex gap-3 justify-end relative z-10 pt-4 border-t border-white/5">
+                <button 
+                  onClick={() => setShowConfirmarPagoModal(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-gold transition-colors"
+                >
+                  CANCELAR
+                </button>
+                <button 
+                  onClick={handleEnviarComprobante}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-gold-dark to-gold text-black hover:brightness-110 transition-all"
+                >
+                  ENVIAR COMPROBANTE
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

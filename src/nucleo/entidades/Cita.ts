@@ -16,6 +16,7 @@ export class Cita {
     public reservaTitularId?: string | null,
     public notas?: string | null,
     public createdAt: Date = new Date(),
+    public metodoPago?: string | null,
   ) {}
 
   public estaVencida(): boolean {

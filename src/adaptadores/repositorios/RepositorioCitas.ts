@@ -45,7 +45,8 @@ export class RepositorioCitas {
       row.grupo_id,
       row.reserva_titular_id || null,
       row.notas || null,
-      row.created_at ? new Date(row.created_at) : new Date()
+      row.created_at ? new Date(row.created_at) : new Date(),
+      row.metodo_pago || null
     ));
   }
 
@@ -102,7 +103,8 @@ export class RepositorioCitas {
       row.grupo_id,
       row.reserva_titular_id || null,
       row.notas || null,
-      row.created_at ? new Date(row.created_at) : new Date()
+      row.created_at ? new Date(row.created_at) : new Date(),
+      row.metodo_pago || null
     ));
   }
 
@@ -139,7 +141,8 @@ export class RepositorioCitas {
       data.grupo_id,
       data.reserva_titular_id || null,
       data.notas || null,
-      data.created_at ? new Date(data.created_at) : new Date()
+      data.created_at ? new Date(data.created_at) : new Date(),
+      data.metodo_pago || null
     );
   }
 }
