@@ -305,9 +305,11 @@ export default function DashboardCliente({
       // Buscar el nombre del titular en CUALQUIER cita del grupo que lo tenga
       const titularNombreResuelto = serviciosAgrupados.find(c => c.titularNombre)?.titularNombre || null;
       const citaBase = { ...serviciosAgrupados[0], reservaTitularId: titularId, titularNombre: titularNombreResuelto };
+      const isAmigas = serviciosAgrupados.some(c => c.reservaTitularId !== null && c.reservaTitularId !== undefined) || new Set(serviciosAgrupados.map(c => c.clienteNombre || 'Cliente')).size > 1;
+      
       citaActivaPrincipal = {
         ...citaBase,
-        servicioNombre: serviciosAgrupados.length > 1 ? "Reserva de Amigas" : citaBase.servicioNombre,
+        servicioNombre: serviciosAgrupados.length > 1 ? (isAmigas ? "Reserva de Amigas" : "Paquete de Servicios") : citaBase.servicioNombre,
         fechaHoraFin: endTimeMax.toISOString(),
         duracionMin: serviciosAgrupados.reduce((acc, c) => acc + c.duracionMin, 0),
         precioTotal: serviciosAgrupados.reduce((acc, c) => acc + c.precioTotal, 0),
@@ -341,10 +343,11 @@ export default function DashboardCliente({
         const titularNombre = grupo.find(c => c.titularNombre)?.titularNombre || null;
         // Clonamos la primera cita del grupo (cronológicamente) para usarla como base
         const citaBase = { ...startTimeMinCita, reservaTitularId: titularId, titularNombre };
+        const isAmigas = grupo.some(c => c.reservaTitularId !== null && c.reservaTitularId !== undefined) || new Set(grupo.map(c => c.clienteNombre || 'Cliente')).size > 1;
         
         otrasCitasAgrupadas.push({
           ...citaBase,
-          servicioNombre: grupo.length > 1 ? "Reserva de Amigas" : citaBase.servicioNombre,
+          servicioNombre: grupo.length > 1 ? (isAmigas ? "Reserva de Amigas" : "Paquete de Servicios") : citaBase.servicioNombre,
           fechaHoraFin: endTimeMax.toISOString(),
           duracionMin: grupo.reduce((acc, c) => acc + c.duracionMin, 0),
           precioTotal: grupo.reduce((acc, c) => acc + c.precioTotal, 0),
@@ -962,6 +965,7 @@ export default function DashboardCliente({
                     )[0];
                     const historyIndex = estadosFiltro.length - index;
                     const esGrupo = grupo.length > 1;
+                    const isAmigas = grupo.some(c => c.reservaTitularId !== null && c.reservaTitularId !== undefined) || new Set(grupo.map(c => c.clienteNombre || 'Cliente')).size > 1;
                     const estadoBase = citaBase.estado;
                     const badge = getBadgeConfig(estadoBase);
                     const totalPrecio = grupo.reduce((acc, c) => acc + c.precioTotal, 0);
@@ -977,7 +981,7 @@ export default function DashboardCliente({
                             <div className="flex items-center gap-2 flex-wrap">
                               <h5 className="font-semibold text-xs text-text-primary tracking-wide flex items-center gap-2">
                                 <span className="text-[10px] text-gold/50 bg-gold/5 px-1.5 py-0.5 rounded font-mono border border-gold/10">#{historyIndex}</span>
-                                {esGrupo ? "Reserva de Amigas" : citaBase.servicioNombre}
+                                {esGrupo ? (isAmigas ? "Reserva de Amigas" : "Paquete de Servicios") : citaBase.servicioNombre}
                               </h5>
                               {esGrupo && (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold uppercase tracking-wider">
