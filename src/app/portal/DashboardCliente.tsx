@@ -1268,7 +1268,7 @@ interface CountdownProps {
 }
 
 function CountdownBanner({ expiresAtStr, onExpire }: CountdownProps) {
-  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -1298,6 +1298,8 @@ function CountdownBanner({ expiresAtStr, onExpire }: CountdownProps) {
     const sec = totalSeconds % 60;
     return `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
+
+  if (timeLeft === null) return null;
 
   if (timeLeft <= 0) {
     return (
