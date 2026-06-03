@@ -422,7 +422,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-inter text-text-primary flex-1">
+    <div className="min-h-screen flex flex-col font-inter text-text-primary flex-1 overflow-x-hidden relative">
       {/* Estética Premium: Círculos de luz flotantes */}
       <div className="absolute top-[-10%] left-[-20%] w-[60%] aspect-square rounded-full bg-gold opacity-[0.03] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-20%] w-[60%] aspect-square rounded-full bg-red-urgency opacity-[0.02] blur-[120px] pointer-events-none" />
