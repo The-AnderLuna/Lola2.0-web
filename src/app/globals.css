@@ -73,7 +73,7 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-gold-dark);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
 }
 

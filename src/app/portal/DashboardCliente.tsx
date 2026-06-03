@@ -1018,6 +1018,24 @@ export default function DashboardCliente({
                           </div>
                         </div>
 
+                        {/* Countdown Component (Only for PRE_AGENDADA) en el historial */}
+                        {citaBase.estado === "PRE_AGENDADA" && citaBase.expiresAt && (
+                          <div className="border-t border-white/5 bg-black/20">
+                            <CountdownBanner 
+                              expiresAtStr={citaBase.expiresAt} 
+                              onExpire={() => {
+                                setCitas(prevCitas => 
+                                  prevCitas.map(cita => 
+                                    (cita.id === citaBase.id || cita.grupoId === citaBase.grupoId) 
+                                      ? { ...cita, estado: "CANCELADA_SISTEMA", expiresAt: null } 
+                                      : cita
+                                  )
+                                );
+                              }}
+                            />
+                          </div>
+                        )}
+
                         {/* Sub-servicios si es grupo */}
                         {esGrupo && (
                           <div className="border-t border-white/5">
