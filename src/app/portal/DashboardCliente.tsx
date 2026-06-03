@@ -386,50 +386,58 @@ export default function DashboardCliente({
       case "CONFIRMADA":
         return {
           text: "Confirmada",
-          styles: "bg-gold/10 text-gold border-gold/30 shadow-[0_0_15px_rgba(212,175,55,0.5)]",
+          styles: "bg-gold/20 text-gold border-gold/50",
+          glow: "0 0 14px rgba(212,175,55,0.7), 0 0 6px rgba(212,175,55,0.4)",
           icon: <CheckCircle className="w-3.5 h-3.5" />
         };
       case "EN_REVISION":
         return {
           text: "En Revisión",
-          styles: "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_15px_rgba(251,191,36,0.5)]",
+          styles: "bg-amber-500/20 text-amber-300 border-amber-400/50",
+          glow: "0 0 14px rgba(251,191,36,0.7), 0 0 6px rgba(251,191,36,0.4)",
           icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
         };
       case "PRE_AGENDADA":
         return {
           text: "Cupo Temporal",
-          styles: "bg-white/5 text-text-primary border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.15)]",
+          styles: "bg-white/10 text-text-primary border-white/20",
+          glow: "0 0 10px rgba(255,255,255,0.2)",
           icon: <Clock className="w-3.5 h-3.5" />
         };
       case "REAGENDADA":
         return {
           text: "Reagendada",
-          styles: "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]",
+          styles: "bg-blue-500/20 text-blue-300 border-blue-400/50",
+          glow: "0 0 14px rgba(59,130,246,0.7), 0 0 6px rgba(59,130,246,0.4)",
           icon: <Calendar className="w-3.5 h-3.5" />
         };
       case "COMPLETADA":
         return {
           text: "Completada",
-          styles: "bg-green-500/10 text-green-400 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.5)]",
+          styles: "bg-green-500/20 text-green-300 border-green-400/50",
+          glow: "0 0 14px rgba(34,197,94,0.7), 0 0 6px rgba(34,197,94,0.4)",
           icon: <CheckCircle className="w-3.5 h-3.5" />
         };
       case "CANCELADA":
       case "CANCELADA_SISTEMA":
         return {
           text: "Cancelada",
-          styles: "bg-white/5 text-text-muted border-white/5 shadow-[0_0_15px_rgba(255,255,255,0.05)]",
+          styles: "bg-white/5 text-text-muted border-white/10",
+          glow: "none",
           icon: <XCircle className="w-3.5 h-3.5" />
         };
       case "NO_ASISTIO":
         return {
           text: "Inasistencia",
-          styles: "bg-red-urgency/10 text-red-urgency border-red-urgency/30 shadow-[0_0_15px_rgba(239,68,68,0.5)]",
+          styles: "bg-red-500/20 text-red-300 border-red-400/50",
+          glow: "0 0 14px rgba(239,68,68,0.7), 0 0 6px rgba(239,68,68,0.4)",
           icon: <AlertCircle className="w-3.5 h-3.5" />
         };
       default:
         return {
           text: estado,
           styles: "bg-white/5 text-text-secondary border-white/10",
+          glow: "none",
           icon: <HelpCircle className="w-3.5 h-3.5" />
         };
     }
@@ -981,7 +989,11 @@ export default function DashboardCliente({
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-2 shrink-0">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.styles}`}>
+                            <span 
+                              className={`flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border ${badge.styles}`}
+                              style={{ boxShadow: badge.glow }}
+                            >
+                              {badge.icon}
                               {badge.text}
                             </span>
                             <span className="text-xs font-semibold text-text-secondary">
