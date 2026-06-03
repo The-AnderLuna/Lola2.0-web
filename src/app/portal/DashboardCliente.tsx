@@ -919,18 +919,26 @@ export default function DashboardCliente({
                                 </span>
                               )}
                             </div>
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-text-secondary">
-                              <span className="capitalize">{formatFriendlyDate(citaBase.fechaHoraInicio)}</span>
-                              <span>•</span>
-                              <span>{formatFriendlyTime(citaBase.fechaHoraInicio)}</span>
-                              <span>•</span>
-                              <span className="text-text-muted">{citaBase.profesionalNombre}</span>
-                            </div>
-                            {fechaCreacion && (
-                              <div className="text-[10px] text-text-muted flex items-center gap-1">
-                                <span>Agendada el {fechaCreacion}</span>
+                            <div className="flex flex-col gap-1.5 mt-2">
+                              <div className="flex items-center gap-2 text-[11px] text-text-secondary">
+                                <Calendar className="w-3.5 h-3.5 text-gold/70" />
+                                <span className="capitalize font-medium">{formatFriendlyDate(citaBase.fechaHoraInicio)}</span>
                               </div>
-                            )}
+                              <div className="flex items-center gap-2 text-[11px] text-text-secondary">
+                                <Clock className="w-3.5 h-3.5 text-gold/70" />
+                                <span>{formatFriendlyTime(citaBase.fechaHoraInicio)} - {formatFriendlyTime(citaBase.fechaHoraFin)} <span className="text-[10px] text-text-muted">({formatDuration(citaBase.duracionMin)})</span></span>
+                              </div>
+                              {fechaCreacion && (
+                                <div className="flex items-center gap-2 text-[10px] text-text-muted">
+                                  <FileText className="w-3.5 h-3.5 opacity-50" />
+                                  <span>Creada el {fechaCreacion}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 text-[11px] text-text-secondary mt-0.5">
+                                <User className="w-3.5 h-3.5 text-gold/70" />
+                                <span>{citaBase.profesionalNombre}</span>
+                              </div>
+                            </div>
                           </div>
                           <div className="flex flex-col items-end gap-2 shrink-0">
                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.styles}`}>
@@ -945,17 +953,29 @@ export default function DashboardCliente({
                         {/* Sub-servicios si es grupo */}
                         {esGrupo && (
                           <div className="border-t border-white/5 px-4 py-2.5 space-y-1.5 bg-white/[0.02]">
-                            {grupo.map(srv => (
-                              <div key={srv.id} className="flex justify-between items-center text-[11px]">
-                                <span className="text-text-muted">
-                                  {srv.clienteNombre && srv.clienteNombre !== citaBase.clienteNombre
-                                    ? `${srv.servicioNombre} (${srv.clienteNombre})`
-                                    : srv.servicioNombre
-                                  }
-                                </span>
-                                <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
-                              </div>
-                            ))}
+                            {grupo.map(srv => {
+                              // Limpiar el nombre del servicio si termina en " - Staff"
+                              let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
+                              const nombreFinal = srv.clienteNombre && srv.clienteNombre !== citaBase.clienteNombre
+                                ? `${nombreLimpio} (${srv.clienteNombre.split(' ')[0]})`
+                                : nombreLimpio;
+                                
+                              return (
+                                <div key={srv.id} className="flex justify-between items-center text-[11px] py-1 border-b border-white/5 last:border-0">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-gold/50"></div>
+                                    <span className="text-text-muted">{nombreFinal}</span>
+                                    {srv.profesionalNombre.toLowerCase().includes('staff') && (
+                                      <span className="text-[8px] bg-white/10 text-white/70 px-1.5 rounded-sm">STAFF</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-[10px] text-text-muted">{formatDuration(srv.duracionMin)}</span>
+                                    <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
