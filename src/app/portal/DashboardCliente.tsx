@@ -349,13 +349,13 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
 
   // Helper: Renderize Actions based on business rules
   const renderActions = (cita: CitaData, isPrimary: boolean) => {
+    const isAmiga = cita.reservaTitularId && cita.reservaTitularId !== cliente.id;
+
     const btnClass = isPrimary 
       ? "flex-1 bg-white/5 border border-white/10 text-xs py-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 font-bold uppercase tracking-wider"
       : "bg-white/5 border border-white/5 hover:border-gold/30 hover:bg-gold/5 text-gold font-semibold text-[10px] px-3.5 py-1.5 rounded-lg transition-all text-center flex items-center gap-1.5";
 
     if (cita.estado === "PRE_AGENDADA") {
-      const isAmiga = cita.reservaTitularId && cita.reservaTitularId !== cliente.id;
-      
       if (isAmiga) {
         return (
           <div className="flex-1 bg-white/5 border border-white/5 px-4 py-3 rounded-xl text-center">
@@ -410,6 +410,10 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
     }
 
     if (cita.estado === "CONFIRMADA" || cita.estado === "REAGENDADA") {
+      if (isAmiga) {
+        return null;
+      }
+
       const horasRestantes = (new Date(cita.fechaHoraInicio).getTime() - now.getTime()) / (1000 * 60 * 60);
       
       if (horasRestantes > 12) {
