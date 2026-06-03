@@ -50,15 +50,45 @@ export class RepositorioCitas {
   }
 
   async obtenerPorClienteId(clienteId: string): Promise<Cita[]> {
-    const { data, error } = await supabase
+    const { data: initialData, error: initialError } = await supabase
       .from('citas')
       .select('*')
-      .or(`cliente_id.eq.${clienteId},reserva_titular_id.eq.${clienteId}`)
-      .order('fecha_hora_inicio', { ascending: false });
+      .or(`cliente_id.eq.${clienteId},reserva_titular_id.eq.${clienteId}`);
 
-    if (error) throw new Error(`Error obteniendo citas por cliente: ${error.message}`);
+    if (initialError) throw new Error(`Error obteniendo citas por cliente: ${initialError.message}`);
+    
+    if (!initialData || initialData.length === 0) return [];
 
-    return (data || []).map(row => new Cita(
+    // Find all unique grupo_ids
+    const grupoIds = [...new Set(initialData.map(cita => cita.grupo_id).filter(Boolean))];
+    
+    let allData = [...initialData];
+
+    if (grupoIds.length > 0) {
+      // Fetch all citas for these groups
+      const { data: groupData, error: groupError } = await supabase
+        .from('citas')
+        .select('*')
+        .in('grupo_id', grupoIds);
+
+      if (groupError) throw new Error(`Error obteniendo citas de grupo: ${groupError.message}`);
+      
+      // Merge and remove duplicates
+      if (groupData) {
+        const uniqueIds = new Set(allData.map(c => c.id));
+        for (const cita of groupData) {
+          if (!uniqueIds.has(cita.id)) {
+            uniqueIds.add(cita.id);
+            allData.push(cita);
+          }
+        }
+      }
+    }
+
+    // Sort by fecha_hora_inicio descending
+    allData.sort((a, b) => new Date(b.fecha_hora_inicio).getTime() - new Date(a.fecha_hora_inicio).getTime());
+
+    return allData.map(row => new Cita(
       row.id,
       row.cliente_id || '',
       row.servicio_id || '',
