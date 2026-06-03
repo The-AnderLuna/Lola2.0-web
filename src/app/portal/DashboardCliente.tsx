@@ -303,7 +303,7 @@ export default function DashboardCliente({
       const citaBase = { ...serviciosAgrupados[0], reservaTitularId: titularId, titularNombre: titularNombreResuelto };
       citaActivaPrincipal = {
         ...citaBase,
-        servicioNombre: serviciosAgrupados.length > 1 ? "Reserva Compartida" : citaBase.servicioNombre,
+        servicioNombre: serviciosAgrupados.length > 1 ? "Reserva de Amigas" : citaBase.servicioNombre,
         fechaHoraFin: endTimeMax.toISOString(),
         duracionMin: serviciosAgrupados.reduce((acc, c) => acc + c.duracionMin, 0),
         precioTotal: serviciosAgrupados.reduce((acc, c) => acc + c.precioTotal, 0),
@@ -340,7 +340,7 @@ export default function DashboardCliente({
         
         otrasCitasAgrupadas.push({
           ...citaBase,
-          servicioNombre: grupo.length > 1 ? "Reserva Compartida" : citaBase.servicioNombre,
+          servicioNombre: grupo.length > 1 ? "Reserva de Amigas" : citaBase.servicioNombre,
           fechaHoraFin: endTimeMax.toISOString(),
           duracionMin: grupo.reduce((acc, c) => acc + c.duracionMin, 0),
           precioTotal: grupo.reduce((acc, c) => acc + c.precioTotal, 0),
@@ -912,7 +912,7 @@ export default function DashboardCliente({
                           <div className="space-y-1.5 flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h5 className="font-semibold text-xs text-text-primary tracking-wide">
-                                {esGrupo ? "Reserva Compartida" : citaBase.servicioNombre}
+                                {esGrupo ? "Reserva de Amigas" : citaBase.servicioNombre}
                               </h5>
                               {esGrupo && (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold uppercase tracking-wider">

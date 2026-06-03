@@ -3728,7 +3728,7 @@ export default function FlujoReserva() {
                                                                 const horaSrv = obtenerHoraServicio(s);
                                                                 return `%0A  - ${s.nombre}${horaSrv ? ` (${horaSrv})` : ''}`;
                                                             }).join('');
-                                                            urlMsg = `Hola Lola! 👋%0A%0A🎀 *RESERVA COMPARTIDA*%0A%0A👤 *Titular:* ${clientData.nombre}%0A📝 *Cédula:* ${clientData.cedula}%0A💇‍♀️ *Servicios:*${srvTitularTexto}%0A%0A👤 *Amiga:* ${datosAmiga.nombre}%0A💇‍♀️ *Servicios:*${srvAmigaTexto}%0A%0A⏰ *Cuándo:* ${fechaTexto} (Inicia ${formatearHora(selectedTime)})%0A💳 *Método:* ${metodoPago.toUpperCase()}%0A💰 *Abono Total:* $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
+                                                            urlMsg = `Hola Lola! 👋%0A%0A🎀 *RESERVA DE AMIGAS*%0A%0A👤 *Titular:* ${clientData.nombre}%0A📝 *Cédula:* ${clientData.cedula}%0A💇‍♀️ *Servicios:*${srvTitularTexto}%0A%0A👤 *Amiga:* ${datosAmiga.nombre}%0A💇‍♀️ *Servicios:*${srvAmigaTexto}%0A%0A⏰ *Cuándo:* ${fechaTexto} (Inicia ${formatearHora(selectedTime)})%0A💳 *Método:* ${metodoPago.toUpperCase()}%0A💰 *Abono Total:* $${totalAbono.toLocaleString('es-CO')}%0A%0A${textAdicional}`;
                                                         } else {
                                                             const serviciosTexto = selectedServices.map(s => {
                                                                 const horaSrv = obtenerHoraServicio(s);
