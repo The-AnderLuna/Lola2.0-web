@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/completar-citas",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

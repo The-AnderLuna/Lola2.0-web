@@ -75,6 +75,7 @@ export default async function PortalPage() {
     titularNombre: cita.reservaTitularId ? (mapaClientes.get(cita.reservaTitularId) || null) : null,
     notas: cita.notas || null,
     metodoPago: cita.metodoPago || null,
+    createdAt: cita.createdAt ? cita.createdAt.toISOString() : null,
   }));
 
   // Renderizar el Dashboard premium pasándole los datos

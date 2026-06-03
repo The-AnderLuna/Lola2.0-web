@@ -46,6 +46,7 @@ export interface CitaData {
   titularNombre?: string | null;
   notas?: string | null;
   metodoPago?: string | null;
+  createdAt?: string | null;
   subServicios?: { clienteNombre: string; servicioNombre: string; }[]; // Para agrupaciones
 }
 
@@ -257,6 +258,7 @@ export default function DashboardCliente({
   };
 
   // Separar citas activas e historial
+  // Historial = todas las citas propias del cliente (no de la amiga)
   // Activa = No cancelada ni completada ni no asistio, y en el futuro
   const now = new Date();
   
@@ -266,11 +268,16 @@ export default function DashboardCliente({
     return !isInactiveState && !inPast;
   });
 
+  // El historial muestra TODAS las reservas propias del cliente (que él inició)
+  // Para la amiga, se filtra para no mostrar citas donde ella es solo invitada
   const citasHistorial = citas.filter(cita => {
-    const inPast = new Date(cita.fechaHoraInicio) < now;
-    const isInactiveState = ["CANCELADA", "CANCELADA_SISTEMA", "COMPLETADA", "NO_ASISTIO"].includes(cita.estado);
-    return isInactiveState || inPast;
+    // Excluir citas donde soy solo amiga (invitada), ya que el historial es "mi historial"
+    const isAmigaInvitada = cita.reservaTitularId && cita.reservaTitularId !== cliente.id;
+    if (isAmigaInvitada) return false;
+    // Incluir TODAS mis propias reservas: pasadas, canceladas, completadas, activas
+    return true;
   });
+
 
   // Elegir la cita activa principal (la más próxima en fecha)
   const citaActivaRaw = citasActivas.length > 0 
@@ -834,70 +841,137 @@ export default function DashboardCliente({
         )}
 
         {/* SECTION B: HISTORIAL DE CITAS */}
-        {activeTab === "historial" && (
-          <div className="space-y-4 animate-fade-in-up">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-white/5 pb-4">
-              <h2 className="text-xs uppercase tracking-widest text-text-muted font-bold flex items-center gap-2">
-                Historial de Visitas
-                <span className="bg-white/5 border border-white/5 text-text-muted px-2 py-0.5 rounded-full font-bold">
-                  {citasHistorial.length}
-                </span>
-              </h2>
-              <select
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-                className="bg-bg-card border border-white/10 rounded-lg text-xs px-3 py-2 text-text-primary outline-none focus:border-gold/50 cursor-pointer"
-              >
-                <option value="TODOS">Todos los estados</option>
-                <option value="COMPLETADA">Completada</option>
-                <option value="CANCELADA_CLIENTE">Cancelada por Cliente</option>
-                <option value="CANCELADA_SISTEMA">Cancelada por Sistema</option>
-                <option value="NO_ASISTIO">No Asistió</option>
-              </select>
-            </div>
-            
-            <div className="space-y-3">
-              {citasHistorial.filter(c => filtroEstado === "TODOS" || c.estado === filtroEstado).length > 0 ? (
-                [...citasHistorial]
-                  .filter(c => filtroEstado === "TODOS" || c.estado === filtroEstado)
-                  .sort((a, b) => new Date(b.fechaHoraInicio).getTime() - new Date(a.fechaHoraInicio).getTime())
-                  .map(cita => {
-                    const badge = getBadgeConfig(cita.estado);
+        {activeTab === "historial" && (() => {
+          // Agrupar historial por grupoId
+          const historialAgrupado: { key: string; citas: CitaData[]; grupoId: string | null; }[] = [];
+          const vistosHistorial = new Set<string>();
+
+          const sortedHistorial = [...citasHistorial].sort((a, b) =>
+            new Date(b.fechaHoraInicio).getTime() - new Date(a.fechaHoraInicio).getTime()
+          );
+
+          sortedHistorial.forEach(cita => {
+            if (vistosHistorial.has(cita.id)) return;
+            if (cita.grupoId) {
+              // Grupo: agrupar todas las citas de este grupo
+              const grupo = sortedHistorial.filter(c => c.grupoId === cita.grupoId);
+              grupo.forEach(c => vistosHistorial.add(c.id));
+              historialAgrupado.push({ key: cita.grupoId, citas: grupo, grupoId: cita.grupoId });
+            } else {
+              vistosHistorial.add(cita.id);
+              historialAgrupado.push({ key: cita.id, citas: [cita], grupoId: null });
+            }
+          });
+
+          const estadosFiltro = filtroEstado === "TODOS"
+            ? historialAgrupado
+            : historialAgrupado.filter(g => g.citas.some(c => c.estado === filtroEstado));
+
+          return (
+            <div className="space-y-4 animate-fade-in-up">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 border-b border-white/5 pb-4">
+                <h2 className="text-xs uppercase tracking-widest text-text-muted font-bold flex items-center gap-2">
+                  Historial de Visitas
+                  <span className="bg-white/5 border border-white/5 text-text-muted px-2 py-0.5 rounded-full font-bold">
+                    {historialAgrupado.length}
+                  </span>
+                </h2>
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => setFiltroEstado(e.target.value)}
+                  className="bg-bg-card border border-white/10 rounded-lg text-xs px-3 py-2 text-text-primary outline-none focus:border-gold/50 cursor-pointer"
+                >
+                  <option value="TODOS">Todos los estados</option>
+                  <option value="PRE_AGENDADA">Pre-agendada</option>
+                  <option value="EN_REVISION">En Revisión</option>
+                  <option value="CONFIRMADA">Confirmada</option>
+                  <option value="COMPLETADA">Completada</option>
+                </select>
+              </div>
+
+              <div className="space-y-3">
+                {estadosFiltro.length > 0 ? (
+                  estadosFiltro.map(({ key, citas: grupo }) => {
+                    // Tomar la cita "base" (la más temprana del grupo)
+                    const citaBase = [...grupo].sort((a, b) =>
+                      new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime()
+                    )[0];
+                    const esGrupo = grupo.length > 1;
+                    const estadoBase = citaBase.estado;
+                    const badge = getBadgeConfig(estadoBase);
+                    const totalPrecio = grupo.reduce((acc, c) => acc + c.precioTotal, 0);
+                    const fechaCreacion = citaBase.createdAt
+                      ? new Date(citaBase.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
+                      : null;
+
                     return (
-                      <div key={cita.id} className="glass rounded-xl p-4 border border-white/5 flex items-center justify-between gap-4 hover:border-white/10 transition-colors">
-                        <div className="space-y-1">
-                          <h5 className="font-semibold text-xs text-text-primary tracking-wide">
-                            {cita.servicioNombre}
-                          </h5>
-                          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-text-secondary">
-                            <span className="capitalize">{formatFriendlyDate(cita.fechaHoraInicio).split(",")[1]}</span>
-                            <span>•</span>
-                            <span>{formatFriendlyTime(cita.fechaHoraInicio)} - {formatFriendlyTime(cita.fechaHoraFin)} <span className="text-[10px]">({formatDuration(cita.duracionMin)})</span></span>
-                            <span>•</span>
-                            <span className="text-text-muted">{cita.profesionalNombre}</span>
+                      <div key={key} className="glass rounded-xl border border-white/5 hover:border-white/10 transition-colors overflow-hidden">
+                        {/* Header de la tarjeta */}
+                        <div className="p-4 flex items-start justify-between gap-3">
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-semibold text-xs text-text-primary tracking-wide">
+                                {esGrupo ? "Reserva Compartida" : citaBase.servicioNombre}
+                              </h5>
+                              {esGrupo && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold uppercase tracking-wider">
+                                  {grupo.length} servicios
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-text-secondary">
+                              <span className="capitalize">{formatFriendlyDate(citaBase.fechaHoraInicio)}</span>
+                              <span>•</span>
+                              <span>{formatFriendlyTime(citaBase.fechaHoraInicio)}</span>
+                              <span>•</span>
+                              <span className="text-text-muted">{citaBase.profesionalNombre}</span>
+                            </div>
+                            {fechaCreacion && (
+                              <div className="text-[10px] text-text-muted flex items-center gap-1">
+                                <span>Agendada el {fechaCreacion}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-2 shrink-0">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.styles}`}>
+                              {badge.text}
+                            </span>
+                            <span className="text-xs font-semibold text-text-secondary">
+                              {formatCurrency(totalPrecio)}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold text-text-secondary">
-                            {formatCurrency(cita.precioTotal)}
-                          </span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.styles}`}>
-                            {badge.text}
-                          </span>
-                        </div>
+
+                        {/* Sub-servicios si es grupo */}
+                        {esGrupo && (
+                          <div className="border-t border-white/5 px-4 py-2.5 space-y-1.5 bg-white/[0.02]">
+                            {grupo.map(srv => (
+                              <div key={srv.id} className="flex justify-between items-center text-[11px]">
+                                <span className="text-text-muted">
+                                  {srv.clienteNombre && srv.clienteNombre !== citaBase.clienteNombre
+                                    ? `${srv.servicioNombre} (${srv.clienteNombre})`
+                                    : srv.servicioNombre
+                                  }
+                                </span>
+                                <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })
-              ) : (
-                <div className="text-center py-10 bg-white/[0.02] rounded-xl border border-white/5">
-                  <p className="text-xs text-text-muted">
-                    No hay citas que coincidan con este filtro.
-                  </p>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center py-10 bg-white/[0.02] rounded-xl border border-white/5">
+                    <p className="text-xs text-text-muted">
+                      No hay citas que coincidan con este filtro.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </main>
 
       {/* Footer Fino */}
