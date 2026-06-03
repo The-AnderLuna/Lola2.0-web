@@ -792,10 +792,17 @@ export default function DashboardCliente({
             <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Otras Reservas
             </h3>
-            <div className="space-y-3">
-              {otrasCitasAgrupadas.map(cita => (
-                <div key={cita.id} className="glass rounded-xl p-4.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gold/20 transition-all">
-                  <div className="space-y-1">
+            <div className="space-y-6">
+              {otrasCitasAgrupadas.map((cita, index) => (
+                <div key={cita.id} className="glass rounded-xl p-4.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gold/20 transition-all overflow-hidden relative">
+                  {/* Número identificador de fondo */}
+                  <div className="absolute -top-4 -right-2 p-4 pointer-events-none opacity-[0.04] select-none flex items-start justify-end">
+                    <span className="text-8xl font-black italic text-gold">
+                      {otrasCitasAgrupadas.length - index}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 relative z-10">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm tracking-wide text-text-primary">{cita.servicioNombre}</span>
                       {(() => {
@@ -901,13 +908,14 @@ export default function DashboardCliente({
                 </select>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {estadosFiltro.length > 0 ? (
-                  estadosFiltro.map(({ key, citas: grupo }) => {
+                  estadosFiltro.map(({ key, citas: grupo }, index) => {
                     // Tomar la cita "base" (la más temprana del grupo)
                     const citaBase = [...grupo].sort((a, b) =>
                       new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime()
                     )[0];
+                    const historyIndex = estadosFiltro.length - index;
                     const esGrupo = grupo.length > 1;
                     const estadoBase = citaBase.estado;
                     const badge = getBadgeConfig(estadoBase);
@@ -917,9 +925,16 @@ export default function DashboardCliente({
                       : null;
 
                     return (
-                      <div key={key} className="glass rounded-xl border border-white/5 hover:border-white/10 transition-colors overflow-hidden">
+                      <div key={key} className="glass rounded-xl border border-white/5 hover:border-gold/20 transition-all overflow-hidden relative">
+                        {/* Número identificador de fondo */}
+                        <div className="absolute -top-4 -right-2 p-4 pointer-events-none opacity-[0.04] select-none flex items-start justify-end">
+                          <span className="text-8xl font-black italic text-gold">
+                            {historyIndex}
+                          </span>
+                        </div>
+                        
                         {/* Header de la tarjeta */}
-                        <div className="p-4 flex items-start justify-between gap-3">
+                        <div className="p-4 flex items-start justify-between gap-3 relative z-10">
                           <div className="space-y-1.5 flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <h5 className="font-semibold text-xs text-text-primary tracking-wide">
