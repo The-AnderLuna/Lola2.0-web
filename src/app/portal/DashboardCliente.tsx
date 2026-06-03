@@ -386,44 +386,44 @@ export default function DashboardCliente({
       case "CONFIRMADA":
         return {
           text: "Confirmada",
-          styles: "bg-gold/10 text-gold border-gold/30 shadow-[0_0_12px_rgba(212,175,55,0.25)]",
+          styles: "bg-gold/10 text-gold border-gold/30 shadow-[0_0_15px_rgba(212,175,55,0.5)]",
           icon: <CheckCircle className="w-3.5 h-3.5" />
         };
       case "EN_REVISION":
         return {
           text: "En Revisión",
-          styles: "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]",
+          styles: "bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_15px_rgba(251,191,36,0.5)]",
           icon: <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
         };
       case "PRE_AGENDADA":
         return {
           text: "Cupo Temporal",
-          styles: "bg-white/5 text-text-primary border-white/10 shadow-[0_0_10px_rgba(255,255,255,0.05)]",
+          styles: "bg-white/5 text-text-primary border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.15)]",
           icon: <Clock className="w-3.5 h-3.5" />
         };
       case "REAGENDADA":
         return {
           text: "Reagendada",
-          styles: "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_12px_rgba(59,130,246,0.2)]",
+          styles: "bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]",
           icon: <Calendar className="w-3.5 h-3.5" />
         };
       case "COMPLETADA":
         return {
           text: "Completada",
-          styles: "bg-green-500/10 text-green-400 border-green-500/30 shadow-[0_0_12px_rgba(34,197,94,0.2)]",
+          styles: "bg-green-500/10 text-green-400 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.5)]",
           icon: <CheckCircle className="w-3.5 h-3.5" />
         };
       case "CANCELADA":
       case "CANCELADA_SISTEMA":
         return {
           text: "Cancelada",
-          styles: "bg-white/5 text-text-muted border-white/5 shadow-[0_0_10px_rgba(255,255,255,0.02)]",
+          styles: "bg-white/5 text-text-muted border-white/5 shadow-[0_0_15px_rgba(255,255,255,0.05)]",
           icon: <XCircle className="w-3.5 h-3.5" />
         };
       case "NO_ASISTIO":
         return {
           text: "Inasistencia",
-          styles: "bg-red-urgency/10 text-red-urgency border-red-urgency/30 shadow-[0_0_12px_rgba(239,68,68,0.25)]",
+          styles: "bg-red-urgency/10 text-red-urgency border-red-urgency/30 shadow-[0_0_15px_rgba(239,68,68,0.5)]",
           icon: <AlertCircle className="w-3.5 h-3.5" />
         };
       default:
