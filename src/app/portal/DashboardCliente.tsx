@@ -205,7 +205,8 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       
       const endTimeMax = new Date(Math.max(...serviciosAgrupados.map(c => new Date(c.fechaHoraFin).getTime())));
       
-      const citaBase = { ...serviciosAgrupados[0] };
+      const titularId = serviciosAgrupados.find(c => c.reservaTitularId)?.reservaTitularId || null;
+      const citaBase = { ...serviciosAgrupados[0], reservaTitularId: titularId };
       citaActivaPrincipal = {
         ...citaBase,
         servicioNombre: serviciosAgrupados.length > 1 ? "Reserva Compartida" : citaBase.servicioNombre,
@@ -238,8 +239,9 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
           new Date(current.fechaHoraInicio) < new Date(earliest.fechaHoraInicio) ? current : earliest
         , grupo[0]);
         
+        const titularId = grupo.find(c => c.reservaTitularId)?.reservaTitularId || null;
         // Clonamos la primera cita del grupo (cronológicamente) para usarla como base
-        const citaBase = { ...startTimeMinCita };
+        const citaBase = { ...startTimeMinCita, reservaTitularId: titularId };
         
         otrasCitasAgrupadas.push({
           ...citaBase,
