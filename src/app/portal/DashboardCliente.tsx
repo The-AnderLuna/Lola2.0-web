@@ -290,7 +290,9 @@ export default function DashboardCliente({
       const endTimeMax = new Date(Math.max(...serviciosAgrupados.map(c => new Date(c.fechaHoraFin).getTime())));
       
       const titularId = serviciosAgrupados.find(c => c.reservaTitularId)?.reservaTitularId || null;
-      const citaBase = { ...serviciosAgrupados[0], reservaTitularId: titularId };
+      // Buscar el nombre del titular en CUALQUIER cita del grupo que lo tenga
+      const titularNombreResuelto = serviciosAgrupados.find(c => c.titularNombre)?.titularNombre || null;
+      const citaBase = { ...serviciosAgrupados[0], reservaTitularId: titularId, titularNombre: titularNombreResuelto };
       citaActivaPrincipal = {
         ...citaBase,
         servicioNombre: serviciosAgrupados.length > 1 ? "Reserva Compartida" : citaBase.servicioNombre,
@@ -1027,20 +1029,33 @@ export default function DashboardCliente({
                 <div className="bg-white/5 border border-gold/20 rounded-xl p-4 mb-5">
                   <p className="text-xs text-text-muted uppercase tracking-wider mb-1">Método elegido al reservar</p>
                   <p className="text-base font-bold text-white mb-3">{metodoPretty}</p>
-                  <div className="flex items-center justify-between bg-bg-base/60 border border-white/10 rounded-lg px-4 py-2.5">
-                    <span className="font-mono text-gold font-bold tracking-wider text-sm">{numero}</span>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(numero)}
-                      className="text-xs text-text-muted hover:text-gold transition-colors ml-3 flex items-center gap-1"
-                      title="Copiar número"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      Copiar
-                    </button>
+                  <div className="bg-[#1A1A1A] p-3 rounded-xl border border-gold/30 flex justify-between items-center group relative overflow-hidden shadow-inner">
+                    <div className="flex flex-col relative z-10">
+                      <span className="font-semibold text-text-secondary text-xs">
+                        {metodoPretty}
+                        {titularCuenta && <span className="text-xs font-normal text-text-muted ml-1">({titularCuenta})</span>}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 relative z-10">
+                      <span className="font-bold text-lg tracking-wider text-white">{numero}</span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(numero.replace(/\s/g, '')).catch(() => {});
+                          }
+                          const btn = e.currentTarget;
+                          const originalHtml = btn.innerHTML;
+                          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400"><path d="M20 6 9 17l-5-5"/></svg>';
+                          setTimeout(() => btn.innerHTML = originalHtml, 2000);
+                        }}
+                        className="p-1.5 rounded-md bg-white/5 border border-white/10 hover:border-gold/50 text-text-muted hover:text-gold transition-colors shadow-sm"
+                        title="Copiar número"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                      </button>
+                    </div>
                   </div>
-                  {titularCuenta && (
-                    <p className="text-xs text-text-muted mt-2 text-center">Titular: <span className="text-white font-semibold">{titularCuenta}</span></p>
-                  )}
                 </div>
               ) : (
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5 text-center">
