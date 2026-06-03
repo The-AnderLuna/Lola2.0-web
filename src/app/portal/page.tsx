@@ -4,12 +4,14 @@ import { RepositorioClientes } from "@/adaptadores/repositorios/RepositorioClien
 import { RepositorioCitas } from "@/adaptadores/repositorios/RepositorioCitas";
 import { RepositorioServicios } from "@/adaptadores/repositorios/RepositorioServicios";
 import { RepositorioProfesionales } from "@/adaptadores/repositorios/RepositorioProfesionales";
+import { RepositorioConfiguracion } from "@/adaptadores/repositorios/RepositorioConfiguracion";
 import DashboardCliente from "./DashboardCliente";
 
 const repositorioClientes = new RepositorioClientes();
 const repositorioCitas = new RepositorioCitas();
 const repositorioServicios = new RepositorioServicios();
 const repositorioProfesionales = new RepositorioProfesionales();
+const repositorioConfiguracion = new RepositorioConfiguracion();
 
 export default async function PortalPage() {
   // 1. Obtener y validar la cookie de sesión
@@ -29,11 +31,12 @@ export default async function PortalPage() {
     redirect("/mis-citas");
   }
 
-  // 3. Obtener citas, servicios y profesionales de forma paralela para rendimiento óptimo
-  const [citasRaw, servicios, profesionales] = await Promise.all([
+  // 3. Obtener citas, servicios, profesionales y configuracion de forma paralela para rendimiento óptimo
+  const [citasRaw, servicios, profesionales, configuracion] = await Promise.all([
     repositorioCitas.obtenerPorClienteId(clienteId),
     repositorioServicios.obtenerActivos(),
     repositorioProfesionales.obtenerActivos(),
+    repositorioConfiguracion.obtenerConfiguracion(),
   ]);
 
   // Crear diccionarios de mapeo para IDs a nombres legibles
@@ -81,6 +84,7 @@ export default async function PortalPage() {
         nombre: cliente.nombre || "Clienta Lola",
         telefono: cliente.telefono,
       }}
+      whatsappNumero={configuracion.whatsapp_numero || "573138865616"}
       citasIniciales={citasMapeadas}
     />
   );

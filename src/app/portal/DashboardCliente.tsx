@@ -50,10 +50,11 @@ export interface CitaData {
 
 interface DashboardProps {
   cliente: ClienteData;
+  whatsappNumero: string;
   citasIniciales: CitaData[];
 }
 
-export default function DashboardCliente({ cliente, citasIniciales }: DashboardProps) {
+export default function DashboardCliente({ cliente, whatsappNumero, citasIniciales }: DashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [citas, setCitas] = useState<CitaData[]>(citasIniciales);
@@ -346,7 +347,9 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
       text = `Hola Mile Almanza Estética, soy ${cliente.nombre}. Adjunto el comprobante de pago para mi cita de *${cita.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. (ID: ${cita.id})`;
     }
     
-    return `https://wa.me/573138865616?text=${encodeURIComponent(text)}`;
+    // Si viene con '+', lo limpiamos por precaución
+    const cleanNumber = whatsappNumero.replace(/\+/g, '');
+    return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`;
   };
 
   // Helper: Renderize Actions based on business rules
