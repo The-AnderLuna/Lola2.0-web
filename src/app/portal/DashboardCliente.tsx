@@ -673,7 +673,11 @@ export default function DashboardCliente({
                             })
                             .map(([nombre, servicios]) => (
                               <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                                <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                                <span className="font-semibold text-gold/80 mb-0.5">
+                                  {nombre === cliente.nombre 
+                                    ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
+                                    : (servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`)}
+                                </span>
                                 {servicios.map((s, idx) => (
                                   <div key={idx} className="flex items-start gap-1.5">
                                     <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
@@ -865,7 +869,11 @@ export default function DashboardCliente({
                               })
                               .map(([nombre, servicios]) => (
                                 <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                                  <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                                  <span className="font-semibold text-gold/80 mb-0.5">
+                                    {nombre === cliente.nombre 
+                                      ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
+                                      : (servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`)}
+                                  </span>
                                   {servicios.map((s, idx) => (
                                     <div key={idx} className="flex items-start gap-1.5">
                                       <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
@@ -1039,7 +1047,11 @@ export default function DashboardCliente({
                                 })
                                 .map(([nombre, servicios]) => (
                                   <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                                    <span className="font-semibold text-gold/80 mb-1.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre.split(' ')[0]}`}</span>
+                                    <span className="font-semibold text-gold/80 mb-1.5">
+                                      {nombre === cliente.nombre 
+                                        ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
+                                        : (servicios.length === 1 ? `Servicio de ${nombre.split(' ')[0]}` : `Servicios de ${nombre.split(' ')[0]}`)}
+                                    </span>
                                     <div className="space-y-1.5">
                                       {servicios.map(srv => {
                                         let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
