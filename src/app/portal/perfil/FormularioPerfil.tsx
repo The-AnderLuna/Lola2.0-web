@@ -225,7 +225,7 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
                   +57 {cliente.telefono.slice(-10)}
                 </div>
                 <p className="text-[10px] text-text-muted italic leading-none pl-1">
-                  * Cambios de teléfono requieren validación OTP.
+                  * Este es tu número de acceso seguro. Si cambiaste de celular, comunícate con nosotros para actualizarlo.
                 </p>
               </div>
 
