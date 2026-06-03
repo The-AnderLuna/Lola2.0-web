@@ -651,7 +651,10 @@ export default function DashboardCliente({
                           <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                             <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
                             {servicios.map((s, idx) => (
-                              <span key={idx} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)]">{s}</span>
+                              <div key={idx} className="flex items-start gap-1.5">
+                                <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
+                                <span className="leading-snug break-words">{s}</span>
+                              </div>
                             ))}
                           </div>
                         ))}
@@ -822,7 +825,10 @@ export default function DashboardCliente({
                             <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                               <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
                               {servicios.map((s, idx) => (
-                                <span key={idx} className="pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)]">{s}</span>
+                                <div key={idx} className="flex items-start gap-1.5">
+                                  <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
+                                  <span className="leading-snug break-words">{s}</span>
+                                </div>
                               ))}
                             </div>
                           ))}
@@ -980,11 +986,14 @@ export default function DashboardCliente({
                                     let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
                                     return (
                                       <div key={srv.id} className="flex justify-between items-start text-[11px] py-1.5 gap-3">
-                                        <div className="flex-1 min-w-0">
-                                          <span className="pl-3 text-text-muted relative before:content-['•'] before:absolute before:left-0 before:top-[5px] before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] leading-snug break-words inline-block w-full">
+                                        <div className="flex-1 min-w-0 flex items-start gap-1.5">
+                                          <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1.5px] shrink-0 leading-none">
+                                            •
+                                          </span>
+                                          <span className="text-text-muted leading-snug break-words">
                                             {nombreLimpio}
                                             {srv.profesionalNombre.toLowerCase().includes('staff') && (
-                                              <span className="inline-block ml-2 text-[8px] bg-white/10 text-white/70 px-1.5 py-[2px] rounded-sm whitespace-nowrap align-middle relative -top-[1px]">
+                                              <span className="inline-block ml-1.5 text-[8px] bg-white/10 text-white/70 px-1.5 py-[2px] rounded-sm whitespace-nowrap align-middle relative -top-[1px]">
                                                 STAFF
                                               </span>
                                             )}
