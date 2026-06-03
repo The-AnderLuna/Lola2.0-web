@@ -7,13 +7,13 @@ import {
   Mail, 
   CreditCard, 
   Calendar, 
-  Sparkles,   
+  Gift, 
+  Sparkles,
   LogOut, 
   ArrowLeft, 
   RefreshCw, 
   CheckCircle2, 
-  AlertTriangle,
-  Lock
+  AlertTriangle
 } from "lucide-react";
 
 interface ClienteData {
@@ -281,28 +281,16 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
             </div>
 
             {/* Premium Notice Box */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              
-              <div className="p-3.5 rounded-xl bg-gold/5 border border-gold/10 flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+            <div className="pt-2">
+              <div className="p-4 rounded-xl bg-gold/5 border border-gold/10 flex items-start gap-3">
+                <Gift className="w-5 h-5 text-gold shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-gold mb-0.5">Beneficio Especial</div>
-                  <p className="text-[11px] text-text-secondary leading-relaxed font-medium">
-                    ¡Registra tu fecha de cumpleaños! Queremos consentirte con obsequios sorpresas y abonos especiales en tu día.
+                  <div className="text-[11px] uppercase font-bold tracking-wider text-gold mb-1">Beneficio de Cumpleaños</div>
+                  <p className="text-xs text-text-secondary leading-relaxed font-medium">
+                    Al registrar tu fecha de cumpleaños obtendrás promociones exclusivas o cupones de descuento para cualquier servicio en tu día especial.
                   </p>
                 </div>
               </div>
-
-              <div className="p-3.5 rounded-xl bg-white/[0.01] border border-white/5 flex items-start gap-2.5">
-                <Lock className="w-4 h-4 text-text-secondary shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-text-secondary mb-0.5">Seguridad Absoluta</div>
-                  <p className="text-[11px] text-text-muted leading-relaxed">
-                    Tus datos se gestionan bajo altos estándares de confidencialidad, cifrados en la base de datos de Lola 2.0.
-                  </p>
-                </div>
-              </div>
-
             </div>
 
             {/* Submit Button */}
