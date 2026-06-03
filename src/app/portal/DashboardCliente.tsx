@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Calendar, 
   Clock, 
@@ -55,12 +55,22 @@ interface DashboardProps {
 
 export default function DashboardCliente({ cliente, citasIniciales }: DashboardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [citas, setCitas] = useState<CitaData[]>(citasIniciales);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"activas" | "historial">("activas");
   const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "historial") {
+      setActiveTab("historial");
+    } else {
+      setActiveTab("activas");
+    }
+  }, [searchParams]);
 
   // Logout action
   const handleLogout = async () => {

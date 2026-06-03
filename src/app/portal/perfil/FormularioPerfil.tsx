@@ -124,6 +124,12 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
               Mis Citas
             </button>
             <button 
+              onClick={() => router.push("/portal?tab=historial")} 
+              className="text-xs tracking-wider uppercase font-semibold text-text-secondary hover:text-text-primary transition-colors pb-1 pt-1"
+            >
+              Historial de Citas
+            </button>
+            <button 
               onClick={() => router.push("/portal/perfil")} 
               className="text-xs tracking-wider uppercase font-semibold text-gold border-b-2 border-gold/80 pb-1 pt-1"
             >
