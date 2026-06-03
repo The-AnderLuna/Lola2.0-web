@@ -62,6 +62,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"activas" | "historial">("activas");
   const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
+  const [showCancelModal, setShowCancelModal] = useState<string | null>(null);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -86,11 +87,15 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
   };
 
   // Autonomous Cancellation for PRE_AGENDADA
-  const handleCancelAppointment = async (citaId: string) => {
-    if (!confirm("¿Estás segura de que deseas cancelar esta reserva temporal? Liberarás el cupo inmediatamente.")) {
-      return;
-    }
+  const handleCancelAppointment = (citaId: string) => {
+    setShowCancelModal(citaId);
+  };
 
+  const confirmCancel = async () => {
+    if (!showCancelModal) return;
+    
+    const citaId = showCancelModal;
+    setShowCancelModal(null);
     setLoadingAction(citaId);
     setActionError(null);
     setActionSuccess(null);
@@ -815,6 +820,37 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
           <span className="hover:text-text-secondary transition-colors cursor-pointer">Privacidad</span>
         </div>
       </footer>
+
+      {/* CUSTOM CANCEL MODAL */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCancelModal(null)}></div>
+          <div className="relative bg-bg-base border border-white/10 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-urgency/10 rounded-bl-full blur-2xl pointer-events-none" />
+            <h3 className="text-lg font-bold text-text-primary font-display mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-urgency" />
+              Cancelar Reserva
+            </h3>
+            <p className="text-sm text-text-secondary mb-6 leading-relaxed">
+              ¿Estás segura de que deseas cancelar esta reserva temporal? <span className="font-semibold text-red-urgency">Liberarás el cupo inmediatamente.</span>
+            </p>
+            <div className="flex gap-3 justify-end relative z-10">
+              <button 
+                onClick={() => setShowCancelModal(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-text-secondary hover:text-white transition-colors"
+              >
+                VOLVER
+              </button>
+              <button 
+                onClick={confirmCancel}
+                className="px-5 py-2 rounded-xl text-xs font-bold bg-red-urgency/10 text-red-urgency border border-red-urgency/20 hover:bg-red-urgency hover:text-white transition-all"
+              >
+                SÍ, CANCELAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
