@@ -18,7 +18,8 @@ import {
   XCircle,
   Activity,
   DollarSign,
-  ShieldAlert
+  ShieldAlert,
+  FileText
 } from "lucide-react";
 
 interface ClienteData {
