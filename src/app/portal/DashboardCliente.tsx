@@ -86,6 +86,17 @@ export default function DashboardCliente({
   const [showConfirmarPagoModal, setShowConfirmarPagoModal] = useState<CitaData | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
+  const toggleCard = (id: string) => {
+    setExpandedCards(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam === "historial") {
@@ -634,30 +645,45 @@ export default function DashboardCliente({
                       {citaActivaPrincipal.servicioNombre}
                     </h4>
                     {citaActivaPrincipal.subServicios && (
-                      <div className="text-xs text-text-secondary mt-2 flex flex-col gap-2">
-                        {Object.entries(
-                          citaActivaPrincipal.subServicios.reduce((acc, sub) => {
-                            if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
-                            acc[sub.clienteNombre].push(sub.servicioNombre);
-                            return acc;
-                          }, {} as Record<string, string[]>)
-                        )
-                        .sort(([nombreA], [nombreB]) => {
-                          if (nombreA === cliente.nombre) return -1;
-                          if (nombreB === cliente.nombre) return 1;
-                          return nombreA.localeCompare(nombreB);
-                        })
-                        .map(([nombre, servicios]) => (
-                          <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                            <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
-                            {servicios.map((s, idx) => (
-                              <div key={idx} className="flex items-start gap-1.5">
-                                <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
-                                <span className="leading-snug break-words">{s}</span>
+                      <div className="mt-2">
+                        <button
+                          onClick={() => toggleCard(citaActivaPrincipal.id)}
+                          className="flex items-center gap-1.5 text-[10px] text-gold/70 hover:text-gold transition-colors font-medium mb-2"
+                        >
+                          {expandedCards.has(citaActivaPrincipal.id) ? (
+                            <>Ocultar detalle <ChevronUp className="w-3.5 h-3.5" /></>
+                          ) : (
+                            <>Ver detalle de servicios <ChevronDown className="w-3.5 h-3.5" /></>
+                          )}
+                        </button>
+                        
+                        {expandedCards.has(citaActivaPrincipal.id) && (
+                          <div className="text-xs text-text-secondary flex flex-col gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
+                            {Object.entries(
+                              citaActivaPrincipal.subServicios.reduce((acc, sub) => {
+                                if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                                acc[sub.clienteNombre].push(sub.servicioNombre);
+                                return acc;
+                              }, {} as Record<string, string[]>)
+                            )
+                            .sort(([nombreA], [nombreB]) => {
+                              if (nombreA === cliente.nombre) return -1;
+                              if (nombreB === cliente.nombre) return 1;
+                              return nombreA.localeCompare(nombreB);
+                            })
+                            .map(([nombre, servicios]) => (
+                              <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                                <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                                {servicios.map((s, idx) => (
+                                  <div key={idx} className="flex items-start gap-1.5">
+                                    <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
+                                    <span className="leading-snug break-words">{s}</span>
+                                  </div>
+                                ))}
                               </div>
                             ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     )}
                   </div>
@@ -795,16 +821,12 @@ export default function DashboardCliente({
             <div className="space-y-6">
               {otrasCitasAgrupadas.map((cita, index) => (
                 <div key={cita.id} className="glass rounded-xl p-4.5 border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gold/20 transition-all overflow-hidden relative">
-                  {/* Número identificador de fondo */}
-                  <div className="absolute -top-4 -right-2 p-4 pointer-events-none opacity-[0.04] select-none flex items-start justify-end">
-                    <span className="text-8xl font-black italic text-gold">
-                      {otrasCitasAgrupadas.length - index}
-                    </span>
-                  </div>
-
                   <div className="space-y-1 relative z-10">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm tracking-wide text-text-primary">{cita.servicioNombre}</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm tracking-wide text-text-primary flex items-center gap-2">
+                        <span className="text-[10px] text-gold/50 bg-gold/5 px-1.5 py-0.5 rounded font-mono border border-gold/10">#{otrasCitasAgrupadas.length - index}</span>
+                        {cita.servicioNombre}
+                      </span>
                       {(() => {
                         const config = getBadgeConfig(cita.estado);
                         return (
@@ -815,30 +837,45 @@ export default function DashboardCliente({
                       })()}
                     </div>
                       {cita.subServicios && (
-                        <div className="text-[11px] text-text-secondary mt-2 mb-1 flex flex-col gap-2">
-                          {Object.entries(
-                            cita.subServicios.reduce((acc, sub) => {
-                              if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
-                              acc[sub.clienteNombre].push(sub.servicioNombre);
-                              return acc;
-                            }, {} as Record<string, string[]>)
-                          )
-                          .sort(([nombreA], [nombreB]) => {
-                            if (nombreA === cliente.nombre) return -1;
-                            if (nombreB === cliente.nombre) return 1;
-                            return nombreA.localeCompare(nombreB);
-                          })
-                          .map(([nombre, servicios]) => (
-                            <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                              <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
-                              {servicios.map((s, idx) => (
-                                <div key={idx} className="flex items-start gap-1.5">
-                                  <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
-                                  <span className="leading-snug break-words">{s}</span>
+                        <div className="mt-2 mb-1">
+                          <button
+                            onClick={() => toggleCard(cita.id)}
+                            className="flex items-center gap-1.5 text-[10px] text-gold/70 hover:text-gold transition-colors font-medium mb-2"
+                          >
+                            {expandedCards.has(cita.id) ? (
+                              <>Ocultar detalle <ChevronUp className="w-3.5 h-3.5" /></>
+                            ) : (
+                              <>Ver detalle de servicios <ChevronDown className="w-3.5 h-3.5" /></>
+                            )}
+                          </button>
+                          
+                          {expandedCards.has(cita.id) && (
+                            <div className="text-[11px] text-text-secondary flex flex-col gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
+                              {Object.entries(
+                                cita.subServicios.reduce((acc, sub) => {
+                                  if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                                  acc[sub.clienteNombre].push(sub.servicioNombre);
+                                  return acc;
+                                }, {} as Record<string, string[]>)
+                              )
+                              .sort(([nombreA], [nombreB]) => {
+                                if (nombreA === cliente.nombre) return -1;
+                                if (nombreB === cliente.nombre) return 1;
+                                return nombreA.localeCompare(nombreB);
+                              })
+                              .map(([nombre, servicios]) => (
+                                <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                                  <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
+                                  {servicios.map((s, idx) => (
+                                    <div key={idx} className="flex items-start gap-1.5">
+                                      <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
+                                      <span className="leading-snug break-words">{s}</span>
+                                    </div>
+                                  ))}
                                 </div>
                               ))}
                             </div>
-                          ))}
+                          )}
                         </div>
                       )}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-secondary mt-1">
@@ -926,18 +963,12 @@ export default function DashboardCliente({
 
                     return (
                       <div key={key} className="glass rounded-xl border border-white/5 hover:border-gold/20 transition-all overflow-hidden relative">
-                        {/* Número identificador de fondo */}
-                        <div className="absolute -top-4 -right-2 p-4 pointer-events-none opacity-[0.04] select-none flex items-start justify-end">
-                          <span className="text-8xl font-black italic text-gold">
-                            {historyIndex}
-                          </span>
-                        </div>
-                        
                         {/* Header de la tarjeta */}
                         <div className="p-4 flex items-start justify-between gap-3 relative z-10">
                           <div className="space-y-1.5 flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h5 className="font-semibold text-xs text-text-primary tracking-wide">
+                              <h5 className="font-semibold text-xs text-text-primary tracking-wide flex items-center gap-2">
+                                <span className="text-[10px] text-gold/50 bg-gold/5 px-1.5 py-0.5 rounded font-mono border border-gold/10">#{historyIndex}</span>
                                 {esGrupo ? "Reserva de Amigas" : citaBase.servicioNombre}
                               </h5>
                               {esGrupo && (
@@ -979,51 +1010,66 @@ export default function DashboardCliente({
 
                         {/* Sub-servicios si es grupo */}
                         {esGrupo && (
-                          <div className="border-t border-white/5 px-4 py-2.5 space-y-3 bg-white/[0.02]">
-                            {Object.entries(
-                              grupo.reduce((acc, srv) => {
-                                const nombre = srv.clienteNombre || cliente.nombre;
-                                if (!acc[nombre]) acc[nombre] = [];
-                                acc[nombre].push(srv);
-                                return acc;
-                              }, {} as Record<string, typeof grupo>)
-                            )
-                            .sort(([nombreA], [nombreB]) => {
-                              if (nombreA === cliente.nombre) return -1;
-                              if (nombreB === cliente.nombre) return 1;
-                              return nombreA.localeCompare(nombreB);
-                            })
-                            .map(([nombre, servicios]) => (
-                              <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                                <span className="font-semibold text-gold/80 mb-1.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre.split(' ')[0]}`}</span>
-                                <div className="space-y-1.5">
-                                  {servicios.map(srv => {
-                                    let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
-                                    return (
-                                      <div key={srv.id} className="flex justify-between items-start text-[11px] py-1.5 gap-3">
-                                        <div className="flex-1 min-w-0 flex items-start gap-1.5">
-                                          <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1.5px] shrink-0 leading-none">
-                                            •
-                                          </span>
-                                          <span className="text-text-muted leading-snug break-words">
-                                            {nombreLimpio}
-                                            {srv.profesionalNombre.toLowerCase().includes('staff') && (
-                                              <span className="inline-block ml-1.5 text-[8px] bg-white/10 text-white/70 px-1.5 py-[2px] rounded-sm whitespace-nowrap align-middle relative -top-[1px]">
-                                                STAFF
+                          <div className="border-t border-white/5">
+                            <button
+                              onClick={() => toggleCard(key)}
+                              className="w-full py-2.5 px-4 flex items-center justify-center gap-1.5 text-[10px] text-gold/70 hover:text-gold hover:bg-white/[0.02] transition-colors font-medium"
+                            >
+                              {expandedCards.has(key) ? (
+                                <>Ocultar detalle <ChevronUp className="w-3.5 h-3.5" /></>
+                              ) : (
+                                <>Ver detalle de servicios <ChevronDown className="w-3.5 h-3.5" /></>
+                              )}
+                            </button>
+                            
+                            {expandedCards.has(key) && (
+                              <div className="px-4 pb-3 pt-1 space-y-3 bg-white/[0.02] animate-in slide-in-from-top-1 fade-in duration-200">
+                                {Object.entries(
+                                  grupo.reduce((acc, srv) => {
+                                    const nombre = srv.clienteNombre || cliente.nombre;
+                                    if (!acc[nombre]) acc[nombre] = [];
+                                    acc[nombre].push(srv);
+                                    return acc;
+                                  }, {} as Record<string, typeof grupo>)
+                                )
+                                .sort(([nombreA], [nombreB]) => {
+                                  if (nombreA === cliente.nombre) return -1;
+                                  if (nombreB === cliente.nombre) return 1;
+                                  return nombreA.localeCompare(nombreB);
+                                })
+                                .map(([nombre, servicios]) => (
+                                  <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                                    <span className="font-semibold text-gold/80 mb-1.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre.split(' ')[0]}`}</span>
+                                    <div className="space-y-1.5">
+                                      {servicios.map(srv => {
+                                        let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
+                                        return (
+                                          <div key={srv.id} className="flex justify-between items-start text-[11px] py-1.5 gap-3">
+                                            <div className="flex-1 min-w-0 flex items-start gap-1.5">
+                                              <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1.5px] shrink-0 leading-none">
+                                                •
                                               </span>
-                                            )}
-                                          </span>
-                                        </div>
-                                        <div className="flex items-center gap-2.5 shrink-0 whitespace-nowrap pt-[2px]">
-                                          <span className="text-[10px] text-text-muted">{formatDuration(srv.duracionMin)}</span>
-                                          <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
+                                              <span className="text-text-muted leading-snug break-words">
+                                                {nombreLimpio}
+                                                {srv.profesionalNombre.toLowerCase().includes('staff') && (
+                                                  <span className="inline-block ml-1.5 text-[8px] bg-white/10 text-white/70 px-1.5 py-[2px] rounded-sm whitespace-nowrap align-middle relative -top-[1px]">
+                                                    STAFF
+                                                  </span>
+                                                )}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2.5 shrink-0 whitespace-nowrap pt-[2px]">
+                                              <span className="text-[10px] text-text-muted">{formatDuration(srv.duracionMin)}</span>
+                                              <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            )}
                           </div>
                         )}
                       </div>
