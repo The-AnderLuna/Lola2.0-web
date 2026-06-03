@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { 
   User, 
   Mail, 
@@ -107,28 +108,25 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
       {/* Header Fino */}
       <header className="w-full border-b border-white/5 bg-bg-card/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push("/portal")}>
-            <div className="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center bg-bg-card shadow-[0_0_10px_rgba(212,175,55,0.08)]">
-              <Sparkles className="w-3.5 h-3.5 text-gold" />
-            </div>
+          <Link href="/portal" className="flex items-center gap-2 group cursor-pointer">
             <span className="font-display font-bold tracking-[0.12em] text-xs uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark transition-all duration-300">
               Mile Almanza
             </span>
-          </div>
+          </Link>
 
           <nav className="flex items-center gap-6">
-            <button 
-              onClick={() => router.push("/portal")} 
+            <Link 
+              href="/portal" 
               className="text-xs tracking-wider uppercase font-semibold text-text-secondary hover:text-text-primary transition-colors pb-1 pt-1"
             >
               Mis Citas
-            </button>
-            <button 
-              onClick={() => router.push("/portal?tab=historial")} 
+            </Link>
+            <Link 
+              href="/portal?tab=historial" 
               className="text-xs tracking-wider uppercase font-semibold text-text-secondary hover:text-text-primary transition-colors pb-1 pt-1"
             >
               Historial de Citas
-            </button>
+            </Link>
             <button 
               onClick={() => router.push("/portal/perfil")} 
               className="text-xs tracking-wider uppercase font-semibold text-gold border-b-2 border-gold/80 pb-1 pt-1"
@@ -152,13 +150,13 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
         
         {/* Navigation / Welcome bar */}
         <div className="flex items-center justify-between mb-4 animate-fade-in-up">
-          <button
-            onClick={() => router.push("/portal")}
+          <Link
+            href="/portal"
             className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-gold transition-colors group cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             Volver al Panel
-          </button>
+          </Link>
           <span className="text-xs font-semibold text-text-secondary">
             ID: <span className="font-mono text-[10px] text-text-muted">{cliente.id.substring(0, 8)}...</span>
           </span>

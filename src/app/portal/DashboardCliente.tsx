@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { 
   Calendar, 
   Clock, 
@@ -576,11 +577,11 @@ export default function DashboardCliente({
       {/* Header Fino */}
       <header className="w-full border-b border-white/5 bg-bg-card/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push("/")}>
+          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
             <span className="font-display font-bold tracking-[0.12em] text-xs uppercase text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark transition-all duration-300">
               Mile Almanza
             </span>
-          </div>
+          </Link>
 
           <nav className="flex items-center gap-6">
             <button 
@@ -595,12 +596,12 @@ export default function DashboardCliente({
             >
               Historial de Citas
             </button>
-            <button 
-              onClick={() => router.push("/portal/perfil")} 
+            <Link 
+              href="/portal/perfil"
               className="text-xs tracking-wider uppercase font-semibold text-text-secondary hover:text-text-primary transition-colors pb-1 pt-1"
             >
               Mi Perfil
-            </button>
+            </Link>
           </nav>
 
           <button 
