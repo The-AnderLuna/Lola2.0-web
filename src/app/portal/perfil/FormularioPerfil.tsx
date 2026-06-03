@@ -270,11 +270,16 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
                 <div className="relative">
                   <input
                     type="date"
-                    disabled={loading}
+                    disabled={loading || !!cliente.fechaCumpleanos}
                     value={fechaCumpleanos}
                     onChange={(e) => setFechaCumpleanos(e.target.value)}
-                    className="w-full bg-bg-base/70 border border-white/10 focus:border-gold/50 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none transition-colors shadow-inner text-text-primary dark:color-scheme-dark"
+                    className={`w-full bg-bg-base/70 border ${!!cliente.fechaCumpleanos ? 'border-transparent opacity-60 cursor-not-allowed' : 'border-white/10 focus:border-gold/50'} rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none transition-colors shadow-inner text-text-primary dark:color-scheme-dark`}
                   />
+                  {!!cliente.fechaCumpleanos && (
+                    <p className="text-[10px] text-text-muted italic mt-1.5 pl-1 leading-none">
+                      * Tu cumpleaños ya está registrado. Para cambiarlo, comunícate a soporte.
+                    </p>
+                  )}
                 </div>
               </div>
 
