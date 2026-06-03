@@ -648,7 +648,13 @@ export default function DashboardCliente({
                             acc[sub.clienteNombre].push(sub.servicioNombre);
                             return acc;
                           }, {} as Record<string, string[]>)
-                        ).map(([nombre, servicios]) => (
+                        )
+                        .sort(([nombreA], [nombreB]) => {
+                          if (nombreA === cliente.nombre) return -1;
+                          if (nombreB === cliente.nombre) return 1;
+                          return nombreA.localeCompare(nombreB);
+                        })
+                        .map(([nombre, servicios]) => (
                           <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                             <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
                             {servicios.map((s, idx) => (
@@ -813,7 +819,13 @@ export default function DashboardCliente({
                               acc[sub.clienteNombre].push(sub.servicioNombre);
                               return acc;
                             }, {} as Record<string, string[]>)
-                          ).map(([nombre, servicios]) => (
+                          )
+                          .sort(([nombreA], [nombreB]) => {
+                            if (nombreA === cliente.nombre) return -1;
+                            if (nombreB === cliente.nombre) return 1;
+                            return nombreA.localeCompare(nombreB);
+                          })
+                          .map(([nombre, servicios]) => (
                             <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                               <span className="font-semibold text-gold/80 mb-0.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre}`}</span>
                               {servicios.map((s, idx) => (
@@ -961,7 +973,13 @@ export default function DashboardCliente({
                                 acc[nombre].push(srv);
                                 return acc;
                               }, {} as Record<string, typeof grupo>)
-                            ).map(([nombre, servicios]) => (
+                            )
+                            .sort(([nombreA], [nombreB]) => {
+                              if (nombreA === cliente.nombre) return -1;
+                              if (nombreB === cliente.nombre) return 1;
+                              return nombreA.localeCompare(nombreB);
+                            })
+                            .map(([nombre, servicios]) => (
                               <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
                                 <span className="font-semibold text-gold/80 mb-1.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre.split(' ')[0]}`}</span>
                                 <div className="space-y-1.5">
