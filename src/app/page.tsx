@@ -254,63 +254,198 @@ export default function Home() {
       <section id="cursos" className="relative py-24 md:py-32 border-t border-border-subtle bg-bg-card/10">
         <div ref={coursesRef} className="reveal max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block text-xs font-semibold text-gold tracking-[0.3em] uppercase mb-4">Aprende con Mile</span>
+            <span className="inline-block text-xs font-semibold text-gold tracking-[0.3em] uppercase mb-4">Formación Profesional</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-text-primary mb-4">
               Cursos & <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold italic">Masterclasses</span>
             </h2>
-            <p className="text-text-secondary max-w-xl mx-auto">Conviértete en un profesional de la micropigmentación y la estética facial de la mano de una experta con técnicas exclusivas.</p>
+            <p className="text-text-secondary max-w-xl mx-auto">Formación de alto nivel en técnicas exclusivas de diseño y micropigmentación, impartida directamente por Milé Almanza.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Curso 1 */}
-            <div className="bg-bg-card border border-border-subtle hover:border-gold/30 rounded-3xl p-8 transition-all duration-500 hover:shadow-[0_0_40px_rgba(212,175,55,0.1)] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/5 to-transparent rounded-bl-full pointer-events-none" />
-              <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-wider uppercase mb-4">
-                <Calendar className="w-4 h-4" /> 3 Días Intensivos
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-6xl mx-auto">
+
+            {/* ── CURSO 1: HENNA ── */}
+            <div className="bg-bg-card border border-border-subtle hover:border-gold/30 rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(212,175,55,0.12)] group flex flex-col">
+              {/* Header */}
+              <div className="relative px-8 pt-8 pb-6 border-b border-border-subtle">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/8 to-transparent rounded-bl-full pointer-events-none" />
+                <span className="inline-block text-[10px] font-bold text-gold tracking-[0.3em] uppercase mb-3">Técnica Brows Perfect</span>
+                <h3 className="font-display text-2xl md:text-3xl font-bold text-text-primary mb-2 group-hover:text-gold transition-colors duration-300">
+                  Sombreado Temporal<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold">en Henna</span>
+                </h3>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  Modalidad mixta — presencial y virtual. Formación intensiva de 4 sesiones dominicales para dominar la técnica de sombreado con henna de manera profesional.
+                </p>
               </div>
-              <h3 className="font-display text-2xl font-bold text-text-primary mb-2 group-hover:text-gold transition-colors">Masterclass de Micropigmentación Inicial</h3>
-              <p className="text-xs text-text-muted mb-4">Aprende diseño, colorimetría, visajismo y micropigmentación de cejas desde cero.</p>
-              <div className="space-y-3 mb-8 text-xs text-text-secondary">
-                <div className="flex items-center gap-2">✓ Material teórico-práctico premium</div>
-                <div className="flex items-center gap-2">✓ Práctica real supervisada por Mile</div>
-                <div className="flex items-center gap-2">✓ Kit inicial completo incluido</div>
-                <div className="flex items-center gap-2">✓ Certificación internacional</div>
-              </div>
-              <div className="flex items-center justify-between border-t border-border-subtle pt-6">
+
+              {/* Curriculum */}
+              <div className="px-8 py-6 flex-1 space-y-5">
+
                 <div>
-                  <span className="text-[10px] text-text-muted block uppercase">Precio del Curso</span>
-                  <span className="text-xl font-bold text-gold">$1.200.000 COP</span>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Anatomía y Morfología</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Tipos de cejas según el rostro y proporciones del visagismo</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Corrección de asimetrías</li>
+                  </ul>
                 </div>
-                <a href={`https://wa.me/${wppNumber}?text=Hola%20Mile!%20Deseo%20más%20información%20sobre%20la%20Masterclass%20de%20Micropigmentación%20Inicial`} target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-105">
-                  Consultar Cupos
+
+                <div>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Materiales y Herramientas</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Tipos de henna: marcas, tonos y calidades</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Brochas, pinceles, removedores y fijadores</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Higiene y Seguridad</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Protocolos de bioseguridad y desinfección</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Preparación de la piel y prueba de alergia</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Preparación del Cliente</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Consulta previa y contraindicaciones</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Medición y diseño con hilo y regla (visagismo)</li>
+                  </ul>
+                </div>
+
+                {/* Dress code */}
+                <div className="p-4 rounded-2xl bg-bg-elevated border border-border-subtle">
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Código de Vestimenta</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Base negra o blanca con un toque en rosa palo. Calzado cómodo y cerrado. Maquillaje natural con cejas bien arregladas.
+                  </p>
+                </div>
+
+                {/* Payment info */}
+                <div className="p-4 rounded-2xl bg-bg-elevated border border-border-subtle">
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Plan de Pago</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    Separa tu espacio con <strong className="text-text-primary">$100.000</strong> y abona semanalmente. Cuenta de ahorros Bancolombia · <strong className="text-text-primary">788 07180362</strong> · Milena Almanza.
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer pricing */}
+              <div className="px-8 pb-8 pt-4 border-t border-border-subtle">
+                <div className="flex items-end justify-between mb-5">
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Inversión total</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-gold">$700.000</span>
+                      <span className="text-[10px] text-text-muted uppercase">COP</span>
+                    </div>
+                    <span className="text-xs text-text-secondary mt-0.5 block">Paga hoy: <strong className="text-gold">$500.000</strong></span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Modalidad</span>
+                    <span className="text-xs font-semibold text-text-primary">Mixto · 4 Domingos</span>
+                  </div>
+                </div>
+                <a
+                  href="https://wa.me/573015183333?text=Hola%20Mile!%20Me%20interesa%20el%20curso%20de%20Sombreado%20Temporal%20en%20Henna%20%E2%80%93%20Técnica%20Brows%20Perfect.%20Quisiera%20más%20información."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(212,175,55,0.3)]"
+                >
+                  Reservar Cupo — Henna
                 </a>
               </div>
             </div>
 
-            {/* Curso 2 */}
-            <div className="bg-bg-card border border-border-subtle hover:border-gold/30 rounded-3xl p-8 transition-all duration-500 hover:shadow-[0_0_40px_rgba(212,175,55,0.1)] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gold/5 to-transparent rounded-bl-full pointer-events-none" />
-              <div className="flex items-center gap-2 text-gold text-xs font-semibold tracking-wider uppercase mb-4">
-                <Calendar className="w-4 h-4" /> 1 Día Intensivo
+            {/* ── CURSO 2: CARIBBEAN BROWS ── */}
+            <div className="bg-bg-card border border-border-subtle hover:border-gold/30 rounded-3xl overflow-hidden transition-all duration-500 hover:shadow-[0_0_50px_rgba(212,175,55,0.12)] group flex flex-col">
+              {/* Header */}
+              <div className="relative px-8 pt-8 pb-6 border-b border-border-subtle">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gold/8 to-transparent rounded-bl-full pointer-events-none" />
+                <span className="inline-block text-[10px] font-bold text-gold tracking-[0.3em] uppercase mb-3">Técnica Caribbean Brows</span>
+                <h3 className="font-display text-2xl md:text-3xl font-bold text-text-primary mb-2 group-hover:text-gold transition-colors duration-300">
+                  Micropigmentación<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold">de Cejas Intensivo</span>
+                </h3>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  Presencial — 2 días intensivos. Curso completo para especializarse en cejas y dominar la técnica Caribbean Brows: acabado natural, elegante y de alta durabilidad.
+                </p>
               </div>
-              <h3 className="font-display text-2xl font-bold text-text-primary mb-2 group-hover:text-gold transition-colors">Perfeccionamiento de Cejas Híbridas</h3>
-              <p className="text-xs text-text-muted mb-4">Especialización para profesionales en técnicas avanzadas de sombreado y trazos hiperrealistas.</p>
-              <div className="space-y-3 mb-8 text-xs text-text-secondary">
-                <div className="flex items-center gap-2">✓ Corrección de trabajos anteriores</div>
-                <div className="flex items-center gap-2">✓ Pigmentología avanzada y agujas</div>
-                <div className="flex items-center gap-2">✓ Modelo real de práctica</div>
-                <div className="flex items-center gap-2">✓ Certificado de especialización</div>
-              </div>
-              <div className="flex items-center justify-between border-t border-border-subtle pt-6">
+
+              {/* Curriculum */}
+              <div className="px-8 py-6 flex-1 space-y-4">
+
                 <div>
-                  <span className="text-[10px] text-text-muted block uppercase">Precio del Curso</span>
-                  <span className="text-xl font-bold text-gold">$800.000 COP</span>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Fundamentos</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Bioseguridad, morfología de la piel y colorimetría</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Cómo lograr tonos marrones naturales</li>
+                  </ul>
                 </div>
-                <a href={`https://wa.me/${wppNumber}?text=Hola%20Mile!%20Deseo%20más%20información%20sobre%20el%20curso%20de%20Perfeccionamiento%20de%20Cejas%20Híbridas`} target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-105">
-                  Consultar Cupos
+
+                <div>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Diseño Profesional</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Visagismo personalizado y corrección de asimetrías</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Preparación previa a la micropigmentación</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Técnica Caribbean Brows</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Manejo del dermógrafo y paso a paso de aplicación</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Prácticas en látex y en modelo real supervisado</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">Corrección y Atención al Cliente</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Corrección de trabajos previos y neutralización</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Post-cuidado y fidelización de clientes</li>
+                  </ul>
+                </div>
+
+                {/* Includes */}
+                <div className="p-4 rounded-2xl bg-bg-elevated border border-border-subtle">
+                  <p className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2">El Curso Incluye</p>
+                  <ul className="space-y-1 text-xs text-text-secondary">
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Kit profesional de inicio (pigmentos, agujas, anestesia tópica, látex, lápiz dermatográfico)</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Manual digital exclusivo de la técnica Caribbean Brows</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Certificado de participación</li>
+                    <li className="flex items-start gap-2"><span className="text-gold mt-0.5">—</span>Soporte post-curso de 1 mes para resolver dudas</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Footer pricing */}
+              <div className="px-8 pb-8 pt-4 border-t border-border-subtle">
+                <div className="flex items-end justify-between mb-5">
+                  <div>
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Inversión total</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-gold">$2.500.000</span>
+                      <span className="text-[10px] text-text-muted uppercase">COP</span>
+                    </div>
+                    <span className="text-xs text-text-secondary mt-0.5 block">Separa con: <strong className="text-gold">$250.000</strong> · Sin devolución</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-text-muted uppercase tracking-wider block mb-1">Modalidad</span>
+                    <span className="text-xs font-semibold text-text-primary">Presencial · 2 Días</span>
+                  </div>
+                </div>
+                <a
+                  href="https://wa.me/573015183333?text=Hola%20Mile!%20Me%20interesa%20el%20curso%20de%20Micropigmentación%20de%20Cejas%20%E2%80%93%20Técnica%20Caribbean%20Brows.%20Quisiera%20más%20información."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-gold-dark via-gold to-gold-light text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(212,175,55,0.3)]"
+                >
+                  Reservar Cupo — Caribbean Brows
                 </a>
               </div>
             </div>
+
           </div>
         </div>
       </section>
