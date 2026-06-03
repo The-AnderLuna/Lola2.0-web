@@ -269,15 +269,8 @@ export default function DashboardCliente({
     return !isInactiveState && !inPast;
   });
 
-  // El historial muestra TODAS las reservas propias del cliente (que él inició)
-  // Para la amiga, se filtra para no mostrar citas donde ella es solo invitada
-  const citasHistorial = citas.filter(cita => {
-    // Excluir citas donde soy solo amiga (invitada), ya que el historial es "mi historial"
-    const isAmigaInvitada = cita.reservaTitularId && cita.reservaTitularId !== cliente.id;
-    if (isAmigaInvitada) return false;
-    // Incluir TODAS mis propias reservas: pasadas, canceladas, completadas, activas
-    return true;
-  });
+  // El historial muestra TODAS las reservas relacionadas con el cliente
+  const citasHistorial = citas;
 
 
   // Elegir la cita activa principal (la más próxima en fecha)
