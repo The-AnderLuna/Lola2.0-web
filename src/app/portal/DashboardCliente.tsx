@@ -229,9 +229,12 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
         gruposProcesados.add(cita.grupoId);
         const grupo = otrasCitasActivasRaw.filter(c => c.grupoId === cita.grupoId);
         const endTimeMax = new Date(Math.max(...grupo.map(c => new Date(c.fechaHoraFin).getTime())));
+        const startTimeMinCita = grupo.reduce((earliest, current) => 
+          new Date(current.fechaHoraInicio) < new Date(earliest.fechaHoraInicio) ? current : earliest
+        , grupo[0]);
         
-        // Clonamos la primera cita del grupo para usarla como base
-        const citaBase = { ...cita };
+        // Clonamos la primera cita del grupo (cronológicamente) para usarla como base
+        const citaBase = { ...startTimeMinCita };
         
         otrasCitasAgrupadas.push({
           ...citaBase,
@@ -719,7 +722,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-secondary mt-1">
                       <span className="capitalize">{formatFriendlyDate(cita.fechaHoraInicio).split(",")[1]}</span>
                       <span>•</span>
-                      <span>{formatFriendlyTime(cita.fechaHoraInicio)}</span>
+                      <span>{formatFriendlyTime(cita.fechaHoraInicio)} - {formatFriendlyTime(cita.fechaHoraFin)} <span className="text-[10px] ml-0.5">({formatDuration(cita.duracionMin)})</span></span>
                       <span>•</span>
                       <span className="font-medium text-text-muted">{cita.profesionalNombre}</span>
                     </div>
@@ -773,7 +776,7 @@ export default function DashboardCliente({ cliente, citasIniciales }: DashboardP
                           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-text-secondary">
                             <span className="capitalize">{formatFriendlyDate(cita.fechaHoraInicio).split(",")[1]}</span>
                             <span>•</span>
-                            <span>{formatFriendlyTime(cita.fechaHoraInicio)}</span>
+                            <span>{formatFriendlyTime(cita.fechaHoraInicio)} - {formatFriendlyTime(cita.fechaHoraFin)} <span className="text-[10px]">({formatDuration(cita.duracionMin)})</span></span>
                             <span>•</span>
                             <span className="text-text-muted">{cita.profesionalNombre}</span>
                           </div>
