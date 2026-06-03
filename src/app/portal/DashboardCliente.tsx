@@ -51,10 +51,20 @@ export interface CitaData {
 interface DashboardProps {
   cliente: ClienteData;
   whatsappNumero: string;
+  nequiNumero?: string;
+  daviplataNumero?: string;
+  titularCuenta?: string;
   citasIniciales: CitaData[];
 }
 
-export default function DashboardCliente({ cliente, whatsappNumero, citasIniciales }: DashboardProps) {
+export default function DashboardCliente({ 
+  cliente, 
+  whatsappNumero, 
+  nequiNumero = "",
+  daviplataNumero = "",
+  titularCuenta = "",
+  citasIniciales 
+}: DashboardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [citas, setCitas] = useState<CitaData[]>(citasIniciales);
@@ -69,6 +79,9 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
   const [reprogramarFecha, setReprogramarFecha] = useState("");
   const [reprogramarHora, setReprogramarHora] = useState("");
   const [reprogramarMotivo, setReprogramarMotivo] = useState("");
+
+  const [showConfirmarPagoModal, setShowConfirmarPagoModal] = useState<CitaData | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -188,6 +201,29 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
     setReprogramarMotivo("");
   };
 
+  const handleEnviarComprobante = () => {
+    if (!showConfirmarPagoModal || !selectedPaymentMethod) return;
+
+    const formattedDate = formatFriendlyDate(showConfirmarPagoModal.fechaHoraInicio);
+    const formattedTime = formatFriendlyTime(showConfirmarPagoModal.fechaHoraInicio);
+    
+    let text = `Hola Mile Almanza, soy ${cliente.nombre}. Adjunto las imágenes del comprobante de pago para mi cita de *${showConfirmarPagoModal.servicioNombre}* programada para el *${formattedDate}* a las *${formattedTime}*. (ID: ${showConfirmarPagoModal.id})`;
+    
+    let methodName = "";
+    if (selectedPaymentMethod === "nequi") methodName = "Nequi";
+    else if (selectedPaymentMethod === "daviplata") methodName = "Daviplata";
+    
+    text += `\n\n💰 *Método de pago utilizado:* ${methodName}`;
+
+    const cleanNumber = whatsappNumero.replace(/\+/g, '');
+    const link = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`;
+    
+    window.open(link, '_blank');
+    
+    setShowConfirmarPagoModal(null);
+    setSelectedPaymentMethod("");
+  };
+
   // Helper: Format Date beautifully in Spanish
   const formatFriendlyDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -290,8 +326,9 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
         , grupo[0]);
         
         const titularId = grupo.find(c => c.reservaTitularId)?.reservaTitularId || null;
+        const titularNombre = grupo.find(c => c.titularNombre)?.titularNombre || null;
         // Clonamos la primera cita del grupo (cronológicamente) para usarla como base
-        const citaBase = { ...startTimeMinCita, reservaTitularId: titularId };
+        const citaBase = { ...startTimeMinCita, reservaTitularId: titularId, titularNombre };
         
         otrasCitasAgrupadas.push({
           ...citaBase,
@@ -422,17 +459,15 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
 
       return (
         <>
-          <a
-            href={getWhatsAppLink(cita, "confirmacion")}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowConfirmarPagoModal(cita)}
             className={isPrimary 
               ? "flex-1 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-xs py-3 rounded-xl cursor-pointer hover:brightness-110 text-center transition-all duration-300 block"
               : "bg-gold hover:brightness-110 text-black font-semibold text-[10px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg transition-all shadow-[0_2px_10px_rgba(212,175,55,0.2)] inline-block"
             }
           >
             Confirmar Pago
-          </a>
+          </button>
           <button
             onClick={() => handleCancelAppointment(cita.id)}
             disabled={loadingAction === cita.id}
@@ -964,6 +999,87 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
                 className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-gold-dark to-gold text-black hover:brightness-110 transition-all"
               >
                 ENVIAR SOLICITUD
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmar Pago */}
+      {showConfirmarPagoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirmarPagoModal(null)}></div>
+          <div className="relative glass-strong border border-gold/20 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
+            <h3 className="text-lg font-bold text-gold font-display mb-2 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-gold" />
+              Confirmar Pago
+            </h3>
+            
+            <p className="text-sm text-text-secondary mb-6 leading-relaxed">
+              Para confirmar tu reserva temporal, escoge un método de pago y envía las imágenes del comprobante a nuestro WhatsApp.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {nequiNumero && (
+                <label className={`block cursor-pointer p-4 rounded-xl border transition-all ${selectedPaymentMethod === 'nequi' ? 'bg-gold/10 border-gold' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="radio" 
+                      name="paymentMethod" 
+                      value="nequi"
+                      checked={selectedPaymentMethod === 'nequi'}
+                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                      className="text-gold focus:ring-gold" 
+                    />
+                    <div>
+                      <span className="block font-bold text-white mb-0.5">Nequi</span>
+                      <span className="block text-xs text-text-muted">N° {nequiNumero}</span>
+                    </div>
+                  </div>
+                </label>
+              )}
+
+              {daviplataNumero && (
+                <label className={`block cursor-pointer p-4 rounded-xl border transition-all ${selectedPaymentMethod === 'daviplata' ? 'bg-gold/10 border-gold' : 'bg-white/5 border-white/10 hover:border-white/20'}`}>
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="radio" 
+                      name="paymentMethod" 
+                      value="daviplata"
+                      checked={selectedPaymentMethod === 'daviplata'}
+                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                      className="text-gold focus:ring-gold" 
+                    />
+                    <div>
+                      <span className="block font-bold text-white mb-0.5">Daviplata</span>
+                      <span className="block text-xs text-text-muted">N° {daviplataNumero}</span>
+                    </div>
+                  </div>
+                </label>
+              )}
+
+              {titularCuenta && selectedPaymentMethod && (
+                <div className="mt-3 text-center bg-white/5 p-3 rounded-lg border border-white/10 animate-fade-in-up">
+                  <p className="text-xs text-text-muted">Titular de la cuenta:</p>
+                  <p className="text-sm font-bold text-white">{titularCuenta}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 justify-end relative z-10 pt-4 border-t border-white/5">
+              <button 
+                onClick={() => setShowConfirmarPagoModal(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-gold transition-colors"
+              >
+                CANCELAR
+              </button>
+              <button 
+                onClick={handleEnviarComprobante}
+                disabled={!selectedPaymentMethod}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-gold-dark to-gold text-black hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ENVIAR IMÁGENES
               </button>
             </div>
           </div>

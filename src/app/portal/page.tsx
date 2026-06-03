@@ -85,6 +85,9 @@ export default async function PortalPage() {
         telefono: cliente.telefono,
       }}
       whatsappNumero={configuracion.whatsapp_numero || "573138865616"}
+      nequiNumero={configuracion.nequi_numero || ""}
+      daviplataNumero={configuracion.daviplata_numero || ""}
+      titularCuenta={configuracion.titular_cuenta || ""}
       citasIniciales={citasMapeadas}
     />
   );
