@@ -648,49 +648,34 @@ export default function DashboardCliente({
                       {citaActivaPrincipal.servicioNombre}
                     </h4>
                     {citaActivaPrincipal.subServicios && (
-                      <div className="mt-2">
-                        <button
-                          onClick={() => toggleCard(citaActivaPrincipal.id)}
-                          className="flex items-center gap-1.5 text-[10px] text-gold/70 hover:text-gold transition-colors font-medium mb-2"
-                        >
-                          {expandedCards.has(citaActivaPrincipal.id) ? (
-                            <>Ocultar detalle <ChevronUp className="w-3.5 h-3.5" /></>
-                          ) : (
-                            <>Ver detalle de servicios <ChevronDown className="w-3.5 h-3.5" /></>
-                          )}
-                        </button>
-                        
-                        {expandedCards.has(citaActivaPrincipal.id) && (
-                          <div className="text-xs text-text-secondary flex flex-col gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
-                            {Object.entries(
-                              citaActivaPrincipal.subServicios.reduce((acc, sub) => {
-                                if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
-                                acc[sub.clienteNombre].push(sub.servicioNombre);
-                                return acc;
-                              }, {} as Record<string, string[]>)
-                            )
-                            .sort(([nombreA], [nombreB]) => {
-                              if (nombreA === cliente.nombre) return -1;
-                              if (nombreB === cliente.nombre) return 1;
-                              return nombreA.localeCompare(nombreB);
-                            })
-                            .map(([nombre, servicios]) => (
-                              <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                                <span className="font-semibold text-gold/80 mb-0.5">
-                                  {nombre === cliente.nombre 
-                                    ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
-                                    : (servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`)}
-                                </span>
-                                {servicios.map((s, idx) => (
-                                  <div key={idx} className="flex items-start gap-1.5">
-                                    <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
-                                    <span className="leading-snug break-words">{s}</span>
-                                  </div>
-                                ))}
+                      <div className="text-xs text-text-secondary mt-2 flex flex-col gap-2">
+                        {Object.entries(
+                          citaActivaPrincipal.subServicios.reduce((acc, sub) => {
+                            if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                            acc[sub.clienteNombre].push(sub.servicioNombre);
+                            return acc;
+                          }, {} as Record<string, string[]>)
+                        )
+                        .sort(([nombreA], [nombreB]) => {
+                          if (nombreA === cliente.nombre) return -1;
+                          if (nombreB === cliente.nombre) return 1;
+                          return nombreA.localeCompare(nombreB);
+                        })
+                        .map(([nombre, servicios]) => (
+                          <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                            <span className="font-semibold text-gold/80 mb-0.5">
+                              {nombre === cliente.nombre 
+                                ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
+                                : (servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`)}
+                            </span>
+                            {servicios.map((s, idx) => (
+                              <div key={idx} className="flex items-start gap-1.5">
+                                <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
+                                <span className="leading-snug break-words">{s}</span>
                               </div>
                             ))}
                           </div>
-                        )}
+                        ))}
                       </div>
                     )}
                   </div>
@@ -844,49 +829,34 @@ export default function DashboardCliente({
                       })()}
                     </div>
                       {cita.subServicios && (
-                        <div className="mt-2 mb-1">
-                          <button
-                            onClick={() => toggleCard(cita.id)}
-                            className="flex items-center gap-1.5 text-[10px] text-gold/70 hover:text-gold transition-colors font-medium mb-2"
-                          >
-                            {expandedCards.has(cita.id) ? (
-                              <>Ocultar detalle <ChevronUp className="w-3.5 h-3.5" /></>
-                            ) : (
-                              <>Ver detalle de servicios <ChevronDown className="w-3.5 h-3.5" /></>
-                            )}
-                          </button>
-                          
-                          {expandedCards.has(cita.id) && (
-                            <div className="text-[11px] text-text-secondary flex flex-col gap-2 animate-in slide-in-from-top-1 fade-in duration-200">
-                              {Object.entries(
-                                cita.subServicios.reduce((acc, sub) => {
-                                  if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
-                                  acc[sub.clienteNombre].push(sub.servicioNombre);
-                                  return acc;
-                                }, {} as Record<string, string[]>)
-                              )
-                              .sort(([nombreA], [nombreB]) => {
-                                if (nombreA === cliente.nombre) return -1;
-                                if (nombreB === cliente.nombre) return 1;
-                                return nombreA.localeCompare(nombreB);
-                              })
-                              .map(([nombre, servicios]) => (
-                                <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
-                                  <span className="font-semibold text-gold/80 mb-0.5">
-                                    {nombre === cliente.nombre 
-                                      ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
-                                      : (servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`)}
-                                  </span>
-                                  {servicios.map((s, idx) => (
-                                    <div key={idx} className="flex items-start gap-1.5">
-                                      <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
-                                      <span className="leading-snug break-words">{s}</span>
-                                    </div>
-                                  ))}
+                        <div className="text-[11px] text-text-secondary mt-2 mb-1 flex flex-col gap-2">
+                          {Object.entries(
+                            cita.subServicios.reduce((acc, sub) => {
+                              if (!acc[sub.clienteNombre]) acc[sub.clienteNombre] = [];
+                              acc[sub.clienteNombre].push(sub.servicioNombre);
+                              return acc;
+                            }, {} as Record<string, string[]>)
+                          )
+                          .sort(([nombreA], [nombreB]) => {
+                            if (nombreA === cliente.nombre) return -1;
+                            if (nombreB === cliente.nombre) return 1;
+                            return nombreA.localeCompare(nombreB);
+                          })
+                          .map(([nombre, servicios]) => (
+                            <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                              <span className="font-semibold text-gold/80 mb-0.5">
+                                {nombre === cliente.nombre 
+                                  ? (servicios.length === 1 ? "Tu servicio" : "Tus servicios") 
+                                  : (servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`)}
+                              </span>
+                              {servicios.map((s, idx) => (
+                                <div key={idx} className="flex items-start gap-1.5">
+                                  <span className="text-gold-light drop-shadow-[0_0_2px_rgba(251,191,36,0.8)] mt-[1px] shrink-0 leading-none">•</span>
+                                  <span className="leading-snug break-words">{s}</span>
                                 </div>
                               ))}
                             </div>
-                          )}
+                          ))}
                         </div>
                       )}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-secondary mt-1">
