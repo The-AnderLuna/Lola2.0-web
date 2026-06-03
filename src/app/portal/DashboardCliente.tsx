@@ -150,11 +150,29 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
     const formattedDate = formatFriendlyDate(showReprogramarModal.fechaHoraInicio);
     const formattedTime = formatFriendlyTime(showReprogramarModal.fechaHoraInicio);
     
-    let text = `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${showReprogramarModal.servicioNombre}* programada originalmente para el *${formattedDate}* a las *${formattedTime}*.`;
+    let text = `Hola Mile Almanza, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${showReprogramarModal.servicioNombre}* programada originalmente para el *${formattedDate}* a las *${formattedTime}*.`;
     
     text += `\n\n*Me gustaría reprogramarla para:*`;
-    if (reprogramarFecha) text += `\n📅 Fecha: ${reprogramarFecha}`;
-    if (reprogramarHora) text += `\n⏰ Hora: ${reprogramarHora}`;
+    
+    if (reprogramarFecha) {
+      // Convertir 'YYYY-MM-DD' a formato amigable
+      const [year, month, day] = reprogramarFecha.split('-');
+      const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      const friendlyDate = dateObj.toLocaleDateString("es-CO", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      text += `\n📅 Fecha: ${friendlyDate}`;
+    }
+    
+    if (reprogramarHora) {
+      // Convertir 'HH:mm' a 12-horas AM/PM
+      const [hourStr, minStr] = reprogramarHora.split(':');
+      let hour = parseInt(hourStr);
+      const ampm = hour >= 12 ? 'p. m.' : 'a. m.';
+      hour = hour % 12;
+      hour = hour ? hour : 12; // 0 se convierte en 12
+      const friendlyTime = `${hour.toString().padStart(2, '0')}:${minStr} ${ampm}`;
+      text += `\n⏰ Hora: ${friendlyTime}`;
+    }
+    
     if (reprogramarMotivo) text += `\n📝 Motivo: ${reprogramarMotivo}`;
     
     text += `\n\n¿Qué disponibilidad tienen?`;
