@@ -953,30 +953,38 @@ export default function DashboardCliente({
 
                         {/* Sub-servicios si es grupo */}
                         {esGrupo && (
-                          <div className="border-t border-white/5 px-4 py-2.5 space-y-1.5 bg-white/[0.02]">
-                            {grupo.map(srv => {
-                              // Limpiar el nombre del servicio si termina en " - Staff"
-                              let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
-                              const nombreFinal = srv.clienteNombre && srv.clienteNombre !== citaBase.clienteNombre
-                                ? `${nombreLimpio} (${srv.clienteNombre.split(' ')[0]})`
-                                : nombreLimpio;
-                                
-                              return (
-                                <div key={srv.id} className="flex justify-between items-center text-[11px] py-1 border-b border-white/5 last:border-0">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-1 h-1 rounded-full bg-gold/50"></div>
-                                    <span className="text-text-muted">{nombreFinal}</span>
-                                    {srv.profesionalNombre.toLowerCase().includes('staff') && (
-                                      <span className="text-[8px] bg-white/10 text-white/70 px-1.5 rounded-sm">STAFF</span>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-[10px] text-text-muted">{formatDuration(srv.duracionMin)}</span>
-                                    <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
-                                  </div>
+                          <div className="border-t border-white/5 px-4 py-2.5 space-y-3 bg-white/[0.02]">
+                            {Object.entries(
+                              grupo.reduce((acc, srv) => {
+                                const nombre = srv.clienteNombre || cliente.nombre;
+                                if (!acc[nombre]) acc[nombre] = [];
+                                acc[nombre].push(srv);
+                                return acc;
+                              }, {} as Record<string, typeof grupo>)
+                            ).map(([nombre, servicios]) => (
+                              <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-2">
+                                <span className="font-semibold text-gold/80 mb-1.5">{nombre === cliente.nombre ? "Tus citas" : `Citas de ${nombre.split(' ')[0]}`}</span>
+                                <div className="space-y-1.5">
+                                  {servicios.map(srv => {
+                                    let nombreLimpio = srv.servicioNombre.replace(/\s*-\s*Staff$/i, '');
+                                    return (
+                                      <div key={srv.id} className="flex justify-between items-center text-[11px] py-0.5">
+                                        <div className="flex items-center gap-2">
+                                          <span className="pl-3 text-text-muted relative before:content-['•'] before:absolute before:left-0 before:text-gold-light before:drop-shadow-[0_0_2px_rgba(251,191,36,0.8)]">{nombreLimpio}</span>
+                                          {srv.profesionalNombre.toLowerCase().includes('staff') && (
+                                            <span className="text-[8px] bg-white/10 text-white/70 px-1.5 rounded-sm">STAFF</span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-[10px] text-text-muted">{formatDuration(srv.duracionMin)}</span>
+                                          <span className="text-text-secondary font-medium">{formatCurrency(srv.precioTotal)}</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
-                              );
-                            })}
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
