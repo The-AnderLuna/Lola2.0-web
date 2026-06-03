@@ -64,6 +64,11 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
   const [activeTab, setActiveTab] = useState<"activas" | "historial">("activas");
   const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
   const [showCancelModal, setShowCancelModal] = useState<string | null>(null);
+  
+  const [showReprogramarModal, setShowReprogramarModal] = useState<CitaData | null>(null);
+  const [reprogramarFecha, setReprogramarFecha] = useState("");
+  const [reprogramarHora, setReprogramarHora] = useState("");
+  const [reprogramarMotivo, setReprogramarMotivo] = useState("");
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -137,6 +142,32 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
     } finally {
       setLoadingAction(null);
     }
+  };
+
+  const handleEnviarReprogramacion = () => {
+    if (!showReprogramarModal) return;
+    
+    const formattedDate = formatFriendlyDate(showReprogramarModal.fechaHoraInicio);
+    const formattedTime = formatFriendlyTime(showReprogramarModal.fechaHoraInicio);
+    
+    let text = `Hola Mile Almanza Estética, soy ${cliente.nombre}. Quisiera solicitar un cambio de fecha/hora para mi cita de *${showReprogramarModal.servicioNombre}* programada originalmente para el *${formattedDate}* a las *${formattedTime}*.`;
+    
+    text += `\n\n*Me gustaría reprogramarla para:*`;
+    if (reprogramarFecha) text += `\n📅 Fecha: ${reprogramarFecha}`;
+    if (reprogramarHora) text += `\n⏰ Hora: ${reprogramarHora}`;
+    if (reprogramarMotivo) text += `\n📝 Motivo: ${reprogramarMotivo}`;
+    
+    text += `\n\n¿Qué disponibilidad tienen?`;
+
+    const cleanNumber = whatsappNumero.replace(/\+/g, '');
+    const link = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(text)}`;
+    
+    window.open(link, '_blank');
+    
+    setShowReprogramarModal(null);
+    setReprogramarFecha("");
+    setReprogramarHora("");
+    setReprogramarMotivo("");
   };
 
   // Helper: Format Date beautifully in Spanish
@@ -423,15 +454,13 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
       
       if (horasRestantes > 12) {
         return (
-          <a
-            href={getWhatsAppLink(cita, "cambio")}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowReprogramarModal(cita)}
             className={`${btnClass} hover:border-gold/30 text-gold hover:bg-gold/5`}
           >
             <MessageSquare className={isPrimary ? "w-4 h-4" : "w-3.5 h-3.5"} />
             Reprogramar Cita
-          </a>
+          </button>
         );
       } else {
         return (
@@ -855,6 +884,68 @@ export default function DashboardCliente({ cliente, whatsappNumero, citasInicial
                 className="px-5 py-2 rounded-xl text-xs font-bold bg-white/5 text-text-primary border border-white/10 hover:bg-red-urgency/80 hover:text-white hover:border-red-urgency transition-all"
               >
                 SÍ, CANCELAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Reprogramar Cita */}
+      {showReprogramarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowReprogramarModal(null)}></div>
+          <div className="relative glass-strong border border-gold/20 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full blur-2xl pointer-events-none" />
+            <h3 className="text-lg font-bold text-gold font-display mb-4 flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-gold" />
+              Reprogramar Cita
+            </h3>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Fecha Deseada (Opcional)</label>
+                <input
+                  type="date"
+                  value={reprogramarFecha}
+                  onChange={(e) => setReprogramarFecha(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Hora Deseada (Opcional)</label>
+                <input
+                  type="time"
+                  value={reprogramarHora}
+                  onChange={(e) => setReprogramarHora(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wider">Motivo (Opcional)</label>
+                <textarea
+                  value={reprogramarMotivo}
+                  onChange={(e) => setReprogramarMotivo(e.target.value)}
+                  placeholder="Ej: Se me presentó un inconveniente de última hora..."
+                  rows={3}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/50 transition-all resize-none text-sm placeholder:text-text-muted/50"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end relative z-10 mt-6 pt-4 border-t border-white/5">
+              <button 
+                onClick={() => setShowReprogramarModal(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-gold transition-colors"
+              >
+                CANCELAR
+              </button>
+              <button 
+                onClick={handleEnviarReprogramacion}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-gold-dark to-gold text-black hover:brightness-110 transition-all"
+              >
+                ENVIAR SOLICITUD
               </button>
             </div>
           </div>
