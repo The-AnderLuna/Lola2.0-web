@@ -204,9 +204,11 @@ export default function DashboardCliente({
       }
 
       // Optimistically update the UI: change state to CANCELADA_POR_CLIENTE
+      const canceledCita = citas.find(c => c.id === citaId);
+      
       setCitas(prevCitas => 
         prevCitas.map(cita => {
-          if (cita.id === citaId || (citaACancelar?.grupoId && cita.grupoId === citaACancelar.grupoId)) {
+          if (cita.id === citaId || (canceledCita?.grupoId && cita.grupoId === canceledCita.grupoId)) {
             return { ...cita, estado: "CANCELADA_POR_CLIENTE", expiresAt: null };
           }
           return cita;

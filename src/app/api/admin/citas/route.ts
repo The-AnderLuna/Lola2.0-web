@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
       )
       .not('estado', 'eq', 'BLOQUEO_TEMPORAL')
       .not('estado', 'eq', 'CANCELADA_SISTEMA')
-      .not('estado', 'eq', 'CANCELADA_POR_CLIENTE')
       .order('fecha_hora_inicio', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
 
@@ -143,7 +142,7 @@ export async function PATCH(request: NextRequest) {
 
     const validEstados = [
       'PRE_AGENDADA', 'EN_REVISION', 'CONFIRMADA', 'REAGENDADA',
-      'CANCELADA', 'COMPLETADA', 'NO_ASISTIO',
+      'CANCELADA', 'CANCELADA_POR_CLIENTE', 'COMPLETADA', 'NO_ASISTIO',
     ];
     if (!validEstados.includes(estado)) {
       return NextResponse.json({ error: 'Estado no válido' }, { status: 400 });

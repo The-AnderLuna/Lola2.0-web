@@ -55,6 +55,7 @@ const TABS = [
   { value: EstadoCita.CONFIRMADA, label: 'Confirmada', dot: '#D4AF37' },
   { value: EstadoCita.COMPLETADA, label: 'Completada', dot: '#22c55e' },
   { value: EstadoCita.REAGENDADA, label: 'Reagendada', dot: '#60a5fa' },
+  { value: EstadoCita.CANCELADA_POR_CLIENTE, label: 'Cancelada x Cliente', dot: '#ef4444' },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
