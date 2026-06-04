@@ -321,14 +321,9 @@ export default function FormularioPerfil({ cliente }: FormularioPerfilProps) {
       </main>
 
       {/* Footer Fino */}
-      <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col sm:flex-row justify-between items-center gap-4 mt-auto">
+      <footer className="w-full max-w-5xl mx-auto py-8 text-center text-xs text-text-muted border-t border-white/5 z-10 flex flex-col justify-center items-center gap-4 mt-auto">
         <div>
           © {new Date().getFullYear()} Mile Almanza Estética. Todos los derechos reservados.
-        </div>
-        <div className="flex gap-4">
-          <span className="hover:text-text-secondary transition-colors cursor-pointer">Términos</span>
-          <span>•</span>
-          <span className="hover:text-text-secondary transition-colors cursor-pointer">Privacidad</span>
         </div>
       </footer>
     </div>
