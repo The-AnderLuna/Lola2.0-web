@@ -75,7 +75,16 @@ export default function DashboardCliente({
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"activas" | "historial">("activas");
+  // Leer tab inicial desde la URL (?tab=historial)
+  const tabFromUrl = (): "activas" | "historial" => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("tab") === "historial" ? "historial" : "activas";
+    }
+    return searchParams.get("tab") === "historial" ? "historial" : "activas";
+  };
+
+  const [activeTab, setActiveTab] = useState<"activas" | "historial">(tabFromUrl);
   const [filtroEstado, setFiltroEstado] = useState<string>("TODOS");
   const [showCancelModal, setShowCancelModal] = useState<string | null>(null);
   
@@ -98,14 +107,35 @@ export default function DashboardCliente({
     });
   };
 
+  // Función para cambiar de pestaña actualizando el historial del navegador
+  // Esto hace que el botón Atrás del iPhone funcione correctamente
+  const switchTab = (tab: "activas" | "historial") => {
+    setActiveTab(tab);
+    const newUrl = tab === "historial" ? "/portal?tab=historial" : "/portal";
+    window.history.pushState({ tab }, "", newUrl);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
+
+  // Escuchar el botón Atrás/Adelante del navegador (gesto iPhone, botón Android, etc.)
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (tabParam === "historial") {
-      setActiveTab("historial");
-    } else {
-      setActiveTab("activas");
-    }
-  }, [searchParams]);
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && typeof e.state.tab === "string") {
+        setActiveTab(e.state.tab as "activas" | "historial");
+      } else {
+        // Sin estado guardado: leer la URL directamente
+        const params = new URLSearchParams(window.location.search);
+        setActiveTab(params.get("tab") === "historial" ? "historial" : "activas");
+      }
+    };
+
+    // Registrar el estado inicial en el historial del navegador
+    const initialTab = tabFromUrl();
+    window.history.replaceState({ tab: initialTab }, "", window.location.href);
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Logout action
   const handleLogout = async () => {
@@ -585,13 +615,13 @@ export default function DashboardCliente({
 
           <nav className="flex items-center gap-6">
             <button 
-              onClick={() => setActiveTab("activas")} 
+              onClick={() => switchTab("activas")} 
               className={`text-xs tracking-wider uppercase font-semibold pb-1 pt-1 transition-colors ${activeTab === "activas" ? "text-gold border-b-2 border-gold/80" : "text-text-secondary hover:text-text-primary"}`}
             >
               Mis Citas
             </button>
             <button 
-              onClick={() => setActiveTab("historial")} 
+              onClick={() => switchTab("historial")} 
               className={`text-xs tracking-wider uppercase font-semibold pb-1 pt-1 transition-colors ${activeTab === "historial" ? "text-gold border-b-2 border-gold/80" : "text-text-secondary hover:text-text-primary"}`}
             >
               Historial de Citas
