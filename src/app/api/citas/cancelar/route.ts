@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
       const { error: cancelError } = await supabaseAdmin
         .from('citas')
-        .update({ estado: EstadoCita.CANCELADA })
+        .update({ estado: EstadoCita.CANCELADA_POR_CLIENTE })
         .eq('grupo_id', cita.grupoId)
         .eq('estado', EstadoCita.PRE_AGENDADA);
         
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         throw new Error(`Error cancelando el grupo de citas: ${cancelError.message}`);
       }
     } else {
-      await repositorioCitas.actualizarEstado(citaId, EstadoCita.CANCELADA);
+      await repositorioCitas.actualizarEstado(citaId, EstadoCita.CANCELADA_POR_CLIENTE);
     }
 
     return NextResponse.json({ success: true, message: 'La reserva ha sido cancelada con éxito y el cupo ha sido liberado.' });

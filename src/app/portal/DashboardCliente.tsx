@@ -203,14 +203,11 @@ export default function DashboardCliente({
         throw new Error(data.error || "No se pudo cancelar la cita");
       }
 
-      // Optimistically update the UI: change state to CANCELADA
-      // Note: Now we also need to update other appointments in the same group if applicable
-      const canceledCita = citas.find(c => c.id === citaId);
-      
+      // Optimistically update the UI: change state to CANCELADA_POR_CLIENTE
       setCitas(prevCitas => 
         prevCitas.map(cita => {
-          if (cita.id === citaId || (canceledCita?.grupoId && cita.grupoId === canceledCita.grupoId)) {
-            return { ...cita, estado: "CANCELADA", expiresAt: null };
+          if (cita.id === citaId || (citaACancelar?.grupoId && cita.grupoId === citaACancelar.grupoId)) {
+            return { ...cita, estado: "CANCELADA_POR_CLIENTE", expiresAt: null };
           }
           return cita;
         })
@@ -344,7 +341,7 @@ export default function DashboardCliente({
 
   const citasActivas = citas.filter(cita => {
     const inPast = new Date(cita.fechaHoraInicio) < now;
-    const isInactiveState = ["CANCELADA", "CANCELADA_SISTEMA", "COMPLETADA", "NO_ASISTIO"].includes(cita.estado);
+    const isInactiveState = ["CANCELADA", "CANCELADA_POR_CLIENTE", "CANCELADA_SISTEMA", "COMPLETADA", "NO_ASISTIO"].includes(cita.estado);
     return !isInactiveState && !inPast;
   }).sort((a, b) => {
     const pesoA = getEstadoPeso(a.estado);
@@ -492,9 +489,10 @@ export default function DashboardCliente({
           icon: <CheckCircle className="w-3.5 h-3.5" />
         };
       case "CANCELADA":
+      case "CANCELADA_POR_CLIENTE":
       case "CANCELADA_SISTEMA":
         return {
-          text: "Cancelada",
+          text: estado === "CANCELADA_POR_CLIENTE" ? "Cancelaste esta cita" : "Cancelada",
           styles: "bg-white/5 text-text-muted border-white/10",
           glow: "none",
           icon: <XCircle className="w-3.5 h-3.5" />

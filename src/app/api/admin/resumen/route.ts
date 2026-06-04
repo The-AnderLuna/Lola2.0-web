@@ -2,40 +2,51 @@ import { NextResponse } from 'next/server';
 import { requireAdminAuth } from '@/lib/adminAuth';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
-export async function GET() {
+export async function GET(request: Request) {
   const authError = await requireAdminAuth();
   if (authError) return authError;
 
   try {
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+    const { searchParams } = new URL(request.url);
+    const rango = searchParams.get('rango') || 'hoy';
 
-    // Consultas paralelas para métricas del día
-    const [citasHoy, preAgendas, clientesNuevos, ingresosSemana] = await Promise.all([
-      // 1. Citas de hoy (todos los estados excepto BLOQUEO_TEMPORAL y canceladas por sistema)
+    const now = new Date();
+    let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    if (rango === '7d') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+    } else if (rango === '30d') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
+    }
+
+    const startISO = startDate.toISOString();
+    const endISO = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
+
+    // Consultas paralelas para métricas del rango
+    const [citasRango, preAgendas, clientesNuevos, ingresosSemana] = await Promise.all([
+      // 1. Citas del rango (todos los estados excepto BLOQUEO_TEMPORAL y canceladas por sistema)
       supabaseAdmin
         .from('citas')
-        .select('*, clientes(nombre, telefono), servicios(nombre, categoria), profesionales(nombre)')
-        .gte('fecha_hora_inicio', todayStart)
-        .lte('fecha_hora_inicio', todayEnd)
+        .select('*, clientes!citas_cliente_id_fkey(nombre, telefono), servicios(nombre, categoria), profesionales(nombre)')
+        .gte('fecha_hora_inicio', startISO)
+        .lte('fecha_hora_inicio', endISO)
         .not('estado', 'eq', 'BLOQUEO_TEMPORAL')
         .order('fecha_hora_inicio', { ascending: true }),
 
       // 2. Pre-agendas activas (todas, no solo de hoy)
       supabaseAdmin
         .from('citas')
-        .select('id, expires_at, fecha_hora_inicio, precio_total, clientes(nombre), servicios(nombre)')
+        .select('id, expires_at, fecha_hora_inicio, precio_total, clientes!citas_cliente_id_fkey(nombre), servicios(nombre)')
         .eq('estado', 'PRE_AGENDADA')
         .order('expires_at', { ascending: true }),
 
-      // 3. Clientes nuevos hoy
+      // 3. Clientes nuevos en el rango
       supabaseAdmin
         .from('clientes')
         .select('id', { count: 'exact', head: true })
-        .gte('created_at', todayStart),
+        .gte('created_at', startISO),
 
-      // 4. Ingresos últimos 7 días (citas confirmadas/completadas)
+      // 4. Ingresos últimos 7 días (para el gráfico, fijo a 7 días por ahora)
       supabaseAdmin
         .from('citas')
         .select('fecha_hora_inicio, precio_total')
@@ -43,8 +54,8 @@ export async function GET() {
         .in('estado', ['CONFIRMADA', 'COMPLETADA']),
     ]);
 
-    // Calcular ingresos de hoy
-    const ingresoHoy = (citasHoy.data || [])
+    // Calcular ingresos del rango
+    const ingresoHoy = (citasRango.data || [])
       .filter(c => ['CONFIRMADA', 'COMPLETADA'].includes(c.estado))
       .reduce((sum, c) => sum + (c.precio_total || 0), 0);
 
@@ -71,8 +82,8 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      citasHoy: citasHoy.data || [],
-      totalCitasHoy: (citasHoy.data || []).length,
+      citasHoy: citasRango.data || [],
+      totalCitasHoy: (citasRango.data || []).length,
       ingresoHoy,
       preAgendas: preAgendas.data || [],
       totalPreAgendas: (preAgendas.data || []).length,

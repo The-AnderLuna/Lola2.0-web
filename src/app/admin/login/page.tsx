@@ -41,54 +41,68 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Background ambient effects */}
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-[#070708]">
+      {/* Luces de ambiente premium */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] opacity-10"
-          style={{ background: 'radial-gradient(circle, #D4AF37, transparent)' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px] opacity-5"
-          style={{ background: 'radial-gradient(circle, #E63946, transparent)' }} />
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-[150px] opacity-15"
+          style={{ background: 'radial-gradient(circle, #D4AF37, transparent 70%)' }} />
+        <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full blur-[130px] opacity-10"
+          style={{ background: 'radial-gradient(circle, #E63946, transparent 70%)' }} />
       </div>
 
       <div className="w-full max-w-md relative z-10 animate-fade-in-up">
-        {/* Logo / Header */}
+        {/* Cabecera Lujosa */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 relative"
             style={{
-              background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05))',
-              border: '1px solid rgba(212, 175, 55, 0.3)',
+              background: 'radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.02) 100%)',
+              border: '1px solid rgba(212, 175, 55, 0.25)',
+              boxShadow: '0 0 20px rgba(212, 175, 55, 0.05)',
             }}>
-            <Crown className="w-8 h-8 text-gold" />
+            {/* Anillo de brillo decorativo */}
+            <div className="absolute inset-1 rounded-full border border-gold/10 animate-pulse" />
+            <Crown className="w-9 h-9 text-gold filter drop-shadow-[0_2px_5px_rgba(212,175,55,0.4)]" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-text-primary mb-2">
-            Panel de Control
+          
+          <h1 className="font-display text-3xl font-light text-text-primary tracking-[0.15em] mb-2 uppercase">
+            Mile Almanza
           </h1>
-          <p className="text-text-secondary text-sm">
-            Mile Almanza — Estudio Premium de Estética
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-gold/40 to-transparent mx-auto mb-3" />
+          <p className="text-gold/70 text-xs tracking-[0.25em] uppercase font-medium">
+            Estética Profesional · Acceso Admin
           </p>
         </div>
 
-        {/* Login Card */}
-        <div className="glass-strong rounded-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Tarjeta de Login Glassmorphism */}
+        <div className="glass-strong rounded-3xl p-8 relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(145deg, rgba(20, 20, 25, 0.8) 0%, rgba(10, 10, 12, 0.9) 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          }}>
+          
+          {/* Línea dorada de brillo superior en la tarjeta */}
+          <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
-            <div>
-              <label htmlFor="admin-email" className="block text-sm font-medium text-text-secondary mb-2">
-                Correo electrónico
+            <div className="space-y-2">
+              <label htmlFor="admin-email" className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                Correo Electrónico
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+              <div className="relative group">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-gold transition-colors duration-200" />
                 <input
                   id="admin-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="mile@milealmanza.com"
+                  placeholder="ejemplo@estudio.com"
                   required
-                  className="w-full pl-11 pr-4 py-3 rounded-xl text-text-primary placeholder:text-text-muted
-                    focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all duration-200"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl text-text-primary placeholder:text-text-muted/30
+                    focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold/40 transition-all duration-200 text-sm"
                   style={{
-                    background: 'rgba(34, 34, 40, 0.8)',
+                    background: 'rgba(15, 15, 18, 0.9)',
                     border: '1px solid rgba(255, 255, 255, 0.07)',
                   }}
                 />
@@ -96,79 +110,83 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Password */}
-            <div>
-              <label htmlFor="admin-password" className="block text-sm font-medium text-text-secondary mb-2">
+            <div className="space-y-2">
+              <label htmlFor="admin-password" className="block text-xs font-semibold uppercase tracking-wider text-text-secondary">
                 Contraseña
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+              <div className="relative group">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-gold transition-colors duration-200" />
                 <input
                   id="admin-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="••••••••••••"
                   required
-                  className="w-full pl-11 pr-12 py-3 rounded-xl text-text-primary placeholder:text-text-muted
-                    focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all duration-200"
+                  className="w-full pl-11 pr-12 py-3.5 rounded-xl text-text-primary placeholder:text-text-muted/30
+                    focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold/40 transition-all duration-200 text-sm"
                   style={{
-                    background: 'rgba(34, 34, 40, 0.8)',
+                    background: 'rgba(15, 15, 18, 0.9)',
                     border: '1px solid rgba(255, 255, 255, 0.07)',
                   }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-gold transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Error message */}
+            {/* Alerta de Error */}
             {error && (
-              <div className="flex items-center gap-2 p-3 rounded-xl text-sm"
+              <div className="flex items-center gap-2 p-3.5 rounded-xl text-xs"
                 style={{
-                  background: 'rgba(230, 57, 70, 0.1)',
-                  border: '1px solid rgba(230, 57, 70, 0.3)',
+                  background: 'rgba(230, 57, 70, 0.07)',
+                  border: '1px solid rgba(230, 57, 70, 0.2)',
                   color: '#E63946',
                 }}>
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {error}
+                <span>{error}</span>
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* Botón de Acceso (Luxury Gold) */}
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300
-                disabled:opacity-40 disabled:cursor-not-allowed
-                hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] active:scale-[0.98]"
+              className="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300
+                disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-none
+                shadow-[0_4px_20px_rgba(212,175,55,0.15)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.35)]
+                hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden group"
               style={{
-                background: 'linear-gradient(135deg, #D4AF37, #A8860A)',
-                color: '#0A0A0B',
+                background: 'linear-gradient(135deg, #E5C060 0%, #D4AF37 50%, #A8860A 100%)',
+                color: '#070708',
               }}
             >
+              {/* Brillo destello en hover */}
+              <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-out pointer-events-none" />
+              
               {loading ? (
                 <span className="inline-flex items-center gap-2">
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <svg className="animate-spin w-4 h-4 text-[#070708]" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                     <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" fill="currentColor" className="opacity-75" />
                   </svg>
-                  Accediendo...
+                  Procesando...
                 </span>
               ) : (
-                'Acceder al Panel'
+                'Iniciar Sesión'
               )}
             </button>
           </form>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-text-muted text-xs mt-6">
-          Acceso restringido · Solo personal autorizado
+        <p className="text-center text-text-muted/60 text-xs mt-8 tracking-wider uppercase">
+          Área de Administración Reservada
         </p>
       </div>
     </div>
