@@ -137,7 +137,33 @@ export default function DashboardCliente({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Logout action
+  // ── POLLING SILENCIOSO ──────────────────────────────────────────────────────
+  // Cada 15 segundos pregunta al servidor si hay cambios en las citas.
+  // El servidor valida la cookie, así la tabla sigue 100% bloqueada en Supabase.
+  useEffect(() => {
+    const fetchCitas = async () => {
+      try {
+        const res = await fetch("/api/citas/mis-citas", { cache: "no-store" });
+        if (!res.ok) return; // Silencioso: no mostramos error al usuario
+        const data = await res.json();
+        if (Array.isArray(data.citas)) {
+          setCitas(prev => {
+            // Solo actualizar si algo cambió (evitar re-renders innecesarios)
+            const prevStr = JSON.stringify(prev.map(c => `${c.id}-${c.estado}-${c.expiresAt}`));
+            const nextStr = JSON.stringify(data.citas.map((c: any) => `${c.id}-${c.estado}-${c.expiresAt}`));
+            return prevStr === nextStr ? prev : data.citas;
+          });
+        }
+      } catch {
+        // Error de red silencioso, lo intentará en el próximo ciclo
+      }
+    };
+
+    const intervalo = setInterval(fetchCitas, 15000); // cada 15 segundos
+    return () => clearInterval(intervalo);
+  }, []);
+
+
   const handleLogout = async () => {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
