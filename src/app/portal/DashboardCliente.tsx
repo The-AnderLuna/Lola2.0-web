@@ -96,6 +96,9 @@ export default function DashboardCliente({
   const [showConfirmarPagoModal, setShowConfirmarPagoModal] = useState<CitaData | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
+  const [showRetryFailedModal, setShowRetryFailedModal] = useState<{ citaBase: CitaData; grupo: CitaData[]; error: string } | null>(null);
+  const [hiddenRetryButtons, setHiddenRetryButtons] = useState<Set<string>>(new Set());
+
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
   const toggleCard = (id: string) => {
@@ -227,8 +230,34 @@ export default function DashboardCliente({
     }
   };
 
-  const handleRetomarReserva = async (citaId: string, grupoId?: string | null) => {
-    setLoadingAction(citaId);
+  const handleIrAlPaso2 = () => {
+    if (!showRetryFailedModal) return;
+    const { citaBase, grupo } = showRetryFailedModal;
+
+    // Reconstruir carrito para el paso 2
+    const servicesToRetry = grupo.map(c => ({
+        id: c.servicioId,
+        nombre: c.servicioNombre,
+        precio: c.precioTotal,
+        duracionMin: c.duracionMin,
+        bufferMin: 0,
+        profesionalId: c.profesionalId,
+        profesionalNombre: c.profesionalNombre,
+        uid: Math.random().toString(36).substring(2, 11)
+    }));
+
+    try {
+       sessionStorage.setItem('lola_booking_services', JSON.stringify(servicesToRetry));
+       sessionStorage.setItem('lola_booking_step', '2');
+       sessionStorage.setItem('lola_booking_rules_accepted', 'true');
+       router.push('/reservar');
+    } catch (e) {
+       console.error("Error al inyectar carrito", e);
+    }
+  };
+
+  const handleRetomarReserva = async (citaBase: CitaData, grupo: CitaData[]) => {
+    setLoadingAction(citaBase.id);
     setActionError(null);
     setActionSuccess(null);
     
@@ -236,12 +265,21 @@ export default function DashboardCliente({
       const res = await fetch("/api/citas/reintentar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ citaId, grupoId }),
+        body: JSON.stringify({ citaId: citaBase.id, grupoId: citaBase.grupoId }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409) {
+           setHiddenRetryButtons(prev => {
+             const next = new Set(prev);
+             next.add(citaBase.id);
+             return next;
+           });
+           setShowRetryFailedModal({ citaBase, grupo, error: data.message || "El horario ya no está disponible." });
+           return;
+        }
         throw new Error(data.message || data.error || "No se pudo retomar la reserva");
       }
 
@@ -1200,10 +1238,10 @@ export default function DashboardCliente({
                         )}
 
                         {/* Botón Retomar Reserva (Solo CANCELADA_FALTA_PAGO) */}
-                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && (
+                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && !hiddenRetryButtons.has(citaBase.id) && (
                           <div className="border-t border-white/5 bg-black/20 p-3 flex justify-end">
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleRetomarReserva(citaBase.id, citaBase.grupoId); }}
+                              onClick={(e) => { e.stopPropagation(); handleRetomarReserva(citaBase, grupo); }}
                               disabled={loadingAction === citaBase.id}
                               className="px-4 py-2.5 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-[10px] rounded-xl transition-all hover:brightness-110 shadow-[0_2px_10px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
@@ -1403,6 +1441,42 @@ export default function DashboardCliente({
           </div>
         );
       })()}
+
+      {/* Modal Horario Ocupado / Reintento Fallido */}
+      {showRetryFailedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowRetryFailedModal(null)}></div>
+          <div className="relative glass-strong border border-white/10 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in">
+            <h3 className="text-lg font-bold text-red-400 font-display mb-2 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              Horario ya ocupado
+            </h3>
+            
+            <p className="text-sm text-text-secondary mb-5 leading-relaxed">
+              {showRetryFailedModal.error}
+            </p>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-5 text-sm text-text-muted">
+               <p className="mb-2">¿Deseas buscar otra fecha u hora para estos mismos servicios?</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowRetryFailedModal(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-white hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
+              >
+                CERRAR
+              </button>
+              <button 
+                onClick={handleIrAlPaso2}
+                className="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-black hover:bg-gold transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              >
+                VER HORARIOS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
