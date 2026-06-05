@@ -23,14 +23,22 @@ export async function GET(request: NextRequest) {
         { count: 'exact' }
       )
       .not('estado', 'eq', 'BLOQUEO_TEMPORAL')
-      .not('estado', 'eq', 'CANCELADA_SISTEMA')
-      .not('estado', 'eq', 'CANCELADA_FALTA_PAGO')
+      .not('estado', 'eq', 'CANCELADA_SISTEMA');
+
+    if (estado === 'CANCELADAS') {
+      // Grupo general de canceladas
+      query = query.in('estado', ['CANCELADA', 'CANCELADA_FALTA_PAGO', 'CANCELADA_POR_CLIENTE']);
+    } else {
+      // Ocultar por defecto de las demás vistas (incluyendo "Todas")
+      query = query.not('estado', 'eq', 'CANCELADA_FALTA_PAGO');
+      if (estado) {
+        query = query.eq('estado', estado);
+      }
+    }
+
+    query = query
       .order('fecha_hora_inicio', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
-
-    if (estado) {
-      query = query.eq('estado', estado);
-    }
 
     if (fecha) {
       const dayStart = new Date(fecha);

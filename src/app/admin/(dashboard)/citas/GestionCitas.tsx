@@ -58,7 +58,7 @@ const TABS = [
   { value: EstadoCita.CONFIRMADA, label: 'Confirmada', dot: '#D4AF37' },
   { value: EstadoCita.COMPLETADA, label: 'Completada', dot: '#22c55e' },
   { value: EstadoCita.REAGENDADA, label: 'Reagendada', dot: '#60a5fa' },
-  { value: EstadoCita.CANCELADA_POR_CLIENTE, label: 'Cancelada x Cliente', dot: '#ef4444' },
+  { value: 'CANCELADAS', label: 'Canceladas', dot: '#ef4444' },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export default function GestionCitas() {
   const { showToast } = useToast();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState<EstadoCita | ''>(EstadoCita.PRE_AGENDADA);
+  const [filtroEstado, setFiltroEstado] = useState<EstadoCita | 'CANCELADAS' | ''>(EstadoCita.PRE_AGENDADA);
   const [filtroFecha, setFiltroFecha] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [detailCita, setDetailCita] = useState<Cita | null>(null);
@@ -285,7 +285,7 @@ export default function GestionCitas() {
           return (
             <button
               key={tab.value}
-              onClick={() => setFiltroEstado(tab.value as EstadoCita | '')}
+              onClick={() => setFiltroEstado(tab.value as EstadoCita | 'CANCELADAS' | '')}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200
                 ${active
                   ? 'text-black shadow-lg'
