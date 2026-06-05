@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin';
+import { google } from 'googleapis';
 
 const ESTADOS_ACTIVOS = [
   'BLOQUEO_TEMPORAL',
@@ -9,6 +10,65 @@ const ESTADOS_ACTIVOS = [
   'CONFIRMADA',
   'REAGENDADA'
 ];
+
+const ZONA_HORARIA = 'America/Bogota';
+const ZONA_OFFSET_H = -5;
+
+function utcToColombiaMinutes(isoStr: string): number {
+  const d = new Date(isoStr);
+  const utcTotalMin = d.getUTCHours() * 60 + d.getUTCMinutes();
+  const colombiaMin = utcTotalMin + (ZONA_OFFSET_H * 60);
+  return ((colombiaMin % 1440) + 1440) % 1440;
+}
+
+async function getGoogleBusyBlocks(
+  calendarIds: string[],
+  fecha: string
+): Promise<{ inicio: number; fin: number; raw_start?: string; raw_end?: string }[]> {
+  if (calendarIds.length === 0) return [];
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/^"|"$/g, ''),
+      },
+      scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
+    });
+
+    const calendar = google.calendar({ version: 'v3', auth });
+    const timeMin = `${fecha}T05:00:00Z`;
+    const timeMax = `${fecha}T04:59:59Z`.replace(fecha, (() => {
+      const d = new Date(`${fecha}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + 1);
+      return d.toISOString().slice(0, 10);
+    })());
+
+    const { data } = await calendar.freebusy.query({
+      requestBody: { timeMin, timeMax, timeZone: ZONA_HORARIA, items: calendarIds.map(id => ({ id })) },
+    });
+
+    const bloques: { inicio: number; fin: number; raw_start?: string; raw_end?: string }[] = [];
+    for (const id of calendarIds) {
+      const calData = data.calendars?.[id];
+      if (calData?.errors) continue;
+      const busy = calData?.busy ?? [];
+      for (const slot of busy) {
+        if (slot.start && slot.end) {
+          bloques.push({
+            inicio: utcToColombiaMinutes(slot.start),
+            fin: utcToColombiaMinutes(slot.end),
+            raw_start: slot.start,
+            raw_end: slot.end
+          });
+        }
+      }
+    }
+    return bloques;
+  } catch (err) {
+    console.error('[Google Calendar] Error:', err);
+    return [];
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,8 +116,9 @@ export async function POST(request: NextRequest) {
     // Extraer ids que vamos a ignorar en el chequeo de colisión
     const idsAIgnorar = citasAReactivar.map(c => c.id);
 
-    // 4. Chequear colisión en la BD para el o los profesionales involucrados
+    // 4. Chequear colisión en la BD y Google Calendar
     for (const cita of citasAReactivar) {
+       // Chequeo en Base de Datos
        const { data: colisiones, error: errorColision } = await supabase
          .from('citas')
          .select('id')
@@ -74,6 +135,21 @@ export async function POST(request: NextRequest) {
 
        if (colisiones && colisiones.length > 0) {
          return NextResponse.json({ error: 'SLOT_TOMADO', message: 'El horario original ya ha sido ocupado por alguien más. Por favor realiza una nueva reserva.' }, { status: 409 });
+       }
+
+       // Chequeo en Google Calendar
+       const { data: prof } = await supabase.from('profesionales').select('calendario_id').eq('id', cita.profesional_id).single();
+       if (prof?.calendario_id) {
+           const fechaCita = cita.fecha_hora_inicio.split('T')[0]; // asumiendo formato ISO YYYY-MM-DDTHH:mm...
+           const gBlocks = await getGoogleBusyBlocks([prof.calendario_id], fechaCita);
+           const citaInicioMin = utcToColombiaMinutes(cita.fecha_hora_inicio);
+           const citaFinMin = utcToColombiaMinutes(cita.fecha_hora_fin);
+           
+           // Validar si algún bloque de Google intercepta
+           const chocaGoogle = gBlocks.some(b => citaInicioMin < b.fin && citaFinMin > b.inicio);
+           if (chocaGoogle) {
+               return NextResponse.json({ error: 'SLOT_TOMADO', message: 'La profesional ya no tiene disponibilidad en su agenda a esa hora. Por favor realiza una nueva reserva.' }, { status: 409 });
+           }
        }
     }
 
