@@ -227,6 +227,35 @@ export default function DashboardCliente({
     }
   };
 
+  const handleRetomarReserva = async (citaId: string, grupoId?: string | null) => {
+    setLoadingAction(citaId);
+    setActionError(null);
+    setActionSuccess(null);
+    
+    try {
+      const res = await fetch("/api/citas/reintentar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ citaId, grupoId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "No se pudo retomar la reserva");
+      }
+
+      setActionSuccess("¡Cupo recuperado con éxito!");
+      setTimeout(() => window.location.reload(), 1500);
+
+    } catch (err: any) {
+      setActionError(err.message || "Error al retomar la reserva");
+      setTimeout(() => setActionError(null), 8000);
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const handleEnviarReprogramacion = () => {
     if (!showReprogramarModal) return;
     
@@ -1167,6 +1196,19 @@ export default function DashboardCliente({
                                 ))}
                               </div>
                             )}
+                          </div>
+                        )}
+
+                        {/* Botón Retomar Reserva (Solo CANCELADA_FALTA_PAGO) */}
+                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && (
+                          <div className="border-t border-white/5 bg-black/20 p-3 flex justify-end">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRetomarReserva(citaBase.id, citaBase.grupoId); }}
+                              disabled={loadingAction === citaBase.id}
+                              className="px-4 py-2.5 bg-gradient-to-r from-gold-dark to-gold text-black font-bold uppercase tracking-wider text-[10px] rounded-xl transition-all hover:brightness-110 shadow-[0_2px_10px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                              {loadingAction === citaBase.id ? 'Verificando cupo...' : 'Retomar Reserva'}
+                            </button>
                           </div>
                         )}
                       </div>
