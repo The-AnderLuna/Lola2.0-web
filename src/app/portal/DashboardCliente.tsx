@@ -988,7 +988,9 @@ export default function DashboardCliente({
 
           const estadosFiltro = filtroEstado === "TODOS"
             ? historialAgrupado
-            : historialAgrupado.filter(g => g.citas.some(c => c.estado === filtroEstado));
+            : filtroEstado === "CANCELADAS"
+              ? historialAgrupado.filter(g => g.citas.some(c => ["CANCELADA", "CANCELADA_FALTA_PAGO", "CANCELADA_POR_CLIENTE"].includes(c.estado)))
+              : historialAgrupado.filter(g => g.citas.some(c => c.estado === filtroEstado));
 
           return (
             <div className="space-y-4 animate-fade-in-up">
@@ -1009,9 +1011,7 @@ export default function DashboardCliente({
                   <option value="EN_REVISION">En Revisión</option>
                   <option value="CONFIRMADA">Confirmada</option>
                   <option value="COMPLETADA">Completada</option>
-                  <option value="CANCELADA">Cancelada (Admin)</option>
-                  <option value="CANCELADA_POR_CLIENTE">Cancelaste esta cita</option>
-                  <option value="CANCELADA_FALTA_PAGO">Falta de pago</option>
+                  <option value="CANCELADAS">Canceladas</option>
                   <option value="NO_ASISTIO">No Asistió</option>
                 </select>
               </div>
