@@ -975,11 +975,11 @@ export default function DashboardCliente({
               // Grupo: agrupar todas las citas de este grupo
               const grupo = citasHistorial.filter(c => c.grupoId === cita.grupoId);
               grupo.forEach(c => vistosHistorial.add(c.id));
-              const fechaBase = Math.min(...grupo.map(c => new Date(c.fechaHoraInicio).getTime()));
+              const fechaBase = Math.max(...grupo.map(c => new Date(c.createdAt || c.fechaHoraInicio).getTime()));
               historialAgrupado.push({ key: cita.grupoId, citas: grupo, grupoId: cita.grupoId, fechaBase });
             } else {
               vistosHistorial.add(cita.id);
-              historialAgrupado.push({ key: cita.id, citas: [cita], grupoId: null, fechaBase: new Date(cita.fechaHoraInicio).getTime() });
+              historialAgrupado.push({ key: cita.id, citas: [cita], grupoId: null, fechaBase: new Date(cita.createdAt || cita.fechaHoraInicio).getTime() });
             }
           });
 
