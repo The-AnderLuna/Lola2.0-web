@@ -1012,7 +1012,6 @@ export default function DashboardCliente({
                   <option value="CONFIRMADA">Confirmada</option>
                   <option value="COMPLETADA">Completada</option>
                   <option value="CANCELADAS">Canceladas</option>
-                  <option value="NO_ASISTIO">No Asistió</option>
                 </select>
               </div>
 
