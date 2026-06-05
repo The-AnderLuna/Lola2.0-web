@@ -1009,6 +1009,10 @@ export default function DashboardCliente({
                   <option value="EN_REVISION">En Revisión</option>
                   <option value="CONFIRMADA">Confirmada</option>
                   <option value="COMPLETADA">Completada</option>
+                  <option value="CANCELADA">Cancelada (Admin)</option>
+                  <option value="CANCELADA_POR_CLIENTE">Cancelaste esta cita</option>
+                  <option value="CANCELADA_FALTA_PAGO">Falta de pago</option>
+                  <option value="NO_ASISTIO">No Asistió</option>
                 </select>
               </div>
 
