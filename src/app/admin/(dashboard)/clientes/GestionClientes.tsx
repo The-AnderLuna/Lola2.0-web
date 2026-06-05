@@ -176,7 +176,7 @@ export default function GestionClientes() {
                         <span className="text-xs text-text-muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
                           {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(cita.precio_total)}
                         </span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${cita.estado === 'COMPLETADA' ? 'text-green-400 bg-green-400/10' : cita.estado === 'CANCELADA' || cita.estado === 'CANCELADA_POR_CLIENTE' ? 'text-red-400 bg-red-400/10' : 'text-amber-400 bg-amber-400/10'}`}>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${cita.estado === 'COMPLETADA' ? 'text-green-400 bg-green-400/10' : cita.estado === 'CANCELADA' || cita.estado === 'CANCELADA_POR_CLIENTE' || cita.estado === 'CANCELADA_FALTA_PAGO' ? 'text-red-400 bg-red-400/10' : 'text-amber-400 bg-amber-400/10'}`}>
                           {cita.estado}
                         </span>
                       </div>

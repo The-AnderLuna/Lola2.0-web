@@ -343,7 +343,7 @@ export default function DashboardCliente({
 
   const citasActivas = citas.filter(cita => {
     const inPast = new Date(cita.fechaHoraInicio) < now;
-    const isInactiveState = ["CANCELADA", "CANCELADA_POR_CLIENTE", "CANCELADA_SISTEMA", "COMPLETADA", "NO_ASISTIO"].includes(cita.estado);
+    const isInactiveState = ["CANCELADA", "CANCELADA_POR_CLIENTE", "CANCELADA_SISTEMA", "CANCELADA_FALTA_PAGO", "COMPLETADA", "NO_ASISTIO"].includes(cita.estado);
     return !isInactiveState && !inPast;
   }).sort((a, b) => {
     const pesoA = getEstadoPeso(a.estado);
@@ -493,8 +493,9 @@ export default function DashboardCliente({
       case "CANCELADA":
       case "CANCELADA_POR_CLIENTE":
       case "CANCELADA_SISTEMA":
+      case "CANCELADA_FALTA_PAGO":
         return {
-          text: estado === "CANCELADA_POR_CLIENTE" ? "Cancelaste esta cita" : "Cancelada",
+          text: estado === "CANCELADA_POR_CLIENTE" ? "Cancelaste esta cita" : estado === "CANCELADA_FALTA_PAGO" ? "Cancelada por falta de pago" : "Cancelada",
           styles: "bg-white/5 text-text-muted border-white/10",
           glow: "none",
           icon: <XCircle className="w-3.5 h-3.5" />

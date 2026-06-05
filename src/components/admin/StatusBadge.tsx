@@ -15,6 +15,7 @@ const CITA_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   [EstadoCita.CANCELADA]: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', dot: '#EF4444' },
   [EstadoCita.CANCELADA_POR_CLIENTE]: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', dot: '#EF4444' },
   [EstadoCita.CANCELADA_SISTEMA]: { bg: 'rgba(239, 68, 68, 0.10)', text: '#F87171', dot: '#F87171' },
+  [EstadoCita.CANCELADA_FALTA_PAGO]: { bg: 'rgba(239, 68, 68, 0.15)', text: '#EF4444', dot: '#EF4444' },
   [EstadoCita.COMPLETADA]: { bg: 'rgba(34, 197, 94, 0.10)', text: '#86EFAC', dot: '#86EFAC' },
   [EstadoCita.NO_ASISTIO]: { bg: 'rgba(251, 146, 60, 0.15)', text: '#FB923C', dot: '#FB923C' },
 };
@@ -36,6 +37,7 @@ const ESTADO_LABELS: Record<string, string> = {
   [EstadoCita.CANCELADA]: 'Cancelada',
   [EstadoCita.CANCELADA_POR_CLIENTE]: 'Cancelada (Por Cliente)',
   [EstadoCita.CANCELADA_SISTEMA]: 'Cancelada (Sistema)',
+  [EstadoCita.CANCELADA_FALTA_PAGO]: 'Cancelada (Falta de Pago)',
   [EstadoCita.COMPLETADA]: 'Completada',
   [EstadoCita.NO_ASISTIO]: 'No Asistió',
   [EstadoPago.PENDIENTE]: 'Pendiente',

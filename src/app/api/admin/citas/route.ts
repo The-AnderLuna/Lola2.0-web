@@ -19,11 +19,12 @@ export async function GET(request: NextRequest) {
     let query = supabaseAdmin
       .from('citas')
       .select(
-        '*, clientes!citas_cliente_id_fkey(id, nombre, telefono, cedula), clientes_titular:clientes!citas_reserva_titular_id_fkey(id, nombre, telefono), servicios(nombre, categoria, precio), profesionales(nombre, rol)',
+        '*, clientes!citas_cliente_id_fkey(id, nombre, telefono, cedula), clientes_titular:clientes!citas_reserva_titular_id_fkey(id, nombre, telefono), servicios(nombre, categoria, precio), profesionales(nombre, rol), pagos(monto, estado)',
         { count: 'exact' }
       )
       .not('estado', 'eq', 'BLOQUEO_TEMPORAL')
       .not('estado', 'eq', 'CANCELADA_SISTEMA')
+      .not('estado', 'eq', 'CANCELADA_FALTA_PAGO')
       .order('fecha_hora_inicio', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
 
@@ -64,6 +65,7 @@ export async function GET(request: NextRequest) {
     // ── Group citas by grupo_id ──────────────────────────────────────────────
     // For the admin view we want ONE row per group (or per individual cita).
     // The "group row" shows total price, duration, and lists all sub-services.
+    // Matches the same grouping logic used in the client DashboardCliente.
 
     const gruposProcesados = new Set<string>();
     const grouped: any[] = [];
@@ -82,14 +84,26 @@ export async function GET(request: NextRequest) {
             new Date(b.fecha_hora_inicio).getTime()
         );
 
+        // A single cita with grupo_id is NOT a real group — treat as individual
+        if (grupo.length === 1) {
+          grouped.push({ ...grupo[0], es_grupo: false, sub_citas: [] });
+          return;
+        }
+
         const base = grupo[0]; // earliest cita is the "header" record
         const maxEnd = new Date(
           Math.max(...grupo.map((c) => new Date(c.fecha_hora_fin).getTime()))
         ).toISOString();
 
         // Determine if it's a "group of friends" or a "service package"
-        const clienteIds = new Set(grupo.map((c) => c.cliente_id));
-        const isAmigas = clienteIds.size > 1;
+        // Same logic as DashboardCliente: check reserva_titular_id OR distinct client names
+        const hasReservaTitular = grupo.some(
+          (c) => c.reserva_titular_id !== null && c.reserva_titular_id !== undefined
+        );
+        const clienteNames = new Set(
+          grupo.map((c) => c.clientes?.nombre || 'Cliente')
+        );
+        const isAmigas = hasReservaTitular || clienteNames.size > 1;
 
         grouped.push({
           ...base,
@@ -101,7 +115,7 @@ export async function GET(request: NextRequest) {
           es_grupo: true,
           tipo_grupo: isAmigas ? 'AMIGAS' : 'PAQUETE',
           cantidad_citas: grupo.length,
-          // Sub-services for expanded view
+          // Sub-services for expanded view (includes clienteNombre for grouping)
           sub_citas: grupo.map((c) => ({
             id: c.id,
             estado: c.estado,
@@ -161,6 +175,25 @@ export async function PATCH(request: NextRequest) {
         .update({ estado })
         .eq('id', id);
       if (error) throw error;
+    }
+
+    // Disparar Webhook a n8n si se confirma manualmente
+    if (estado === 'CONFIRMADA') {
+      const webhookUrl = process.env.N8N_WEBHOOK_CONFIRM_URL;
+      if (webhookUrl) {
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_cita: id,
+            grupo_id: grupo_id || null,
+            origen: 'panel_admin',
+            pago_abono: 0 // Si se confirma manual, asumimos abono previo 0 (debe todo)
+          })
+        }).catch(err => console.error('Error disparando webhook de n8n:', err));
+      } else {
+        console.warn('⚠️ N8N_WEBHOOK_CONFIRM_URL no está configurada en las variables de entorno.');
+      }
     }
 
     return NextResponse.json({ success: true, message: `Cita(s) actualizadas a ${estado}` });

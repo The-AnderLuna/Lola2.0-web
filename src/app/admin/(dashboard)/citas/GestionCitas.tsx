@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback, Fragment, useRef } from 'react';
 import {
-  CalendarDays, Search, ChevronRight,
+  CalendarDays, Search, ChevronRight, ChevronDown, ChevronUp,
   CheckCircle, XCircle, Eye, UserCheck, UserX, Users, Package,
+  Calendar, Clock, FileText, User, Tag, Star, Crown, MessageCircle
 } from 'lucide-react';
 import StatusBadge from '@/components/admin/StatusBadge';
 import Modal from '@/components/admin/Modal';
@@ -30,6 +31,7 @@ interface SubCita {
 interface Cita {
   id: string;
   estado: string;
+  created_at: string;
   fecha_hora_inicio: string;
   fecha_hora_fin: string;
   duracion_min: number;
@@ -44,6 +46,7 @@ interface Cita {
   clientes_titular: { id: string; nombre: string; telefono: string } | null;
   servicios: { nombre: string; categoria: string; precio: number } | null;
   profesionales: { nombre: string; rol: string } | null;
+  pagos?: { monto: number; estado: string }[];
 }
 
 // ─── Filter tabs ──────────────────────────────────────────────────────────────
@@ -64,25 +67,17 @@ export default function GestionCitas() {
   const { showToast } = useToast();
   const [citas, setCitas] = useState<Cita[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState(EstadoCita.PRE_AGENDADA);
+  const [filtroEstado, setFiltroEstado] = useState<EstadoCita | ''>(EstadoCita.PRE_AGENDADA);
   const [filtroFecha, setFiltroFecha] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [detailCita, setDetailCita] = useState<Cita | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [confirmAction, setConfirmAction] = useState<{ cita: Cita; estado: string } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [newCitaFlash, setNewCitaFlash] = useState<string | null>(null);
+  const [clienteStats, setClienteStats] = useState<{totalCitas: number} | null>(null);
   // Track known grupo_ids / cita ids to detect new arrivals
   const seenIdsRef = useRef<Set<string>>(new Set());
   const isFirstLoad = useRef(true);
-
-  const toggleGroup = (id: string) => {
-    setExpandedGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
 
   // ─── Fetch citas via admin API ─────────────────────────────────────────────
 
@@ -120,6 +115,10 @@ export default function GestionCitas() {
       try {
         // Always fetch without active filters so we catch ALL new citas
         const res = await fetch('/api/admin/citas?limit=100');
+        if (res.status === 401) {
+          window.location.href = '/admin/login';
+          return;
+        }
         if (!res.ok) return;
         const json = await res.json();
         const freshCitas: Cita[] = json.data || [];
@@ -189,7 +188,27 @@ export default function GestionCitas() {
     }
   };
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
+  // ─── Fetch client stats when modal opens ───────────────────────────────────
+  useEffect(() => {
+    if (detailCita) {
+      const clienteId = detailCita.clientes?.id;
+      if (clienteId) {
+        setClienteStats(null);
+        fetch(`/api/admin/clientes/${clienteId}/resumen`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && typeof data.totalCitas === 'number') {
+              setClienteStats(data);
+            }
+          })
+          .catch(console.error);
+      }
+    } else {
+      setClienteStats(null);
+    }
+  }, [detailCita]);
+
+  // ─── Action Handlers ───────────────────────────────────────────────────────────────
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -197,11 +216,46 @@ export default function GestionCitas() {
   const formatTime = (dateStr: string) =>
     new Date(dateStr).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
 
+  const formatFullDate = (dateStr: string) => {
+    const dateStrFormatted = new Date(dateStr).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return dateStrFormatted.charAt(0).toUpperCase() + dateStrFormatted.slice(1);
+  };
+
+  const getEndTime = (dateStr: string, duracion: number) => {
+    const d = new Date(dateStr);
+    d.setMinutes(d.getMinutes() + duracion);
+    return formatTime(d.toISOString());
+  };
+
+  const formatDurationLong = (min: number) => {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'min' : ''}`.trim();
+  };
+
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(v);
 
   const getInitials = (name: string) =>
     name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+  const formatDuration = (mins: number) => {
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  };
+
+  // Group sub_citas by clienteNombre (same pattern as DashboardCliente)
+  const groupSubCitasByCliente = (subCitas: SubCita[]) => {
+    const grouped: Record<string, SubCita[]> = {};
+    subCitas.forEach(sub => {
+      const nombre = sub.clientes?.nombre || 'Cliente';
+      if (!grouped[nombre]) grouped[nombre] = [];
+      grouped[nombre].push(sub);
+    });
+    return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));
+  };
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -231,7 +285,7 @@ export default function GestionCitas() {
           return (
             <button
               key={tab.value}
-              onClick={() => setFiltroEstado(tab.value)}
+              onClick={() => setFiltroEstado(tab.value as EstadoCita | '')}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200
                 ${active
                   ? 'text-black shadow-lg'
@@ -306,7 +360,6 @@ export default function GestionCitas() {
                 <tr className="border-b border-white/[0.03]" style={{ background: 'rgba(255,255,255,0.01)' }}>
                   <th className="text-left px-5 py-4 text-xs font-semibold text-gold uppercase tracking-[0.15em] opacity-80">Cliente / Grupo</th>
                   <th className="text-left px-5 py-4 text-xs font-semibold text-gold uppercase tracking-[0.15em] opacity-80 hidden md:table-cell">Servicio</th>
-                  <th className="text-left px-5 py-4 text-xs font-semibold text-gold uppercase tracking-[0.15em] opacity-80 hidden lg:table-cell">Especialista</th>
                   <th className="text-left px-5 py-4 text-xs font-semibold text-gold uppercase tracking-[0.15em] opacity-80">Fecha / Hora</th>
                   <th className="text-left px-5 py-4 text-xs font-semibold text-gold uppercase tracking-[0.15em] opacity-80">Estado</th>
                   <th className="text-right px-5 py-4 text-xs font-semibold text-gold uppercase tracking-[0.15em] opacity-80 hidden sm:table-cell">Total</th>
@@ -315,7 +368,6 @@ export default function GestionCitas() {
               </thead>
               <tbody>
                 {citas.map((cita) => {
-                  const isExpanded = expandedGroups.has(cita.id);
                   const clienteNombre = cita.clientes?.nombre || '—';
                   const isNew = newCitaFlash && (
                     cita.id === newCitaFlash ||
@@ -330,7 +382,7 @@ export default function GestionCitas() {
                           ${cita.es_grupo ? 'hover:bg-gold/[0.02]' : 'hover:bg-white/[0.02]'}
                           ${isNew ? 'animate-pulse-once bg-green-500/[0.04]' : ''}`}
                         style={isNew ? { boxShadow: 'inset 0 0 0 1px rgba(34,197,94,0.2)' } : {}}
-                        onClick={() => cita.es_grupo ? toggleGroup(cita.id) : setDetailCita(cita)}
+                        onClick={() => setDetailCita(cita)}
                       >
                         {/* Cliente / Grupo */}
                         <td className="px-5 py-4">
@@ -351,15 +403,17 @@ export default function GestionCitas() {
                               {cita.es_grupo ? (
                                 <>
                                   <div className="flex items-center gap-1.5">
-                                    <p className={`text-sm font-medium truncate ${cita.tipo_grupo === 'AMIGAS' ? 'text-purple-300' : 'text-gold'}`}>
-                                      {cita.tipo_grupo === 'AMIGAS' ? 'Reserva de Amigas' : 'Paquete de Servicios'}
+                                    <p className="text-sm font-medium text-text-primary group-hover:text-gold transition-colors duration-200 truncate">
+                                      {clienteNombre}
                                     </p>
                                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0
                                       ${cita.tipo_grupo === 'AMIGAS' ? 'bg-purple-500/15 text-purple-400' : 'bg-gold/15 text-gold'}`}>
                                       ×{cita.cantidad_citas}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-text-muted truncate">{clienteNombre}</p>
+                                  <p className={`text-xs truncate ${cita.tipo_grupo === 'AMIGAS' ? 'text-purple-400' : 'text-gold'}`}>
+                                    {cita.tipo_grupo === 'AMIGAS' ? 'Reserva de Amigas' : 'Paquete de Servicios'}
+                                  </p>
                                 </>
                               ) : (
                                 <>
@@ -370,16 +424,22 @@ export default function GestionCitas() {
                                 </>
                               )}
                             </div>
-                            {cita.es_grupo && (
-                              <ChevronRight className={`w-4 h-4 text-text-muted ml-auto shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
-                            )}
                           </div>
                         </td>
 
                         {/* Servicio */}
                         <td className="px-5 py-4 hidden md:table-cell">
                           {cita.es_grupo ? (
-                            <span className="text-xs text-text-muted italic">{cita.cantidad_citas} servicios — ver detalle</span>
+                            <div className="flex flex-col gap-0.5">
+                              <p className="text-sm text-text-primary truncate max-w-[200px]">
+                                {cita.sub_citas?.[0]?.servicios?.nombre || 'Múltiples servicios'}
+                              </p>
+                              {cita.cantidad_citas > 1 && (
+                                <span className="text-[10px] font-medium text-gold/70">
+                                  + {cita.cantidad_citas - 1} servicio{cita.cantidad_citas - 1 !== 1 ? 's' : ''} más
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <>
                               <p className="text-sm text-text-primary truncate max-w-[200px]">{cita.servicios?.nombre || '—'}</p>
@@ -388,15 +448,10 @@ export default function GestionCitas() {
                           )}
                         </td>
 
-                        {/* Especialista */}
-                        <td className="px-5 py-4 hidden lg:table-cell">
-                          <span className="text-sm text-text-secondary">{cita.profesionales?.nombre || '—'}</span>
-                        </td>
-
                         {/* Fecha / Hora */}
                         <td className="px-5 py-4">
                           <p className="text-sm text-text-primary font-medium">{formatDate(cita.fecha_hora_inicio)}</p>
-                          <p className="text-xs text-text-muted">{formatTime(cita.fecha_hora_inicio)}</p>
+                          <p className="text-xs text-text-muted">{formatTime(cita.fecha_hora_inicio)} - {getEndTime(cita.fecha_hora_inicio, cita.duracion_min)}</p>
                         </td>
 
                         {/* Estado */}
@@ -451,43 +506,7 @@ export default function GestionCitas() {
                         </td>
                       </tr>
 
-                      {/* ── Expanded Sub-rows ─────────────────────────────── */}
-                      {cita.es_grupo && isExpanded && cita.sub_citas.map((sub) => (
-                        <tr key={sub.id} className="border-b border-white/[0.01] bg-white/[0.01]">
-                          <td className="px-5 py-3 pl-14">
-                            <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-text-secondary border border-white/10 bg-white/5 shrink-0">
-                                {getInitials(sub.clientes?.nombre || '?')}
-                              </div>
-                              <div>
-                                <p className="text-xs font-medium text-text-secondary">{sub.clientes?.nombre || '—'}</p>
-                                {sub.clientes_titular && (
-                                  <p className="text-[10px] text-text-muted">Titular: {sub.clientes_titular.nombre}</p>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3 hidden md:table-cell">
-                            <p className="text-xs text-text-secondary truncate max-w-[200px]">{sub.servicios?.nombre || '—'}</p>
-                            <p className="text-[10px] text-text-muted">{sub.duracion_min} min</p>
-                          </td>
-                          <td className="px-5 py-3 hidden lg:table-cell">
-                            <span className="text-xs text-text-muted">{sub.profesionales?.nombre || '—'}</span>
-                          </td>
-                          <td className="px-5 py-3">
-                            <p className="text-xs text-text-secondary">{formatTime(sub.fecha_hora_inicio)}</p>
-                          </td>
-                          <td className="px-5 py-3">
-                            <StatusBadge estado={sub.estado} />
-                          </td>
-                          <td className="px-5 py-3 text-right hidden sm:table-cell">
-                            <span className="text-xs text-text-muted" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                              {formatCurrency(sub.precio_total)}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3" />
-                        </tr>
-                      ))}
+
                     </Fragment>
                   );
                 })}
@@ -507,34 +526,163 @@ export default function GestionCitas() {
                 border: '1px solid rgba(212,175,55,0.15)',
               }}>
               <div>
-                <span className="text-[10px] uppercase tracking-[0.2em] text-gold/80 block mb-1">Estado</span>
-                <StatusBadge estado={detailCita.estado} size="md" />
-                {detailCita.es_grupo && (
-                  <span className={`mt-2 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gold/80 block mb-1">
+                  {detailCita.es_grupo ? (detailCita.tipo_grupo === 'AMIGAS' ? 'GRUPO DE AMIGAS' : 'PAQUETE') : 'SERVICIO'}
+                </span>
+                {detailCita.es_grupo ? (
+                  <span className={`mt-1 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider font-bold px-2 py-1 rounded-full
                     ${detailCita.tipo_grupo === 'AMIGAS' ? 'bg-purple-500/15 text-purple-400' : 'bg-gold/15 text-gold'}`}>
-                    {detailCita.tipo_grupo === 'AMIGAS' ? <Users className="w-3 h-3" /> : <Package className="w-3 h-3" />}
-                    {detailCita.tipo_grupo === 'AMIGAS' ? 'Reserva de Amigas' : 'Paquete'} · {detailCita.cantidad_citas} citas
+                    {detailCita.tipo_grupo === 'AMIGAS' ? <Users className="w-3.5 h-3.5" /> : <Package className="w-3.5 h-3.5" />}
+                    {detailCita.cantidad_citas} citas incluidas
                   </span>
+                ) : (
+                  <div className="flex flex-col">
+                    <span className="text-base font-semibold tracking-wide text-white">
+                      {detailCita.servicios?.nombre || '—'}
+                    </span>
+                    {detailCita.servicios?.categoria && (
+                      <span className="text-xs text-gold/70 mt-0.5">({detailCita.servicios.categoria})</span>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="text-right">
                 <span className="text-[10px] uppercase tracking-[0.2em] text-text-muted block mb-1">Total</span>
                 <span className="text-2xl font-light text-gold">{formatCurrency(detailCita.precio_total)}</span>
+                
+                {/* Estado Financiero (Abonos y Saldos) */}
+                {(() => {
+                  const abonado = (detailCita.pagos || [])
+                    .filter(p => ['APROBADO', 'COMPLETADO', 'PAGADO', 'ENVIADO'].includes(p.estado))
+                    .reduce((sum, p) => sum + Number(p.monto), 0);
+                  const saldo = Math.max(0, detailCita.precio_total - abonado);
+                  
+                  return (
+                    <div className="mt-3 space-y-1.5 border-t border-white/5 pt-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-text-muted">Abonado</span>
+                        <span className="text-emerald-400 font-medium flex items-center gap-1">
+                          {abonado > 0 && <CheckCircle className="w-3 h-3" />}
+                          {formatCurrency(abonado)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-text-muted">Saldo</span>
+                        <span className={`font-semibold ${saldo > 0 ? 'text-rose-400' : 'text-text-muted'}`}>
+                          {formatCurrency(saldo)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
-            {!detailCita.es_grupo && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 bg-[#0a0a0c]/60 p-5 rounded-2xl border border-white/[0.03]">
-                <InfoField label="CLIENTE" value={detailCita.clientes?.nombre || '—'} />
-                <InfoField label="IDENTIFICACIÓN" value={detailCita.clientes?.cedula || '—'} />
-                <InfoField label="TELÉFONO" value={detailCita.clientes?.telefono || '—'} />
-                <InfoField label="CATEGORÍA" value={detailCita.servicios?.categoria || '—'} />
-                <InfoField label="SERVICIO" value={detailCita.servicios?.nombre || '—'} />
-                <InfoField label="ESPECIALISTA" value={detailCita.profesionales?.nombre || '—'} />
-                <InfoField label="DURACIÓN" value={`${detailCita.duracion_min} min`} />
-                <InfoField label="FECHA Y HORA" value={`${formatDate(detailCita.fecha_hora_inicio)} · ${formatTime(detailCita.fecha_hora_inicio)}`} />
+            {/* ── Additional Info Block ── */}
+            <div className="space-y-4 px-2">
+              <div className="flex items-center gap-4">
+                <Calendar className="w-5 h-5 text-gold/60 shrink-0" />
+                <span className="text-[15px] font-semibold text-text-primary tracking-wide">
+                  {formatFullDate(detailCita.fecha_hora_inicio)}
+                </span>
               </div>
-            )}
+              <div className="flex items-center gap-4">
+                <Clock className="w-5 h-5 text-gold/60 shrink-0" />
+                <div className="flex items-center gap-2">
+                  <span className="text-[15px] font-semibold text-text-primary tracking-wide">
+                    {formatTime(detailCita.fecha_hora_inicio)} - {getEndTime(detailCita.fecha_hora_inicio, detailCita.duracion_min)}
+                  </span>
+                  <span className="text-sm text-text-muted">({formatDurationLong(detailCita.duracion_min)})</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <FileText className="w-5 h-5 text-gold/30 shrink-0" />
+                <span className="text-sm text-text-muted">
+                  Creada el {new Date(detailCita.created_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <div className={`w-2.5 h-2.5 rounded-full ${
+                    detailCita.estado.includes('CANCELADA') ? 'bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.6)]' :
+                    detailCita.estado === 'COMPLETADA' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' :
+                    detailCita.estado === 'CONFIRMADA' ? 'bg-gold shadow-[0_0_8px_rgba(212,175,55,0.6)]' :
+                    'bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.6)]'
+                  }`} />
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-[15px] font-bold tracking-wide uppercase ${
+                    detailCita.estado.includes('CANCELADA') ? 'text-rose-400' :
+                    detailCita.estado === 'COMPLETADA' ? 'text-emerald-400' :
+                    detailCita.estado === 'CONFIRMADA' ? 'text-gold' :
+                    'text-purple-400'
+                  }`}>
+                    {detailCita.estado.replace(/_/g, ' ')}
+                  </span>
+                  {detailCita.estado === EstadoCita.PRE_AGENDADA && detailCita.expires_at && (
+                    <div className="mt-0.5">
+                       <CountdownBadge expiresAt={detailCita.expires_at} />
+                    </div>
+                  )}
+                </div>
+              </div>
+              {(!detailCita.es_grupo && detailCita.profesionales?.nombre) && (
+                <div className="flex items-center gap-4">
+                  <User className="w-5 h-5 text-gold/60 shrink-0" />
+                  <span className="text-[15px] font-semibold text-text-primary tracking-wide">
+                    {detailCita.profesionales.nombre}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 bg-[#0a0a0c]/60 p-5 rounded-2xl border border-white/[0.03]">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-gold block mb-1 font-semibold opacity-70">
+                  {detailCita.es_grupo ? 'CLIENTE TITULAR' : 'CLIENTE'}
+                </span>
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-text-primary">
+                    {detailCita.clientes?.nombre || detailCita.clientes_titular?.nombre || '—'}
+                  </p>
+                  {clienteStats && (
+                    <span className={`inline-flex items-center text-[10px] font-medium px-2 py-1 rounded-sm w-fit ${clienteStats.totalCitas <= 1 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-orange-500/10 text-orange-400'}`}>
+                      {clienteStats.totalCitas <= 1 ? (
+                        <><Star className="w-3 h-3 mr-1" /> Cliente Nuevo</>
+                      ) : (
+                        <><Crown className="w-3 h-3 mr-1" /> Cliente Frecuente ({clienteStats.totalCitas} citas)</>
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <InfoField label="IDENTIFICACIÓN" value={detailCita.clientes?.cedula || detailCita.clientes_titular?.telefono || '—'} />
+              {(() => {
+                const telefono = detailCita.clientes?.telefono || detailCita.clientes_titular?.telefono || '';
+                const hasTelefono = telefono && telefono !== '—';
+                const waLink = hasTelefono ? `https://wa.me/${telefono.replace(/\D/g, '')}` : '#';
+                
+                return (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gold/75 tracking-wider uppercase">TELÉFONO</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-text-primary">{telefono || '—'}</p>
+                      {hasTelefono && (
+                        <a 
+                          href={waLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="p-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] rounded-full transition-colors shrink-0"
+                          title="Contactar por WhatsApp"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
 
             {detailCita.es_grupo && (
               <div className="space-y-3">
@@ -542,42 +690,52 @@ export default function GestionCitas() {
                   <span className="text-[10px] font-bold text-gold/75 tracking-wider uppercase">Servicios del Grupo</span>
                   <div className="h-px flex-1 bg-white/5" />
                 </div>
-                {detailCita.sub_citas.map((sub) => (
-                  <div key={sub.id} className="bg-[#0a0a0c]/60 p-4 rounded-xl border border-white/[0.03] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-gold border border-gold/15 bg-gold/5 shrink-0">
-                          {getInitials(sub.clientes?.nombre || '?')}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-text-primary">{sub.clientes?.nombre || '—'}</p>
-                          {sub.clientes_titular && (
-                            <p className="text-[10px] text-text-muted">Titular: {sub.clientes_titular.nombre}</p>
-                          )}
-                        </div>
+                <div className="bg-[#0a0a0c]/60 p-5 rounded-xl border border-white/[0.03] space-y-4">
+                  {groupSubCitasByCliente(detailCita.sub_citas).map(([nombre, servicios]) => (
+                    <div key={nombre} className="flex flex-col border-l-2 border-gold/30 pl-3">
+                      <span className="font-semibold text-gold/80 text-xs mb-2 tracking-wide">
+                        {servicios.length === 1 ? `Servicio de ${nombre}` : `Servicios de ${nombre}`}
+                      </span>
+                      <div className="space-y-2">
+                        {servicios.map(sub => (
+                          <div key={sub.id} className="flex justify-between items-start text-[11px] py-1.5 gap-3">
+                            <div className="flex-1 min-w-0 flex items-start gap-1.5">
+                              <span className="text-gold-light mt-[1.5px] shrink-0 leading-none" style={{ textShadow: '0 0 2px rgba(251,191,36,0.8)' }}>•</span>
+                              <div>
+                                <span className="text-text-primary leading-snug break-words block">
+                                  {sub.servicios?.nombre || '—'}
+                                  {sub.servicios?.categoria && (
+                                    <span className="text-[10px] text-gold/60 ml-1.5 font-normal tracking-wide">
+                                      ({sub.servicios.categoria})
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="text-[10px] text-text-muted">{sub.profesionales?.nombre || '—'} · {formatDuration(sub.duracion_min)}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2.5 shrink-0 whitespace-nowrap pt-[2px]">
+                              <span className="text-text-secondary font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(sub.precio_total)}</span>
+                              <StatusBadge estado={sub.estado} />
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <StatusBadge estado={sub.estado} />
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      <InfoField label="SERVICIO" value={sub.servicios?.nombre || '—'} />
-                      <InfoField label="CATEGORÍA" value={sub.servicios?.categoria || '—'} />
-                      <InfoField label="ESPECIALISTA" value={sub.profesionales?.nombre || '—'} />
-                      <InfoField label="HORA" value={formatTime(sub.fecha_hora_inicio)} />
-                      <InfoField label="DURACIÓN" value={`${sub.duracion_min} min`} />
-                      <InfoField label="PRECIO" value={formatCurrency(sub.precio_total)} />
-                    </div>
-                  </div>
-                ))}
-                <div className="p-3 rounded-xl flex items-center justify-between text-sm"
-                  style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                  <span className="text-text-muted text-xs uppercase tracking-wider">Total ({detailCita.cantidad_citas} servicios)</span>
-                  <span className="text-gold font-medium">{formatCurrency(detailCita.precio_total)}</span>
+                  ))}
                 </div>
               </div>
             )}
 
             <div className="flex flex-wrap gap-2 pt-4 border-t border-white/[0.03]">
-              {['PRE_AGENDADA', 'EN_REVISION'].includes(detailCita.estado) && (
+              {detailCita.estado === 'PRE_AGENDADA' && (
+                <>
+                  <ActionBtn icon={<CheckCircle className="w-4 h-4" />} label="Confirmar" color="#22C55E"
+                    onClick={() => setConfirmAction({ cita: detailCita, estado: 'CONFIRMADA' })} />
+                  <ActionBtn icon={<XCircle className="w-4 h-4" />} label="Liberar Espacio" color="#EF4444"
+                    onClick={() => setConfirmAction({ cita: detailCita, estado: 'CANCELADA' })} />
+                </>
+              )}
+              {detailCita.estado === 'EN_REVISION' && (
                 <ActionBtn icon={<CheckCircle className="w-4 h-4" />} label="Confirmar Reserva" color="#22C55E"
                   onClick={() => setConfirmAction({ cita: detailCita, estado: 'CONFIRMADA' })} />
               )}
@@ -589,11 +747,11 @@ export default function GestionCitas() {
                     onClick={() => setConfirmAction({ cita: detailCita, estado: 'NO_ASISTIO' })} />
                 </>
               )}
-              {['PRE_AGENDADA', 'EN_REVISION', 'CONFIRMADA'].includes(detailCita.estado) && (
+              {['EN_REVISION', 'CONFIRMADA'].includes(detailCita.estado) && (
                 <ActionBtn icon={<XCircle className="w-4 h-4" />} label="Cancelar Reserva" color="#EF4444"
                   onClick={() => setConfirmAction({ cita: detailCita, estado: 'CANCELADA' })} />
               )}
-              {detailCita.es_grupo && (
+              {detailCita.es_grupo && ['PRE_AGENDADA', 'EN_REVISION', 'CONFIRMADA'].includes(detailCita.estado) && (
                 <p className="w-full text-[10px] text-text-muted mt-1">
                   ⚠️ Los cambios de estado aplicarán a <strong>todas las citas del grupo</strong>.
                 </p>
@@ -662,9 +820,11 @@ function CountdownBadge({ expiresAt }: { expiresAt: string }) {
   }, [expiresAt]);
 
   return (
-    <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1 bg-amber-400/5 px-2 py-0.5 rounded border border-amber-400/10"
-      style={{ fontVariantNumeric: 'tabular-nums', width: 'fit-content' }}>
-      ⏳ {timeLeft}
-    </span>
+    <div className="flex items-center gap-1.5 mt-1.5 bg-gold/10 px-2 py-1 rounded-md border border-gold/20 w-fit">
+      <Clock className="w-3 h-3 text-gold" />
+      <span className="text-[11px] font-bold tracking-widest text-gold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+        {timeLeft}
+      </span>
+    </div>
   );
 }

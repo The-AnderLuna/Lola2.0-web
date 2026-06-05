@@ -7,6 +7,8 @@ import { ToastProvider } from '@/components/admin/Toast';
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarClock,
+  List,
   Users,
   Sparkles,
   UserCog,
@@ -22,7 +24,8 @@ import {
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Resumen', icon: LayoutDashboard },
-  { href: '/admin/citas', label: 'Citas', icon: CalendarDays },
+  { href: '/admin/agenda', label: 'Agenda', icon: CalendarClock },
+  { href: '/admin/citas', label: 'Lista de Citas', icon: List },
   { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/admin/servicios', label: 'Servicios', icon: Sparkles },
   { href: '/admin/staff', label: 'Staff', icon: UserCog },
