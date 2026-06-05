@@ -97,7 +97,7 @@ export default function DashboardCliente({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
 
   const [showRetryFailedModal, setShowRetryFailedModal] = useState<{ citaBase: CitaData; grupo: CitaData[]; error: string } | null>(null);
-  const [hiddenRetryButtons, setHiddenRetryButtons] = useState<Set<string>>(new Set());
+  const [hiddenRetryButtons, setHiddenRetryButtons] = useState<string[]>([]);
 
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
@@ -271,13 +271,9 @@ export default function DashboardCliente({
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 409) {
-           setHiddenRetryButtons(prev => {
-             const next = new Set(prev);
-             next.add(citaBase.id);
-             return next;
-           });
-           setShowRetryFailedModal({ citaBase, grupo, error: data.message || "El horario ya no está disponible." });
+        if (res.status === 409 || res.status === 400 || res.status === 404 || res.status === 500) {
+           setHiddenRetryButtons(prev => [...prev, citaBase.id]);
+           setShowRetryFailedModal({ citaBase, grupo, error: data.message || data.error || "El horario ya no está disponible." });
            return;
         }
         throw new Error(data.message || data.error || "No se pudo retomar la reserva");
@@ -1238,7 +1234,7 @@ export default function DashboardCliente({
                         )}
 
                         {/* Botón Retomar Reserva (Solo CANCELADA_FALTA_PAGO) */}
-                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && !hiddenRetryButtons.has(citaBase.id) && (
+                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && !hiddenRetryButtons.includes(citaBase.id) && (
                           <div className="border-t border-white/5 bg-black/20 p-3 flex justify-end">
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRetomarReserva(citaBase, grupo); }}
