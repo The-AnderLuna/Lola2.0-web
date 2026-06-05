@@ -116,8 +116,29 @@ export async function POST(request: NextRequest) {
     // Extraer ids que vamos a ignorar en el chequeo de colisión
     const idsAIgnorar = citasAReactivar.map(c => c.id);
 
-    // 4. Chequear colisión en la BD y Google Calendar
+    // 4. Chequear colisión en la BD, Google Calendar y Horario Laboral
     for (const cita of citasAReactivar) {
+       const citaInicioMin = utcToColombiaMinutes(cita.fecha_hora_inicio);
+       const citaFinMin = utcToColombiaMinutes(cita.fecha_hora_fin);
+
+       // Chequeo de Horario Laboral (por si la profesional cambió su horario de trabajo)
+       const dObj = new Date(cita.fecha_hora_inicio);
+       const colDate = new Date(dObj.getTime() + (ZONA_OFFSET_H * 60 * 60 * 1000));
+       const diaSemana = colDate.getUTCDay();
+       
+       const { data: horarios } = await supabase.from('horarios').select('hora_inicio, hora_fin').eq('dia_semana', diaSemana).eq('profesional_id', cita.profesional_id);
+       const enHorario = (horarios || []).some(hr => {
+          const [hI, mI] = hr.hora_inicio.split(':').map(Number);
+          const [hF, mF] = hr.hora_fin.split(':').map(Number);
+          const hmInicio = hI * 60 + mI;
+          const hmFin = hF * 60 + mF;
+          return citaInicioMin >= hmInicio && citaFinMin <= hmFin;
+       });
+
+       if (!enHorario) {
+           return NextResponse.json({ error: 'SLOT_TOMADO', message: 'La profesional ya no atiende en este horario. Por favor realiza una nueva reserva.' }, { status: 409 });
+       }
+
        // Chequeo en Base de Datos
        const { data: colisiones, error: errorColision } = await supabase
          .from('citas')
@@ -140,10 +161,9 @@ export async function POST(request: NextRequest) {
        // Chequeo en Google Calendar
        const { data: prof } = await supabase.from('profesionales').select('calendario_id').eq('id', cita.profesional_id).single();
        if (prof?.calendario_id) {
-           const fechaCita = cita.fecha_hora_inicio.split('T')[0]; // asumiendo formato ISO YYYY-MM-DDTHH:mm...
+           // Usar la fecha de Colombia correcta (colDate)
+           const fechaCita = colDate.toISOString().split('T')[0];
            const gBlocks = await getGoogleBusyBlocks([prof.calendario_id], fechaCita);
-           const citaInicioMin = utcToColombiaMinutes(cita.fecha_hora_inicio);
-           const citaFinMin = utcToColombiaMinutes(cita.fecha_hora_fin);
            
            // Validar si algún bloque de Google intercepta
            const chocaGoogle = gBlocks.some(b => citaInicioMin < b.fin && citaFinMin > b.inicio);
