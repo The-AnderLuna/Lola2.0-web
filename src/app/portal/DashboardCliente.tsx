@@ -1234,7 +1234,7 @@ export default function DashboardCliente({
                         )}
 
                         {/* Botón Retomar Reserva (Solo CANCELADA_FALTA_PAGO) */}
-                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && !hiddenRetryButtons.includes(citaBase.id) && (
+                        {citaBase.estado === "CANCELADA_FALTA_PAGO" && !showRetryFailedModal && !hiddenRetryButtons.includes(citaBase.id) && (
                           <div className="border-t border-white/5 bg-black/20 p-3 flex justify-end">
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRetomarReserva(citaBase, grupo); }}
